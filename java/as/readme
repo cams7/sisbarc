@@ -1,14 +1,32 @@
-For Linux:   $JBOSS_HOME/bin/standalone.sh
-For Windows: $JBOSS_HOME\bin\standalone.bat
+For Linux QBEX:   
+	$JBOSS_HOME/bin/standalone.sh -b 192.168.0.160 -bmanagement 192.168.0.160
+
+For Windows VAIO: 
+	#FOR /F "tokens=4 delims= " %%P IN ('netstat -a -n -o ^| findstr :8080') DO @ECHO TaskKill.exe /PID %%P
+	#FOR /F "tokens=4 delims= " %%P IN ('netstat -a -n -o ^| findstr :9990') DO @ECHO TaskKill.exe /PID %%P
+	
+	netstat -a -n -o
+	TaskKill /F /PID pid
+	
+	cd C:\Users\cams7\Desenv\java\jboss\wildfly-8.2.0.Final\bin
+	standalone.bat -b 192.168.0.150 -bmanagement 192.168.0.150
 
 WildFly started
 
-mvn clean install wildfly:deploy
-mvn wildfly:undeploy
+	mvn clean install wildfly:deploy
+	mvn wildfly:undeploy
 
-mvn clean test -Parq-wildfly-remote
+	mvn clean test -Parq-wildfly-remote
 
+	For Linux QBEX: 
+		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.0.160
+		mvn wildfly:undeploy -Dwildfly.hostname=192.168.0.160
+		
+	For Windows VAIO:
+		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.0.150
+		mvn wildfly:undeploy -Dwildfly.hostname=192.168.0.150
+	
 WildFly stopped
 
-mvn clean test -Parq-wildfly-managed
+	mvn clean test -Parq-wildfly-managed
 

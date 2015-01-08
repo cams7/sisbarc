@@ -7,6 +7,9 @@
 #Linux
 *~
 
+#Windows
+Thumbs.db
+
 # Maven
 log/
 target/

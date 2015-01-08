@@ -15,7 +15,7 @@ import java.util.TooManyListenersException;
 
 public abstract class Arduino implements Runnable, SerialPortEventListener {
 
-	public static final String SERIAL_PORT = "/dev/ttyACM0";
+	public static final String SERIAL_PORT = "COM1";
 	public static final int BAUD_RATE = 9600;
 
 	public static final long MILLIS = 500;

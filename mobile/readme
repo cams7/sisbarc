@@ -1,3 +1,9 @@
+For Linux QBEX: 
+	cd ~/desenv/git/github/sisbarc/mobile/acende_apaga_leds-android
+
+For Windows VAIO:
+	cd ~/Desenv/github/sisbarc/mobile/acende_apaga_leds-android
+
 mvn clean install
 
 mvn android:emulator-start
