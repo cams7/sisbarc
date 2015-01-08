@@ -1,0 +1,10 @@
+mvn clean install
+
+mvn android:emulator-start
+mvn android:deploy
+mvn android:undeploy
+
+android avd
+emulator -avd API_10
+
+

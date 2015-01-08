@@ -1,0 +1,64 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>br.com.cams7.sisbarc</groupId>
+		<artifactId>java</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>jmx</artifactId>
+
+	<packaging>pom</packaging>
+
+	<name>1.1) Sistema Embarcado - Modulos JMX</name>
+	<description></description>
+
+	<url>https://github.com/cams7/bazuca_mata_formiga/java/jmx</url>
+
+	<properties>
+	</properties>
+
+	<dependencyManagement>
+        	<dependencies>
+			<!-- http://jlog.org/rxtx-lin.html -->
+			<!-- http://jlog.org/rxtx-win.html -->
+			<dependency>
+				<groupId>org.rxtx</groupId>
+				<artifactId>rxtx</artifactId>
+				<version>2.1.7</version>
+			</dependency>
+		</dependencies>
+    	</dependencyManagement>
+
+	<modules>
+		<module>acende_apaga_leds_monitor-base</module>
+		<module>acende_apaga_leds_monitor</module>
+	</modules>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<plugins>
+			<!-- Copy project dependency -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.9</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeScope>runtime</includeScope>
+							<outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

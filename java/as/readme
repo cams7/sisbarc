@@ -1,0 +1,14 @@
+For Linux:   $JBOSS_HOME/bin/standalone.sh
+For Windows: $JBOSS_HOME\bin\standalone.bat
+
+WildFly started
+
+mvn clean install wildfly:deploy
+mvn wildfly:undeploy
+
+mvn clean test -Parq-wildfly-remote
+
+WildFly stopped
+
+mvn clean test -Parq-wildfly-managed
+
