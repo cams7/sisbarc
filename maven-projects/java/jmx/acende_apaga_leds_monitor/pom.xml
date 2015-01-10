@@ -19,12 +19,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.rxtx</groupId>
-			<artifactId>rxtx</artifactId>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>arduino-base</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
-			<artifactId>acende_apaga_leds_monitor-base</artifactId>			
+			<artifactId>acende_apaga_leds_monitor-base</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -43,7 +43,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>br.com.cams7.arduino.jmx.Main</mainClass>
+							<mainClass>br.com.cams7.sisbarc.aal.jmx.Main</mainClass>
 							<classpathPrefix>dependency-jars/</classpathPrefix>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>

@@ -21,7 +21,7 @@
 	</properties>
 
 	<dependencyManagement>
-        	<dependencies>
+        <dependencies>
 			<!-- http://jlog.org/rxtx-lin.html -->
 			<!-- http://jlog.org/rxtx-win.html -->
 			<dependency>
@@ -29,10 +29,16 @@
 				<artifactId>rxtx</artifactId>
 				<version>2.1.7</version>
 			</dependency>
+			<dependency>
+				<groupId>br.com.cams7.sisbarc</groupId>
+				<artifactId>arduino-base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
-    	</dependencyManagement>
+    </dependencyManagement>
 
 	<modules>
+		<module>arduino-base</module>
 		<module>acende_apaga_leds_monitor-base</module>
 		<module>acende_apaga_leds_monitor</module>
 	</modules>

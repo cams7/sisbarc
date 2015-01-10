@@ -1,17 +1,17 @@
 /**
  * 
  */
-package br.com.cams7.arduino.jmx;
+package br.com.cams7.sisbarc.aal.jmx.service;
 
 import br.com.cams7.arduino.Arduino;
 import br.com.cams7.arduino.ArduinoException;
+import br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean;
 
 /**
  * @author cesar
  *
  */
-public class AppArduinoService extends Arduino implements
-		AppArduinoServiceMBean {
+public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 
 	private final int LED_VERDE_APAGADA = 10;
 	private final int LED_VERDE_ACESA = 11;
@@ -42,8 +42,9 @@ public class AppArduinoService extends Arduino implements
 	private boolean ledVerdeLigada = false;
 	private boolean ledVermelhaLigada = false;
 
-	public AppArduinoService() throws ArduinoException {
-		super();
+	public ArduinoService(String serialPort, int baudRate, long threadTime)
+			throws ArduinoException {
+		super(serialPort, baudRate, threadTime);
 		System.out.println("Novo Servico");
 	}
 

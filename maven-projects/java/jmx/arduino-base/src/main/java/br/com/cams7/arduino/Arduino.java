@@ -15,11 +15,6 @@ import java.util.TooManyListenersException;
 
 public abstract class Arduino implements Runnable, SerialPortEventListener {
 
-	public static final String SERIAL_PORT = "COM1";
-	public static final int BAUD_RATE = 9600;
-
-	public static final long MILLIS = 500;
-
 	private OutputStream output;
 	private InputStream input;
 
@@ -44,7 +39,7 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 	 * @param bauldRate
 	 *            - Taxa de transferencia da porta serial geralmente e 9600
 	 */
-	private Arduino(String serialPort, int baudRate, long threadTime)
+	protected Arduino(String serialPort, int baudRate, long threadTime)
 			throws ArduinoException {
 		super();
 
@@ -54,10 +49,6 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 		this.threadTime = threadTime;
 
 		init();
-	}
-
-	public Arduino() throws ArduinoException {
-		this(SERIAL_PORT, BAUD_RATE, MILLIS);
 	}
 
 	/**

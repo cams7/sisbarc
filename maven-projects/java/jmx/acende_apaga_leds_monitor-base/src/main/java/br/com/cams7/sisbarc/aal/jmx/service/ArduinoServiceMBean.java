@@ -1,13 +1,13 @@
 /**
  * 
  */
-package br.com.cams7.arduino.jmx;
+package br.com.cams7.sisbarc.aal.jmx.service;
 
 /**
  * @author cesar
  *
  */
-public interface AppArduinoServiceMBean {
+public interface ArduinoServiceMBean {
 
 	public void mudaStatusLEDAmarela();
 
