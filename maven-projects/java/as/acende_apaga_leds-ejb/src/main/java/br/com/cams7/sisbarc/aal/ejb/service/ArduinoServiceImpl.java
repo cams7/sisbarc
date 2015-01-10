@@ -72,25 +72,31 @@ public class ArduinoServiceImpl implements ArduinoService {
 		log.info("JMX Connector Close");
 	}
 
-	public void mudaStatusLEDAmarela() {
+	public Boolean mudaStatusLEDAmarela() {
 		if (mbeanProxy != null) {
 			mbeanProxy.mudaStatusLEDAmarela();
 			log.info("Acende LED Amarela");
+			return !mbeanProxy.isLedAmarelaLigada();
 		}
+		return null;
 	}
 
-	public void mudaStatusLEDVerde() {
+	public Boolean mudaStatusLEDVerde() {
 		if (mbeanProxy != null) {
 			mbeanProxy.mudaStatusLEDVerde();
 			log.info("Acende LED Verde");
+			return !mbeanProxy.isLedVerdeLigada();
 		}
+		return null;
 	}
 
-	public void mudaStatusLEDVermelha() {
+	public Boolean mudaStatusLEDVermelha() {
 		if (mbeanProxy != null) {
 			mbeanProxy.mudaStatusLEDVermelha();
 			log.info("Acende LED Vermelha");
+			return !mbeanProxy.isLedVermelhaLigada();
 		}
+		return null;
 	}
 
 }

@@ -3,12 +3,15 @@
  */
 package br.com.cams7.sisbarc.aal.ejb.service;
 
-import br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean;
-
 /**
  * @author cams7
  *
  */
-public interface ArduinoService extends ArduinoServiceMBean {
+public interface ArduinoService {
+	public Boolean mudaStatusLEDAmarela();
+
+	public Boolean mudaStatusLEDVerde();
+
+	public Boolean mudaStatusLEDVermelha();
 
 }

@@ -52,7 +52,8 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * br.com.cams7.embarcado.arduino.jmx.ArduinoServiceMBean#mudaStatusLED()
+	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDAmarela
+	 * ()
 	 */
 	public void mudaStatusLEDAmarela() {
 		try {
@@ -83,6 +84,13 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 				.println("Ocorreu um erro ao tentar acender ou apagar o LED Amarelo");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDVerde
+	 * ()
+	 */
 	public void mudaStatusLEDVerde() {
 		try {
 			if (ledVerdeLigada)
@@ -111,6 +119,12 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 				.println("Ocorreu um erro ao tentar acender ou apagar o LED Verde");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#
+	 * mudaStatusLEDVermelha()
+	 */
 	public void mudaStatusLEDVermelha() {
 		try {
 			if (ledVermelhaLigada)
@@ -243,15 +257,36 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedAmarelaLigada
+	 * ()
+	 */
 	public boolean isLedAmarelaLigada() {
 		return ledAmarelaLigada;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVerdeLigada
+	 * ()
+	 */
 	public boolean isLedVerdeLigada() {
 		return ledVerdeLigada;
 	}
 
-	protected boolean isLedVermelhaLigada() {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVermelhaLigada
+	 * ()
+	 */
+	public boolean isLedVermelhaLigada() {
 		return ledVermelhaLigada;
 	}
 

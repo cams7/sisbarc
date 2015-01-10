@@ -10,10 +10,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import br.com.cams7.sisbarc.aal.LED;
 import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
+import br.com.cams7.sisbarc.aal.vo.Led;
 
 /**
  * @author cams7
@@ -32,26 +31,22 @@ public class ArduinoResourceRESTService {
 	@GET
 	@Path("/led/{led}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response mudaStatusLED(@PathParam("led") String stringLed) {
+	public Led mudaStatusLED(@PathParam("led") String stringLed) {
 
-		LED led = LED.valueOf(stringLed);
+		Led led = new Led();
+		led.setCor(stringLed);
 
-		switch (led) {
-		case AMARELA:
-			service.mudaStatusLEDAmarela();
-			break;
-		case VERDE:
-			service.mudaStatusLEDVerde();
-			break;
-		case VERMELHA:
-			service.mudaStatusLEDVermelha();
-			break;
-		default:
-			break;
-		}
+		Boolean status = null;
+		if ("AMARELA".equals(led.getCor()))
+			status = service.mudaStatusLEDAmarela();
+		else if ("VERDE".equals(led.getCor()))
+			status = service.mudaStatusLEDVerde();
+		else if ("VERMELHA".equals(led.getCor()))
+			status = service.mudaStatusLEDVermelha();
 
-		Response.ResponseBuilder builder = Response.ok();
-		return builder.build();
+		led.setAcesa(status);
+
+		return led;
 	}
 
 }

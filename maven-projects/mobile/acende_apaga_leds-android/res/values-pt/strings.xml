@@ -1,5 +1,18 @@
 <resources>
 
-    <string name="app_name">Ola mundo</string>
+    <string name="app_name">Acende Apaga LEDs</string>
+    <string name="btn_red">LED Vermelha</string>
+    <string name="btn_green">LED Verde</string>
+    <string name="btn_yellow">LED Amarela</string>
+    <string name="msg_connected">Você está conectado</string>
+    <string name="msg_not_connected">Você não está conectado</string>
+    <string name="msg_error">Não funcionou!</string>
+    <string name="msg_received">Recebido!</string>
+    <string name="msg_is_connected">está conectado?</string>
+    <string name="msg_btn_red_clicked">Red button clicked</string>
+    <string name="msg_btn_green_clicked">Green button clicked</string>
+    <string name="msg_btn_yellow_clicked">Yellow button clicked</string>
+    <string name="msg_led_on">LED turns ON</string>
+    <string name="msg_led_off">LED turns OFF</string>
 
 </resources>
