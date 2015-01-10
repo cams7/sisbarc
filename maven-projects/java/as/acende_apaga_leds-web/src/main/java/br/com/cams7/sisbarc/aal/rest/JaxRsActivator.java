@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.quickstarts.kitchensink_ear.rest;
+package br.com.cams7.sisbarc.aal.rest;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

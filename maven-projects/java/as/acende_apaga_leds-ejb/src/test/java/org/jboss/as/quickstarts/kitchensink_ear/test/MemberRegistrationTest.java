@@ -26,13 +26,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.quickstarts.bean_validation.model.Member;
 import org.jboss.as.quickstarts.kitchensink_ear.service.MemberRegistration;
-import org.jboss.as.quickstarts.kitchensink_ear.util.Resources;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import br.com.cams7.sisbarc.aal.util.Resources;
 
 @RunWith(Arquillian.class)
 public class MemberRegistrationTest {
