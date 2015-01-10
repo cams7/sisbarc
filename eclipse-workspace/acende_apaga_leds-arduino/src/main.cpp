@@ -11,9 +11,9 @@
 #define BAUD_RATE 9600
 
 #define PIN_LED_VERDE    12
-#define PIN_LED_AMARELA  3 //atribui o pino 13 a variável ledPin
+#define PIN_LED_AMARELA  13 //atribui o pino 13 a variável ledPin
 #define PIN_LED_VERMELHA 2
-#define PIN_LED_AZUL     13
+#define PIN_LED_AZUL     3
 
 #define PIN_BOTAO_LED_VERDE    7
 #define PIN_BOTAO_LED_AMARELA  8
