@@ -20,6 +20,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>sisbarc-base</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
 			<artifactId>arduino-base</artifactId>
 		</dependency>
 		<dependency>

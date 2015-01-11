@@ -39,9 +39,13 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	private final byte EVENTO_MUDA_STATUS_LED_VERDE = EVENTO_MUDA_STATUS_LED_AMARELA + 1;
 	private final byte EVENTO_MUDA_STATUS_LED_VERMELHA = EVENTO_MUDA_STATUS_LED_VERDE + 1;
 
-	private boolean ledAmarelaLigada = false;
-	private boolean ledVerdeLigada = false;
-	private boolean ledVermelhaLigada = false;
+	private boolean _ledAmarelaAcesa = false;
+	private boolean _ledVerdeAcesa = false;
+	private boolean _ledVermelhaAcesa = false;
+
+	private boolean ledAmarelaAcesa = false;
+	private boolean ledVerdeAcesa = false;
+	private boolean ledVermelhaAcesa = false;
 
 	public AppArduinoService(String serialPort, int baudRate, long threadTime)
 			throws ArduinoException {
@@ -56,12 +60,14 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDAmarela
 	 * ()
 	 */
-	public synchronized void mudaStatusLEDAmarela() {
+	public void mudaStatusLEDAmarela(boolean ledAcesa) {
+		_ledAmarelaAcesa = ledAcesa;
 		try {
-			if (ledAmarelaLigada)
-				serialWrite(LED_AMARELA_APAGADA);
-			else
+			if (ledAcesa)
 				serialWrite(LED_AMARELA_ACESA);
+			else
+				serialWrite(LED_AMARELA_APAGADA);
+
 		} catch (ArduinoException e) {
 			e.printStackTrace();
 		}
@@ -69,15 +75,14 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		setEventoAtual(EVENTO_MUDA_STATUS_LED_AMARELA);
 	}
 
-	private void printStatusLEDArmarela(boolean ledAmarelaLigada) {
-		System.out.println(ledAmarelaLigada ? "LED Amarela acesa"
+	private void printStatusLEDArmarela(boolean ledAcesa) {
+		System.out.println(ledAcesa ? "LED Amarela acesa"
 				: "LED Amarela apagada");
 	}
 
 	private void mudaStatusLEDArmarelaOK() {
-		ledAmarelaLigada = !ledAmarelaLigada;
-
-		printStatusLEDArmarela(ledAmarelaLigada);
+		ledAmarelaAcesa = _ledAmarelaAcesa;
+		printStatusLEDArmarela(ledAmarelaAcesa);
 	}
 
 	private void printStatusErrorLEDArmarela() {
@@ -92,12 +97,14 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDVerde
 	 * ()
 	 */
-	public synchronized void mudaStatusLEDVerde() {
+	public void mudaStatusLEDVerde(boolean ledAcesa) {
+		_ledVerdeAcesa = ledAcesa;
 		try {
-			if (ledVerdeLigada)
-				serialWrite(LED_VERDE_APAGADA);
-			else
+			if (ledAcesa)
 				serialWrite(LED_VERDE_ACESA);
+			else
+				serialWrite(LED_VERDE_APAGADA);
+
 		} catch (ArduinoException e) {
 			e.printStackTrace();
 		}
@@ -111,8 +118,8 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	private void mudaStatusLEDVerdeOK() {
-		ledVerdeLigada = !ledVerdeLigada;
-		printStatusLEDVerde(ledVerdeLigada);
+		ledVerdeAcesa = _ledVerdeAcesa;
+		printStatusLEDVerde(ledVerdeAcesa);
 	}
 
 	private void printStatusErrorLEDVerde() {
@@ -126,12 +133,14 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	 * @see br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#
 	 * mudaStatusLEDVermelha()
 	 */
-	public synchronized void mudaStatusLEDVermelha() {
+	public void mudaStatusLEDVermelha(boolean ledAcesa) {
+		_ledVermelhaAcesa = ledAcesa;
 		try {
-			if (ledVermelhaLigada)
-				serialWrite(LED_VERMELHA_APAGADA);
-			else
+			if (ledAcesa)
 				serialWrite(LED_VERMELHA_ACESA);
+			else
+				serialWrite(LED_VERMELHA_APAGADA);
+
 		} catch (ArduinoException e) {
 			e.printStackTrace();
 		}
@@ -145,8 +154,8 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	private void mudaStatusLEDVermelhaOK() {
-		ledVermelhaLigada = !ledVermelhaLigada;
-		printStatusLEDVermelha(ledVermelhaLigada);
+		ledVermelhaAcesa = _ledVermelhaAcesa;
+		printStatusLEDVermelha(ledVermelhaAcesa);
 	}
 
 	private void printStatusErrorLEDVermelha() {
@@ -215,28 +224,28 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		else
 			switch (dadoRecebido) {
 			case BTN_LED_AMARELA_SOLTO:
-				ledAmarelaLigada = false;
-				printStatusLEDArmarela(ledAmarelaLigada);
+				ledAmarelaAcesa = false;
+				printStatusLEDArmarela(ledAmarelaAcesa);
 				break;
 			case BTN_LED_AMARELA_PRESSIONADO:
-				ledAmarelaLigada = true;
-				printStatusLEDArmarela(ledAmarelaLigada);
+				ledAmarelaAcesa = true;
+				printStatusLEDArmarela(ledAmarelaAcesa);
 				break;
 			case BTN_LED_VERDE_SOLTO:
-				ledVerdeLigada = false;
-				printStatusLEDVerde(ledVerdeLigada);
+				ledVerdeAcesa = false;
+				printStatusLEDVerde(ledVerdeAcesa);
 				break;
 			case BTN_LED_VERDE_PRESSIONADO:
-				ledVerdeLigada = true;
-				printStatusLEDVerde(ledVerdeLigada);
+				ledVerdeAcesa = true;
+				printStatusLEDVerde(ledVerdeAcesa);
 				break;
 			case BTN_LED_VERMELHA_SOLTO:
-				ledVermelhaLigada = false;
-				printStatusLEDVermelha(ledVermelhaLigada);
+				ledVermelhaAcesa = false;
+				printStatusLEDVermelha(ledVermelhaAcesa);
 				break;
 			case BTN_LED_VERMELHA_PRESSIONADO:
-				ledVermelhaLigada = true;
-				printStatusLEDVermelha(ledVermelhaLigada);
+				ledVermelhaAcesa = true;
+				printStatusLEDVermelha(ledVermelhaAcesa);
 				break;
 			default:
 				System.err
@@ -265,8 +274,8 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedAmarelaLigada
 	 * ()
 	 */
-	public synchronized boolean isLedAmarelaLigada() {
-		return ledAmarelaLigada;
+	public boolean isLEDAmarelaAcesa() {
+		return ledAmarelaAcesa;
 	}
 
 	/*
@@ -276,8 +285,8 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVerdeLigada
 	 * ()
 	 */
-	public synchronized boolean isLedVerdeLigada() {
-		return ledVerdeLigada;
+	public boolean isLEDVerdeAcesa() {
+		return ledVerdeAcesa;
 	}
 
 	/*
@@ -287,8 +296,8 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVermelhaLigada
 	 * ()
 	 */
-	public synchronized boolean isLedVermelhaLigada() {
-		return ledVermelhaLigada;
+	public boolean isLEDVermelhaAcesa() {
+		return ledVermelhaAcesa;
 	}
 
 }

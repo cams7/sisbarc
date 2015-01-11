@@ -14,12 +14,12 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
-import br.com.cams7.sisbarc.aal.vo.Led;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
 
 /**
  * @author cams7
@@ -35,50 +35,39 @@ public class ArduinoResourceRESTService {
 	@EJB
 	private ArduinoService service;
 
-	// arduino/led/AMARELA
-	// arduino/led/VERDE
-	// arduino/led/VERMELHA
+	// arduino/led?led=AMARELA&status=ACESA
+	// arduino/led?led=VERDE&status=APAGADA
+	// arduino/led?led=VERMELHA&status=ACESA
 	@GET
-	@Path("/led/{led}")
+	@Path("/led")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Led mudaStatusLED(@PathParam("led") String stringLed) {
+	public LedEntity mudaStatusLED(@QueryParam("led") String stringLed,
+			@QueryParam("status") String stringStatus) {
 
-		Led.Cor cor = Led.Cor.valueOf(stringLed);
+		LedEntity.Cor ledCor = LedEntity.Cor.valueOf(stringLed);
+		LedEntity.Status ledStatus = LedEntity.Status.valueOf(stringStatus);
 
-		Led led = new Led();
-		led.setCor(cor);
+		LedEntity led = new LedEntity();
+		led.setCor(ledCor);
+		led.setStatus(ledStatus);
 
-		Future<Boolean> call = null;
+		log.info("mudaStatusLED('" + led.getCor() + "', '" + led.getStatus()
+				+ "') - Before sleep: " + ArduinoService.DF.format(new Date()));
 
-		log.info("mudaStatusLED('" + led.getCor() + "') - Before sleep: "
-				+ ArduinoService.DF.format(new Date()));
-
-		switch (led.getCor()) {
-		case AMARELA:
-			call = service.mudaStatusLEDAmarela();
-			break;
-		case VERDE:
-			call = service.mudaStatusLEDVerde();
-			break;
-		case VERMELHA:
-			call = service.mudaStatusLEDVermelha();
-			break;
-		default:
-			break;
-		}
+		Future<LedEntity> call = service.mudaStatusLED(led);
 
 		if (call != null)
 			try {
-				Boolean status = call.get();
-				led.setAcesa(status);
-				log.info("LED '" + led.getCor() + "' esta "
-						+ (led.getAcesa() ? "'Acesa'" : "'Apagada'"));
+				led = call.get();
+
+				log.info("LED '" + led.getCor() + "' esta '" + led.getStatus()
+						+ "'");
 			} catch (InterruptedException | ExecutionException e) {
 				log.log(Level.WARNING, e.getMessage());
 			}
 
-		log.info("mudaStatusLED('" + led.getCor() + "') - After sleep: "
-				+ ArduinoService.DF.format(new Date()));
+		log.info("mudaStatusLED('" + led.getCor() + "', '" + led.getStatus()
+				+ "') - After sleep: " + ArduinoService.DF.format(new Date()));
 
 		return led;
 	}

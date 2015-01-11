@@ -8,6 +8,8 @@ import java.util.concurrent.Future;
 
 import javax.ejb.Local;
 
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+
 /**
  * @author cams7
  *
@@ -18,10 +20,6 @@ public interface ArduinoService {
 	public static final SimpleDateFormat DF = new SimpleDateFormat(
 			YEARS_TO_MILLIS);
 
-	public Future<Boolean> mudaStatusLEDAmarela();
-
-	public Future<Boolean> mudaStatusLEDVerde();
-
-	public Future<Boolean> mudaStatusLEDVermelha();
+	public Future<LedEntity> mudaStatusLED(LedEntity led);
 
 }

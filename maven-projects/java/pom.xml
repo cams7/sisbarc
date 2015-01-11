@@ -26,6 +26,7 @@
 	</properties>
 
 	<modules>
+		<module>sisbarc-base</module>
 		<module>jmx</module>
 		<module>as</module>
 	</modules>
@@ -53,6 +54,11 @@
 				<scope>import</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>br.com.cams7.sisbarc</groupId>
+				<artifactId>sisbarc-base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>br.com.cams7.sisbarc</groupId>
 				<artifactId>arduino-base</artifactId>

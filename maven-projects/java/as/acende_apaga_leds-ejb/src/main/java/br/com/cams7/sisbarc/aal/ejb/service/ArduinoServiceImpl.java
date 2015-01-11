@@ -2,6 +2,7 @@ package br.com.cams7.sisbarc.aal.ejb.service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,17 +22,18 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Status;
+import br.com.cams7.util.AppException;
+import br.com.cams7.util.AppUtil;
 
 @Stateless
 public class ArduinoServiceImpl implements ArduinoService {
 
-	private static final String JMX_HOST = "192.168.0.150";
-	private static final String JMX_PORT = "1234";
-
 	@Inject
 	private Logger log;
 
-	private JMXConnector jmxConnector = null;
+	private JMXConnector jmxConnector;
 	private AppArduinoServiceMBean mbeanProxy;
 
 	public ArduinoServiceImpl() {
@@ -41,9 +43,16 @@ public class ArduinoServiceImpl implements ArduinoService {
 	@PostConstruct
 	private void jmxConnectorInit() {
 		try {
-			JMXServiceURL url = new JMXServiceURL(
-					"service:jmx:rmi:///jndi/rmi://" + JMX_HOST + ":"
-							+ JMX_PORT + "/jmxrmi");
+			Properties config = AppUtil.getPropertiesFile(
+					ArduinoServiceImpl.class, "config.properties");
+
+			String jmxURL = "service:jmx:rmi:///jndi/rmi://"
+					+ config.getProperty("JMX_HOST").trim() + ":"
+					+ config.getProperty("JMX_PORT").trim() + "/jmxrmi";
+
+			log.info("JMX URL: " + jmxURL);
+
+			JMXServiceURL url = new JMXServiceURL(jmxURL);
 
 			jmxConnector = JMXConnectorFactory.connect(url);
 			MBeanServerConnection mbeanServerConnection = jmxConnector
@@ -57,7 +66,7 @@ public class ArduinoServiceImpl implements ArduinoService {
 			mbeanProxy = (AppArduinoServiceMBean) MBeanServerInvocationHandler
 					.newProxyInstance(mbeanServerConnection, mbeanName,
 							AppArduinoServiceMBean.class, true);
-		} catch (IOException | MalformedObjectNameException e) {
+		} catch (IOException | MalformedObjectNameException | AppException e) {
 			log.log(Level.SEVERE, e.getMessage());
 		}
 
@@ -77,61 +86,65 @@ public class ArduinoServiceImpl implements ArduinoService {
 	}
 
 	@Asynchronous
-	public Future<Boolean> mudaStatusLEDAmarela() {
-		if (mbeanProxy != null) {
-			mbeanProxy.mudaStatusLEDAmarela();
+	public Future<LedEntity> mudaStatusLED(LedEntity led) {
+		boolean status = false;
 
-			log.info("mudaStatusLEDAmarela() - Before sleep: "
-					+ DF.format(new Date()));
-			serialThreadTime();
-			log.info("mudaStatusLEDAmarela() - After sleep: "
-					+ DF.format(new Date()));
-
-			Boolean ledLigada = mbeanProxy.isLedAmarelaLigada();
-
-			log.info("LED 'Amarela' esta "
-					+ (ledLigada ? "'Acesa'" : "'Apagada'"));
-			return new AsyncResult<Boolean>(ledLigada);
+		switch (led.getStatus()) {
+		case ACESA:
+			status = true;
+			break;
+		case APAGADA:
+			status = false;
+			break;
+		default:
+			break;
 		}
-		return null;
-	}
 
-	@Asynchronous
-	public Future<Boolean> mudaStatusLEDVerde() {
 		if (mbeanProxy != null) {
-			mbeanProxy.mudaStatusLEDVerde();
+			switch (led.getCor()) {
+			case AMARELA:
+				mbeanProxy.mudaStatusLEDAmarela(status);
+				break;
+			case VERDE:
+				mbeanProxy.mudaStatusLEDVerde(status);
+				break;
+			case VERMELHA:
+				mbeanProxy.mudaStatusLEDVermelha(status);
+				break;
+			default:
+				break;
+			}
 
-			log.info("mudaStatusLEDVerde() - Before sleep: "
-					+ DF.format(new Date()));
+			log.info("mudaStatusLED('" + led.getCor() + "','" + led.getStatus()
+					+ "') - Before sleep: " + DF.format(new Date()));
 			serialThreadTime();
-			log.info("mudaStatusLEDVerde() - After sleep: "
-					+ DF.format(new Date()));
+			log.info("mudaStatusLED('" + led.getCor() + "','" + led.getStatus()
+					+ "') - After sleep: " + DF.format(new Date()));
 
-			Boolean ledLigada = mbeanProxy.isLedVerdeLigada();
+			Boolean ledLigada = null;
 
-			log.info("LED 'Verde' esta "
-					+ (ledLigada ? "'Acesa'" : "'Apagada'"));
-			return new AsyncResult<Boolean>(ledLigada);
-		}
-		return null;
-	}
+			switch (led.getCor()) {
+			case AMARELA:
+				ledLigada = mbeanProxy.isLEDAmarelaAcesa();
+				break;
+			case VERDE:
+				ledLigada = mbeanProxy.isLEDVerdeAcesa();
+				break;
+			case VERMELHA:
+				ledLigada = mbeanProxy.isLEDVermelhaAcesa();
+				break;
+			default:
+				break;
+			}
+			if (ledLigada != null) {
+				led.setStatus(ledLigada ? Status.ACESA : Status.APAGADA);
 
-	@Asynchronous
-	public Future<Boolean> mudaStatusLEDVermelha() {
-		if (mbeanProxy != null) {
-			mbeanProxy.mudaStatusLEDVermelha();
+				log.info("LED '" + led.getCor() + "' esta '" + led.getStatus()
+						+ "'");
+			}
 
-			log.info("mudaStatusLEDVermelha() - Before sleep: "
-					+ DF.format(new Date()));
-			serialThreadTime();
-			log.info("mudaStatusLEDVermelha() - After sleep: "
-					+ DF.format(new Date()));
+			return new AsyncResult<LedEntity>(led);
 
-			Boolean ledLigada = mbeanProxy.isLedVermelhaLigada();
-
-			log.info("LED 'Vermelha' esta "
-					+ (ledLigada ? "'Acesa'" : "'Apagada'"));
-			return new AsyncResult<Boolean>(ledLigada);
 		}
 		return null;
 	}

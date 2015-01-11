@@ -32,14 +32,20 @@
 	<dependencies>
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
-			<artifactId>acende_apaga_leds-jpa</artifactId>
+			<artifactId>sisbarc-base</artifactId>
+			<scope>provided</scope>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>acende_apaga_leds_monitor-base</artifactId>
 			<scope>provided</scope>
 			<type>jar</type>
 		</dependency>
 
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
-			<artifactId>acende_apaga_leds_monitor-base</artifactId>
+			<artifactId>acende_apaga_leds-jpa</artifactId>
 			<scope>provided</scope>
 			<type>jar</type>
 		</dependency>

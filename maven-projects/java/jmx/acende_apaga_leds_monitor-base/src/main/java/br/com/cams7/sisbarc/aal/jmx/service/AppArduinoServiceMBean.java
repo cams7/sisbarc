@@ -11,16 +11,16 @@ import br.com.cams7.arduino.ArduinoService;
  */
 public interface AppArduinoServiceMBean extends ArduinoService {
 
-	public void mudaStatusLEDAmarela();
+	public void mudaStatusLEDAmarela(boolean ledAcesa);
 
-	public boolean isLedAmarelaLigada();
+	public boolean isLEDAmarelaAcesa();
 
-	public void mudaStatusLEDVerde();
+	public void mudaStatusLEDVerde(boolean ledAcesa);
 
-	public boolean isLedVerdeLigada();
+	public boolean isLEDVerdeAcesa();
 
-	public void mudaStatusLEDVermelha();
+	public void mudaStatusLEDVermelha(boolean ledAcesa);
 
-	public boolean isLedVermelhaLigada();
+	public boolean isLEDVermelhaAcesa();
 
 }

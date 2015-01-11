@@ -33,7 +33,7 @@ import br.com.cams7.util.RestUtil;
 public class MainActivity extends Activity implements OnClickListener {
 
 	private static final String TAG = "MainActivity";
-	private static final String URL = "http://192.168.0.150:8080/acende_apaga_leds/rest/arduino/led";
+	private static final String URL = "http://192.168.0.150:8080/acende_apaga_leds/rest/arduino/led?";
 
 	private TextView tvIsConnected;
 	private TextView tvResponse;
@@ -43,6 +43,10 @@ public class MainActivity extends Activity implements OnClickListener {
 	private Button btnYellow;
 
 	private Led led;
+
+	private boolean ledAmarelaLigada = false;
+	private boolean ledVerdeLigada = false;
+	private boolean ledVermelhaLigada = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,26 +84,36 @@ public class MainActivity extends Activity implements OnClickListener {
 		switch (view.getId()) {
 		case R.id.btn_red:
 			// call AsynTask to perform network operation on separate thread
-			new HttpAsyncTask().execute(URL + "/VERMELHA");
+			new HttpAsyncTask().execute(URL
+					+ "led=VERMELHA&status="
+					+ (!ledVermelhaLigada ? Led.Status.ACESA
+							: Led.Status.APAGADA));
 
 			Toast.makeText(getBaseContext(),
-					getString(R.string.msg_btn_red_clicked), Toast.LENGTH_LONG)
+					getString(R.string.msg_btn_red_clicked), Toast.LENGTH_SHORT)
 					.show();
 
 			break;
 
 		case R.id.btn_green:
-			new HttpAsyncTask().execute(URL + "/VERDE");
+			new HttpAsyncTask()
+					.execute(URL
+							+ "led=VERDE&status="
+							+ (!ledVerdeLigada ? Led.Status.ACESA
+									: Led.Status.APAGADA));
 			Toast.makeText(getBaseContext(),
 					getString(R.string.msg_btn_green_clicked),
-					Toast.LENGTH_LONG).show();
+					Toast.LENGTH_SHORT).show();
 
 			break;
 		case R.id.btn_yellow:
-			new HttpAsyncTask().execute(URL + "/AMARELA");
+			new HttpAsyncTask().execute(URL
+					+ "led=AMARELA&status="
+					+ (!ledAmarelaLigada ? Led.Status.ACESA
+							: Led.Status.APAGADA));
 			Toast.makeText(getBaseContext(),
 					getString(R.string.msg_btn_yellow_clicked),
-					Toast.LENGTH_LONG).show();
+					Toast.LENGTH_SHORT).show();
 
 			break;
 
@@ -148,8 +162,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
 		protected void onPostExecute(String result) {
-			Toast.makeText(getBaseContext(), getString(R.string.msg_received),
-					Toast.LENGTH_LONG).show();
+			// Toast.makeText(getBaseContext(),
+			// getString(R.string.msg_received),
+			// Toast.LENGTH_LONG).show();
 
 			String errorMsg = getString(R.string.msg_error);
 
@@ -158,12 +173,52 @@ public class MainActivity extends Activity implements OnClickListener {
 				try {
 					JSONObject json = new JSONObject(result);
 
-					led.setCor(json.getString("cor"));
-					led.setAcesa(json.getBoolean("acesa"));
+					Led.Cor cor = Led.Cor.valueOf(json.getString("cor"));
+					Led.Status status = Led.Status.valueOf(json
+							.getString("status"));
 
-					if (led.getAcesa() != null)
-						tvResponse.setText(led.getAcesa() ? R.string.msg_led_on
-								: R.string.msg_led_off);
+					led.setCor(cor);
+					led.setStatus(status);
+
+					if (led.getStatus() != null)
+						switch (led.getStatus()) {
+						case ACESA:
+							switch (led.getCor()) {
+							case AMARELA:
+								ledAmarelaLigada = true;
+								break;
+							case VERDE:
+								ledVerdeLigada = true;
+								break;
+							case VERMELHA:
+								ledVermelhaLigada = true;
+								break;
+							default:
+								break;
+							}
+
+							tvResponse.setText(R.string.msg_led_on);
+							break;
+						case APAGADA:
+							switch (led.getCor()) {
+							case AMARELA:
+								ledAmarelaLigada = false;
+								break;
+							case VERDE:
+								ledVerdeLigada = false;
+								break;
+							case VERMELHA:
+								ledVermelhaLigada = false;
+								break;
+							default:
+								break;
+							}
+
+							tvResponse.setText(R.string.msg_led_off);
+							break;
+						default:
+							break;
+						}
 					else
 						tvResponse.setText(R.string.msg_error);
 

@@ -1,27 +1,35 @@
 package br.com.cams7.sisbarc.aal.vo;
 
 public class Led {
-	private String cor;
-	private Boolean acesa;
+	private Cor cor;
+	private Status status;
 
 	public Led() {
 		super();
 	}
 
-	public String getCor() {
+	public Cor getCor() {
 		return cor;
 	}
 
-	public void setCor(String cor) {
+	public void setCor(Cor cor) {
 		this.cor = cor;
 	}
 
-	public Boolean getAcesa() {
-		return acesa;
+	public Status getStatus() {
+		return status;
 	}
 
-	public void setAcesa(Boolean acesa) {
-		this.acesa = acesa;
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public enum Cor {
+		AMARELA, VERDE, VERMELHA;
+	}
+
+	public enum Status {
+		ACESA, APAGADA
 	}
 
 }

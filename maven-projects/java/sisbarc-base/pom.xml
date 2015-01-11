@@ -4,13 +4,13 @@
 
 	<parent>
 		<groupId>br.com.cams7.sisbarc</groupId>
-		<artifactId>jmx</artifactId>
+		<artifactId>java</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>arduino-base</artifactId>
-	<name>Arduino - base</name>
-	<description>Arduino - base</description>
+	<artifactId>sisbarc-base</artifactId>
+	<name>Sistema Embarcado - base</name>
+	<description>Sistema Embarcado - base</description>
 
 	<packaging>jar</packaging>
 
@@ -18,10 +18,6 @@
 	</properties>
 
 	<dependencies>		
-		<dependency>
-			<groupId>org.rxtx</groupId>
-			<artifactId>rxtx</artifactId>
-		</dependency>
 	</dependencies>
 
 	<build>
