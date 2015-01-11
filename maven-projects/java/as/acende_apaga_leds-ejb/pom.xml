@@ -36,6 +36,13 @@
 			<scope>provided</scope>
 			<type>jar</type>
 		</dependency>
+
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>arduino-base</artifactId>
+			<scope>provided</scope>
+			<type>jar</type>
+		</dependency>
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
 			<artifactId>acende_apaga_leds_monitor-base</artifactId>
@@ -117,4 +124,3 @@
 		</plugins>
 	</build>
 </project>
-

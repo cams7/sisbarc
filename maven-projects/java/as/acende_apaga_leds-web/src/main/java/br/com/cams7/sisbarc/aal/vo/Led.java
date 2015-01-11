@@ -4,27 +4,31 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Led {
-	private String cor;
-	private boolean acesa;
+	private Cor cor;
+	private Boolean acesa;
 
 	public Led() {
 		super();
 	}
 
-	public String getCor() {
+	public Cor getCor() {
 		return cor;
 	}
 
-	public void setCor(String cor) {
+	public void setCor(Cor cor) {
 		this.cor = cor;
 	}
 
-	public boolean isAcesa() {
+	public Boolean getAcesa() {
 		return acesa;
 	}
 
-	public void setAcesa(boolean acesa) {
+	public void setAcesa(Boolean acesa) {
 		this.acesa = acesa;
+	}
+
+	public enum Cor {
+		AMARELA, VERDE, VERMELHA;
 	}
 
 }

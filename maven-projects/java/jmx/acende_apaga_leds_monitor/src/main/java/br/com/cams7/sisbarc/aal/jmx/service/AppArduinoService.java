@@ -3,15 +3,16 @@
  */
 package br.com.cams7.sisbarc.aal.jmx.service;
 
-import br.com.cams7.arduino.Arduino;
+import br.com.cams7.arduino.ArduinoServiceImpl;
 import br.com.cams7.arduino.ArduinoException;
-import br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean;
+import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 
 /**
  * @author cesar
  *
  */
-public class ArduinoService extends Arduino implements ArduinoServiceMBean {
+public class AppArduinoService extends ArduinoServiceImpl implements
+		AppArduinoServiceMBean {
 
 	private final int LED_VERDE_APAGADA = 10;
 	private final int LED_VERDE_ACESA = 11;
@@ -42,7 +43,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	private boolean ledVerdeLigada = false;
 	private boolean ledVermelhaLigada = false;
 
-	public ArduinoService(String serialPort, int baudRate, long threadTime)
+	public AppArduinoService(String serialPort, int baudRate, long threadTime)
 			throws ArduinoException {
 		super(serialPort, baudRate, threadTime);
 		System.out.println("Novo Servico");
@@ -55,7 +56,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDAmarela
 	 * ()
 	 */
-	public void mudaStatusLEDAmarela() {
+	public synchronized void mudaStatusLEDAmarela() {
 		try {
 			if (ledAmarelaLigada)
 				serialWrite(LED_AMARELA_APAGADA);
@@ -91,7 +92,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDVerde
 	 * ()
 	 */
-	public void mudaStatusLEDVerde() {
+	public synchronized void mudaStatusLEDVerde() {
 		try {
 			if (ledVerdeLigada)
 				serialWrite(LED_VERDE_APAGADA);
@@ -125,7 +126,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * @see br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#
 	 * mudaStatusLEDVermelha()
 	 */
-	public void mudaStatusLEDVermelha() {
+	public synchronized void mudaStatusLEDVermelha() {
 		try {
 			if (ledVermelhaLigada)
 				serialWrite(LED_VERMELHA_APAGADA);
@@ -264,7 +265,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedAmarelaLigada
 	 * ()
 	 */
-	public boolean isLedAmarelaLigada() {
+	public synchronized boolean isLedAmarelaLigada() {
 		return ledAmarelaLigada;
 	}
 
@@ -275,7 +276,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVerdeLigada
 	 * ()
 	 */
-	public boolean isLedVerdeLigada() {
+	public synchronized boolean isLedVerdeLigada() {
 		return ledVerdeLigada;
 	}
 
@@ -286,7 +287,7 @@ public class ArduinoService extends Arduino implements ArduinoServiceMBean {
 	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVermelhaLigada
 	 * ()
 	 */
-	public boolean isLedVermelhaLigada() {
+	public synchronized boolean isLedVermelhaLigada() {
 		return ledVermelhaLigada;
 	}
 

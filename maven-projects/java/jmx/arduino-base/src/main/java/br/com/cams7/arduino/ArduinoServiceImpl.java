@@ -13,15 +13,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.TooManyListenersException;
 
-public abstract class Arduino implements Runnable, SerialPortEventListener {
+public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
+		SerialPortEventListener {
 
 	private OutputStream output;
 	private InputStream input;
 
-	private int baudRate;
 	private String serialPort;
-
-	private long threadTime;
+	private int serialBaudRate;
+	private long serialThreadTime;
 
 	private int dadoEnviado = -1;
 	private int ultimoDadoRecebido = -1;
@@ -39,14 +39,13 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 	 * @param bauldRate
 	 *            - Taxa de transferencia da porta serial geralmente e 9600
 	 */
-	protected Arduino(String serialPort, int baudRate, long threadTime)
-			throws ArduinoException {
+	protected ArduinoServiceImpl(String serialPort, int serialBaudRate,
+			long serialThreadTime) throws ArduinoException {
 		super();
 
 		this.serialPort = serialPort;
-		this.baudRate = baudRate;
-
-		this.threadTime = threadTime;
+		this.serialBaudRate = serialBaudRate;
+		this.serialThreadTime = serialThreadTime;
 
 		init();
 	}
@@ -72,7 +71,7 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 		try {
 			// Abre a porta COM
 			SerialPort port = (SerialPort) portId.open("Comunicacao serial",
-					baudRate);
+					serialBaudRate);
 
 			output = port.getOutputStream();
 			input = port.getInputStream();
@@ -81,8 +80,8 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 
 			port.notifyOnDataAvailable(true);
 
-			port.setSerialPortParams(baudRate, // taxa de transferencia da
-												// porta serial
+			port.setSerialPortParams(serialBaudRate, // taxa de transferencia da
+					// porta serial
 					SerialPort.DATABITS_8, // taxa de 10 bits 8 (envio)
 					SerialPort.STOPBITS_1, // taxa de 10 bits 1 (recebimento)
 					SerialPort.PARITY_NONE); // receber e enviar dados
@@ -180,7 +179,7 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 	 */
 	public void run() {
 		try {
-			Thread.sleep(threadTime);
+			Thread.sleep(serialThreadTime);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -218,8 +217,16 @@ public abstract class Arduino implements Runnable, SerialPortEventListener {
 		this.eventoAtual = eventoAtual;
 	}
 
-	protected String getSerialPort() {
+	public String getSerialPort() {
 		return serialPort;
+	}
+
+	public int getSerialBaudRate() {
+		return serialBaudRate;
+	}
+
+	public long getSerialThreadTime() {
+		return serialThreadTime;
 	}
 
 }

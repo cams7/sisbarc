@@ -14,7 +14,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import br.com.cams7.arduino.ArduinoException;
-import br.com.cams7.sisbarc.aal.jmx.service.ArduinoService;
+import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoService;
 import br.com.cams7.util.AppException;
 import br.com.cams7.util.AppUtil;
 
@@ -29,16 +29,16 @@ public class Main {
 					"config.properties");
 
 			String serialPort = config.getProperty("SERIAL_PORT").trim();
-			Integer baudRate = Integer.valueOf(config.getProperty("BAUD_RATE")
-					.trim());
+			Integer serialBaudRate = Integer.valueOf(config.getProperty(
+					"SERIAL_BAUD_RATE").trim());
 			Long serialThreadTime = Long.valueOf(config.getProperty(
 					"SERIAL_THREAD_TIME").trim());
 
-			ArduinoService service = new ArduinoService(serialPort, baudRate,
-					serialThreadTime);
+			AppArduinoService service = new AppArduinoService(serialPort,
+					serialBaudRate, serialThreadTime);
 
 			ObjectName name = new ObjectName(
-					"br.com.cams7.sisbarc.aal.jmx.service:type=ArduinoService");
+					"br.com.cams7.sisbarc.aal.jmx.service:type=AppArduinoService");
 
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 

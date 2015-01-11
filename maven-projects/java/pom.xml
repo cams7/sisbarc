@@ -18,10 +18,11 @@
 	<packaging>pom</packaging>
 
 	<url>https://github.com/cams7/sisbarc/java</url>
-	
+
 	<properties>
-		<!-- Define the version of the JBoss BOMs we want to import to specify tested stacks. -->
-        	<version.jboss.bom>8.0.0.Final</version.jboss.bom>			
+		<!-- Define the version of the JBoss BOMs we want to import to specify 
+			tested stacks. -->
+		<version.jboss.bom>8.0.0.Final</version.jboss.bom>
 	</properties>
 
 	<modules>
@@ -30,45 +31,52 @@
 	</modules>
 
 	<dependencyManagement>
-        	<dependencies>
-            		<!-- JBoss distributes a complete set of Java EE 7 APIs including a Bill of Materials (BOM). 
-			A BOM specifies the versions of a "stack" (or a collection) of artifacts. We use this here so that we always get the correct versions of artifacts. 
-			Here we use the jboss-javaee-7.0-with tools stack (you can read this as the JBoss stack of the Java EE 7 APIs, with some extras tools for your project, 
-			such as Arquillian for testing) -->
-           		 <dependency>
-                		<groupId>org.wildfly.bom</groupId>
-                		<artifactId>jboss-javaee-7.0-with-tools</artifactId>
-                		<version>${version.jboss.bom}</version>
-                		<type>pom</type>
-                		<scope>import</scope>
-            		</dependency>
-            		<dependency>
-                		<groupId>org.wildfly.bom</groupId>
-                		<artifactId>jboss-javaee-7.0-with-hibernate</artifactId>
-                		<version>${version.jboss.bom}</version>
-                		<type>pom</type>
-                		<scope>import</scope>
-            		</dependency>
+		<dependencies>
+			<!-- JBoss distributes a complete set of Java EE 7 APIs including a Bill 
+				of Materials (BOM). A BOM specifies the versions of a "stack" (or a collection) 
+				of artifacts. We use this here so that we always get the correct versions 
+				of artifacts. Here we use the jboss-javaee-7.0-with tools stack (you can 
+				read this as the JBoss stack of the Java EE 7 APIs, with some extras tools 
+				for your project, such as Arquillian for testing) -->
+			<dependency>
+				<groupId>org.wildfly.bom</groupId>
+				<artifactId>jboss-javaee-7.0-with-tools</artifactId>
+				<version>${version.jboss.bom}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.bom</groupId>
+				<artifactId>jboss-javaee-7.0-with-hibernate</artifactId>
+				<version>${version.jboss.bom}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
 			<dependency>
 				<groupId>br.com.cams7.sisbarc</groupId>
-				<artifactId>acende_apaga_leds_monitor-base</artifactId>	
-				<version>${project.version}</version>		
+				<artifactId>arduino-base</artifactId>
+				<version>${project.version}</version>
 			</dependency>
-        	</dependencies>
-    	</dependencyManagement>
+			<dependency>
+				<groupId>br.com.cams7.sisbarc</groupId>
+				<artifactId>acende_apaga_leds_monitor-base</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<!-- Test scope dependencies -->
 		<dependency>
-		    <groupId>junit</groupId>
-		    <artifactId>junit</artifactId>
-		    <scope>test</scope>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
-	 </dependencies>
-	
+	</dependencies>
+
 	<build>
-		<finalName>${project.artifactId}</finalName>		
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<!-- download source code in Eclipse, best practice -->
 			<plugin>
@@ -79,7 +87,7 @@
 					<downloadSources>true</downloadSources>
 					<downloadJavadocs>false</downloadJavadocs>
 				</configuration>
-			</plugin>			
+			</plugin>
 		</plugins>
 	</build>
 </project>
