@@ -15,15 +15,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import br.com.cams7.sisbarc.aal.vo.Led;
+import br.com.cams7.sisbarc.aal.vo.Led.Cor;
 import br.com.cams7.util.RestUtil;
 
 /**
@@ -35,18 +37,19 @@ public class MainActivity extends Activity implements OnClickListener {
 	private static final String TAG = "MainActivity";
 	private static final String URL = "http://192.168.1.7:8080/acende_apaga_leds/rest/arduino/led?";
 
-	private TextView tvIsConnected;
+	private static final String[] LEDs = { Cor.AMARELA.name(),
+			Cor.VERDE.name(), Cor.VERMELHA.name() };
+	private static final byte TOTAL_LEDS = (byte) LEDs.length;
+
 	private TextView tvResponse;
 
-	private Button btnRed;
-	private Button btnGreen;
-	private Button btnYellow;
+	private ImageButton[] btnSwitch;
 
-	private Led led;
+	private Led.Status[] statusLEDs = { Led.Status.APAGADA, Led.Status.APAGADA,
+			Led.Status.APAGADA };
 
-	private boolean ledAmarelaLigada = false;
-	private boolean ledVerdeLigada = false;
-	private boolean ledVermelhaLigada = false;
+	private boolean isConnected;
+	private MediaPlayer mp;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,70 +58,56 @@ public class MainActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.acende_apaga_leds);
 
-		tvIsConnected = (TextView) findViewById(R.id.tvIsConnected);
 		tvResponse = (TextView) findViewById(R.id.tvResponse);
 
-		// Obtain handles to UI objects
-		btnRed = (Button) findViewById(R.id.btn_red);
-		btnGreen = (Button) findViewById(R.id.btn_green);
-		btnYellow = (Button) findViewById(R.id.btn_yellow);
+		btnSwitch = new ImageButton[TOTAL_LEDS];
 
-		// add click listener to Button "POST"
-		btnRed.setOnClickListener(this);
-		btnGreen.setOnClickListener(this);
-		btnYellow.setOnClickListener(this);
+		// flash switch button
+		btnSwitch[0] = (ImageButton) findViewById(R.id.btn_yellow);
+		btnSwitch[0].setOnClickListener(this);
+
+		btnSwitch[1] = (ImageButton) findViewById(R.id.btn_green);
+		btnSwitch[1].setOnClickListener(this);
+
+		btnSwitch[2] = (ImageButton) findViewById(R.id.btn_red);
+		btnSwitch[2].setOnClickListener(this);
+
+		isConnected = RestUtil.isConnected(this);
 
 		// check if you are connected or not
-		if (RestUtil.isConnected(this)) {
-			tvIsConnected.setBackgroundColor(0xFF00CC00);
-			tvIsConnected.setText(R.string.msg_connected);
+		if (isConnected) {
+			tvResponse.setBackgroundColor(0x0000FF);
+			tvResponse.setText(R.string.msg_connected);
 		} else {
-			tvIsConnected.setText(R.string.msg_not_connected);
+			tvResponse.setText(R.string.msg_not_connected);
 		}
-
-		led = new Led();
 
 	}
 
 	public void onClick(View view) {
+		Byte ledIndex = null;
 		switch (view.getId()) {
-		case R.id.btn_red:
-			// call AsynTask to perform network operation on separate thread
-			new HttpAsyncTask().execute(URL
-					+ "led=VERMELHA&status="
-					+ (!ledVermelhaLigada ? Led.Status.ACESA
-							: Led.Status.APAGADA));
-
-			Toast.makeText(getBaseContext(),
-					getString(R.string.msg_btn_red_clicked), Toast.LENGTH_SHORT)
-					.show();
-
-			break;
-
-		case R.id.btn_green:
-			new HttpAsyncTask()
-					.execute(URL
-							+ "led=VERDE&status="
-							+ (!ledVerdeLigada ? Led.Status.ACESA
-									: Led.Status.APAGADA));
-			Toast.makeText(getBaseContext(),
-					getString(R.string.msg_btn_green_clicked),
-					Toast.LENGTH_SHORT).show();
-
-			break;
 		case R.id.btn_yellow:
-			new HttpAsyncTask().execute(URL
-					+ "led=AMARELA&status="
-					+ (!ledAmarelaLigada ? Led.Status.ACESA
-							: Led.Status.APAGADA));
-			Toast.makeText(getBaseContext(),
-					getString(R.string.msg_btn_yellow_clicked),
-					Toast.LENGTH_SHORT).show();
-
+			ledIndex = 0;
 			break;
-
+		case R.id.btn_green:
+			ledIndex = 1;
+			break;
+		case R.id.btn_red:
+			ledIndex = 2;
+			break;
 		default:
 			break;
+		}
+
+		if (ledIndex != null) {
+			if (statusLEDs[ledIndex] == Led.Status.ACESA)
+				// turn off flash
+				turnOffLED(ledIndex);
+			else
+				// turn on flash
+				turnOnLED(ledIndex);
+
 		}
 	}
 
@@ -162,72 +151,162 @@ public class MainActivity extends Activity implements OnClickListener {
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
 		protected void onPostExecute(String result) {
-			// Toast.makeText(getBaseContext(),
-			// getString(R.string.msg_received),
-			// Toast.LENGTH_LONG).show();
-
 			String errorMsg = getString(R.string.msg_error);
 
-			tvResponse.setVisibility(View.VISIBLE);
+			tvResponse.setBackgroundColor(0x0000FF);
 			if (!errorMsg.equals(result)) {
 				try {
 					JSONObject json = new JSONObject(result);
 
-					Led.Cor cor = Led.Cor.valueOf(json.getString("cor"));
+					Cor cor = Cor.valueOf(json.getString("cor"));
 					Led.Status status = Led.Status.valueOf(json
 							.getString("status"));
 
+					Led led = new Led();
 					led.setCor(cor);
 					led.setStatus(status);
 
-					if (led.getStatus() != null)
-						switch (led.getStatus()) {
-						case ACESA:
-							switch (led.getCor()) {
-							case AMARELA:
-								ledAmarelaLigada = true;
-								break;
-							case VERDE:
-								ledVerdeLigada = true;
-								break;
-							case VERMELHA:
-								ledVermelhaLigada = true;
-								break;
-							default:
-								break;
-							}
-
-							tvResponse.setText(R.string.msg_led_on);
+					if (led.getStatus() != null) {
+						switch (led.getCor()) {
+						case AMARELA:
+							statusLEDs[0] = led.getStatus();
 							break;
-						case APAGADA:
-							switch (led.getCor()) {
-							case AMARELA:
-								ledAmarelaLigada = false;
-								break;
-							case VERDE:
-								ledVerdeLigada = false;
-								break;
-							case VERMELHA:
-								ledVermelhaLigada = false;
-								break;
-							default:
-								break;
-							}
-
-							tvResponse.setText(R.string.msg_led_off);
+						case VERDE:
+							statusLEDs[1] = led.getStatus();
+							break;
+						case VERMELHA:
+							statusLEDs[2] = led.getStatus();
 							break;
 						default:
 							break;
 						}
-					else
+
+						switch (led.getStatus()) {
+						case ACESA:
+							tvResponse.setText(getString(R.string.msg_led_on,
+									led.getCor().name()));
+							break;
+						case APAGADA:
+							tvResponse.setText(getString(R.string.msg_led_off,
+									led.getCor().name()));
+							break;
+						default:
+							break;
+						}
+					} else {
+						tvResponse.setBackgroundColor(0xF7F7F7);
 						tvResponse.setText(R.string.msg_error);
+					}
 
 				} catch (JSONException e) {
 					Log.d(TAG, e.getLocalizedMessage(), e.getCause());
 				}
-			} else
+			} else {
+				tvResponse.setBackgroundColor(0xF7F7F7);
 				tvResponse.setText(errorMsg);
-
+			}
 		}
+	}
+
+	/*
+	 * Turning On flash
+	 */
+	private void turnOnLED(byte ledIndex) {
+		if (statusLEDs[ledIndex] == Led.Status.APAGADA) {
+			// play sound
+			playSound(ledIndex);
+
+			new HttpAsyncTask().execute(URL + "led=" + LEDs[ledIndex]
+					+ "&status=" + Led.Status.ACESA);
+
+			// isLEDsOn[ledIndex] = true;
+
+			// changing button/switch image
+			toggleButtonImage(ledIndex);
+		}
+	}
+
+	/*
+	 * Turning Off flash
+	 */
+	private void turnOffLED(byte ledIndex) {
+		if (statusLEDs[ledIndex] == Led.Status.ACESA) {
+			playSound(ledIndex);
+
+			new HttpAsyncTask().execute(URL + "led=" + LEDs[ledIndex]
+					+ "&status=" + Led.Status.APAGADA);
+
+			// isLEDsOn[ledIndex] = false;
+
+			// changing button/switch image
+			toggleButtonImage(ledIndex);
+		}
+	}
+
+	/*
+	 * Playing sound will play button toggle sound on flash on / off
+	 */
+	private void playSound(byte ledIndex) {
+		if (statusLEDs[ledIndex] == Led.Status.ACESA)
+			mp = MediaPlayer.create(MainActivity.this, R.raw.light_switch_off);
+		else
+			mp = MediaPlayer.create(MainActivity.this, R.raw.light_switch_on);
+
+		mp.setOnCompletionListener(new OnCompletionListener() {
+			public void onCompletion(MediaPlayer mp) {
+				// TODO Auto-generated method stub
+				mp.release();
+			}
+		});
+		mp.start();
+	}
+
+	/*
+	 * Toggle switch button images changing image states to on / off
+	 */
+	private void toggleButtonImage(byte ledIndex) {
+		if (statusLEDs[ledIndex] == Led.Status.ACESA)
+			btnSwitch[ledIndex].setImageResource(R.drawable.btn_switch_off);
+		else
+			btnSwitch[ledIndex].setImageResource(R.drawable.btn_switch_on);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		// on pause turn off the flash
+		for (byte i = 0x00; i < TOTAL_LEDS; i++)
+			turnOffLED(i);
+	}
+
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		// on resume turn on the flash
+		if (isConnected)
+			for (byte i = 0x00; i < TOTAL_LEDS; i++)
+				turnOffLED(i);
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
 	}
 }
