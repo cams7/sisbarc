@@ -60,13 +60,7 @@
 	</repositories>
 
 	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>br.com.cams7.sisbarc</groupId>
-				<artifactId>acende_apaga_leds-jpa</artifactId>
-				<version>${project.version}</version>
-				<type>jar</type>
-			</dependency>
+		<dependencies>			
 			<!-- Define the version of the EJB jar so that we don't need to repeat 
 				ourselves in every module -->
 			<dependency>

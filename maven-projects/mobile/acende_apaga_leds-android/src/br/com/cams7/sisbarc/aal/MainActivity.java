@@ -33,7 +33,7 @@ import br.com.cams7.util.RestUtil;
 public class MainActivity extends Activity implements OnClickListener {
 
 	private static final String TAG = "MainActivity";
-	private static final String URL = "http://192.168.0.150:8080/acende_apaga_leds/rest/arduino/led?";
+	private static final String URL = "http://192.168.1.7:8080/acende_apaga_leds/rest/arduino/led?";
 
 	private TextView tvIsConnected;
 	private TextView tvResponse;

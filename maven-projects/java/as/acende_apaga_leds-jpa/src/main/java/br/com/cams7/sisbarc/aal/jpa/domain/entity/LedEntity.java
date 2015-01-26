@@ -75,7 +75,19 @@ public class LedEntity extends BaseEntity<Byte> {
 	}
 
 	public enum Cor {
-		AMARELA, VERDE, VERMELHA;
+		AMARELA((byte) 0x0B), // Pin 11
+		VERDE((byte) 0x0A), // Pin 10
+		VERMELHA((byte) 0x09);// Pin 09
+
+		private byte pin;
+
+		private Cor(byte pin) {
+			this.pin = pin;
+		}
+
+		public byte getPin() {
+			return pin;
+		}
 	}
 
 	public enum Status {

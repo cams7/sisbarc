@@ -9,7 +9,7 @@ For Windows VAIO:
 	TaskKill /F /PID pid
 	
 	cd C:\Users\cams7\Desenv\java\jboss\wildfly-8.2.0.Final\bin
-	standalone.bat -b 192.168.0.150 -bmanagement 192.168.0.150
+	standalone.bat -b 192.168.1.7 -bmanagement 192.168.1.7
 
 WildFly started
 
@@ -23,8 +23,8 @@ WildFly started
 		mvn wildfly:undeploy -Dwildfly.hostname=192.168.0.160
 		
 	For Windows VAIO:
-		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.0.150
-		mvn wildfly:undeploy -Dwildfly.hostname=192.168.0.150
+		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.1.7
+		mvn wildfly:undeploy -Dwildfly.hostname=192.168.1.7
 	
 WildFly stopped
 

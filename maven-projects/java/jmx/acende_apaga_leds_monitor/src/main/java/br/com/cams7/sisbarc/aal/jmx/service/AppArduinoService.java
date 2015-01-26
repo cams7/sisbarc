@@ -3,9 +3,11 @@
  */
 package br.com.cams7.sisbarc.aal.jmx.service;
 
-import br.com.cams7.arduino.ArduinoServiceImpl;
 import br.com.cams7.arduino.ArduinoException;
-import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
+import br.com.cams7.arduino.ArduinoServiceImpl;
+import br.com.cams7.arduino.util.ArduinoStatus;
+import br.com.cams7.arduino.util.ArduinoStatus.PinType;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
 
 /**
  * @author cesar
@@ -14,38 +16,17 @@ import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 public class AppArduinoService extends ArduinoServiceImpl implements
 		AppArduinoServiceMBean {
 
-	private final int LED_VERDE_APAGADA = 10;
-	private final int LED_VERDE_ACESA = 11;
+	private final byte PIN_LED_PISCA = 13; // Pino 13 Digital
 
-	private final int LED_AMARELA_APAGADA = 12;
-	private final int LED_AMARELA_ACESA = 13;
+	private final byte PIN_LED_AMARELA = 11; // Pino 11 PWM
+	private final byte PIN_LED_VERDE = 10; // Pino 10 PWM
+	private final byte PIN_LED_VERMELHA = 9; // Pino 09 PWM
 
-	private final int LED_VERMELHA_APAGADA = 14;
-	private final int LED_VERMELHA_ACESA = 15;
+	// private final byte PIN_BOTAO_LED_AMARELA = 12; // Pino 12 Digital
+	// private final byte PIN_BOTAO_LED_VERDE = 8; // Pino 8 Digital
+	// private final byte PIN_BOTAO_LED_VERMELHA = 7; // Pino 7 Digital
 
-	private final int BTN_LED_VERDE_SOLTO = 20;
-	private final int BTN_LED_VERDE_PRESSIONADO = 21;
-
-	private final int BTN_LED_AMARELA_SOLTO = 22;
-	private final int BTN_LED_AMARELA_PRESSIONADO = 23;
-
-	private final int BTN_LED_VERMELHA_SOLTO = 24;
-	private final int BTN_LED_VERMELHA_PRESSIONADO = 25;
-
-	private final int MIN_POTENCIOMETRO = 100;
-	private final int MAX_POTENCIOMETRO = 200;
-
-	private final byte EVENTO_MUDA_STATUS_LED_AMARELA = EVENTO_NAO_INFORMADO + 1;
-	private final byte EVENTO_MUDA_STATUS_LED_VERDE = EVENTO_MUDA_STATUS_LED_AMARELA + 1;
-	private final byte EVENTO_MUDA_STATUS_LED_VERMELHA = EVENTO_MUDA_STATUS_LED_VERDE + 1;
-
-	private boolean _ledAmarelaAcesa = false;
-	private boolean _ledVerdeAcesa = false;
-	private boolean _ledVermelhaAcesa = false;
-
-	private boolean ledAmarelaAcesa = false;
-	private boolean ledVerdeAcesa = false;
-	private boolean ledVermelhaAcesa = false;
+	private final byte PIN_POTENCIOMETRO = 0; // Pino 0 Analogico
 
 	public AppArduinoService(String serialPort, int baudRate, long threadTime)
 			throws ArduinoException {
@@ -53,251 +34,135 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		System.out.println("Novo Servico");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDAmarela
-	 * ()
-	 */
-	public void mudaStatusLEDAmarela(boolean ledAcesa) {
-		_ledAmarelaAcesa = ledAcesa;
-		try {
-			if (ledAcesa)
-				serialWrite(LED_AMARELA_ACESA);
-			else
-				serialWrite(LED_AMARELA_APAGADA);
-
-		} catch (ArduinoException e) {
-			e.printStackTrace();
-		}
-
-		setEventoAtual(EVENTO_MUDA_STATUS_LED_AMARELA);
-	}
-
-	private void printStatusLEDArmarela(boolean ledAcesa) {
-		System.out.println(ledAcesa ? "LED Amarela acesa"
-				: "LED Amarela apagada");
-	}
-
-	private void mudaStatusLEDArmarelaOK() {
-		ledAmarelaAcesa = _ledAmarelaAcesa;
-		printStatusLEDArmarela(ledAmarelaAcesa);
-	}
-
-	private void printStatusErrorLEDArmarela() {
-		System.err
-				.println("Ocorreu um erro ao tentar acender ou apagar o LED Amarelo");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#mudaStatusLEDVerde
-	 * ()
-	 */
-	public void mudaStatusLEDVerde(boolean ledAcesa) {
-		_ledVerdeAcesa = ledAcesa;
-		try {
-			if (ledAcesa)
-				serialWrite(LED_VERDE_ACESA);
-			else
-				serialWrite(LED_VERDE_APAGADA);
-
-		} catch (ArduinoException e) {
-			e.printStackTrace();
-		}
-
-		setEventoAtual(EVENTO_MUDA_STATUS_LED_VERDE);
-	}
-
-	private void printStatusLEDVerde(boolean ledVerdeLigada) {
-		System.out.println(ledVerdeLigada ? "LED Verde acesa"
-				: "LED Verde apagada");
-	}
-
-	private void mudaStatusLEDVerdeOK() {
-		ledVerdeAcesa = _ledVerdeAcesa;
-		printStatusLEDVerde(ledVerdeAcesa);
-	}
-
-	private void printStatusErrorLEDVerde() {
-		System.err
-				.println("Ocorreu um erro ao tentar acender ou apagar o LED Verde");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#
-	 * mudaStatusLEDVermelha()
-	 */
-	public void mudaStatusLEDVermelha(boolean ledAcesa) {
-		_ledVermelhaAcesa = ledAcesa;
-		try {
-			if (ledAcesa)
-				serialWrite(LED_VERMELHA_ACESA);
-			else
-				serialWrite(LED_VERMELHA_APAGADA);
-
-		} catch (ArduinoException e) {
-			e.printStackTrace();
-		}
-
-		setEventoAtual(EVENTO_MUDA_STATUS_LED_VERMELHA);
-	}
-
-	private void printStatusLEDVermelha(boolean ledVermelha) {
-		System.out.println(ledVermelha ? "LED Vermelha acesa"
-				: "LED Vermelha apagada");
-	}
-
-	private void mudaStatusLEDVermelhaOK() {
-		ledVermelhaAcesa = _ledVermelhaAcesa;
-		printStatusLEDVermelha(ledVermelhaAcesa);
-	}
-
-	private void printStatusErrorLEDVermelha() {
-		System.err
-				.println("Ocorreu um erro ao tentar acender ou apagar o LED Vermelha");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see br.com.cams7.arduino.Arduino#envioOK()
-	 */
-	protected void envioOK() {
-		switch (getEventoAtual()) {
-		case EVENTO_NAO_INFORMADO:
-			break;
-		case EVENTO_MUDA_STATUS_LED_AMARELA:
-			mudaStatusLEDArmarelaOK();
-			break;
-		case EVENTO_MUDA_STATUS_LED_VERDE:
-			mudaStatusLEDVerdeOK();
-			break;
-		case EVENTO_MUDA_STATUS_LED_VERMELHA:
-			mudaStatusLEDVermelhaOK();
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see br.com.cams7.arduino.Arduino#envioError()
-	 */
-	protected void envioError() {
-		switch (getEventoAtual()) {
-		case EVENTO_NAO_INFORMADO:
-			break;
-		case EVENTO_MUDA_STATUS_LED_AMARELA:
-			printStatusErrorLEDArmarela();
-			break;
-		case EVENTO_MUDA_STATUS_LED_VERDE:
-			printStatusErrorLEDVerde();
-			break;
-		case EVENTO_MUDA_STATUS_LED_VERMELHA:
-			printStatusErrorLEDVermelha();
-			break;
-		default:
-			break;
-		}
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see br.com.cams7.arduino.Arduino#setDadoRecebido(int)
-	 */
-	protected void setDadoRecebido(int dadoRecebido) {
-		if (dadoRecebido >= MIN_POTENCIOMETRO
-				&& dadoRecebido <= MAX_POTENCIOMETRO)
-			System.out.println("Valor atual do potenciometro '"
-					+ (dadoRecebido - 100) + "%'");
-		else
-			switch (dadoRecebido) {
-			case BTN_LED_AMARELA_SOLTO:
-				ledAmarelaAcesa = false;
-				printStatusLEDArmarela(ledAmarelaAcesa);
-				break;
-			case BTN_LED_AMARELA_PRESSIONADO:
-				ledAmarelaAcesa = true;
-				printStatusLEDArmarela(ledAmarelaAcesa);
-				break;
-			case BTN_LED_VERDE_SOLTO:
-				ledVerdeAcesa = false;
-				printStatusLEDVerde(ledVerdeAcesa);
-				break;
-			case BTN_LED_VERDE_PRESSIONADO:
-				ledVerdeAcesa = true;
-				printStatusLEDVerde(ledVerdeAcesa);
-				break;
-			case BTN_LED_VERMELHA_SOLTO:
-				ledVermelhaAcesa = false;
-				printStatusLEDVermelha(ledVermelhaAcesa);
-				break;
-			case BTN_LED_VERMELHA_PRESSIONADO:
-				ledVermelhaAcesa = true;
-				printStatusLEDVermelha(ledVermelhaAcesa);
-				break;
-			default:
-				System.err
-						.println("O dado '" + dadoRecebido + "' nao e valido");
+	@Override
+	protected void receive(PinType pinType, byte pin, short pinValue) {
+		switch (pinType) {
+		case DIGITAL: {
+			switch (pin) {
+			case PIN_LED_AMARELA:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHA: {
+				System.out.println("LED ("
+						+ pin
+						+ "): "
+						+ (pinValue == 0x0001 ? LedEntity.Status.ACESA
+								: LedEntity.Status.APAGADA));
 				break;
 			}
+			case PIN_LED_PISCA: {
+				System.out.println("LED Pisca ("
+						+ pin
+						+ "): "
+						+ (pinValue == 0x0001 ? LedEntity.Status.ACESA
+								: LedEntity.Status.APAGADA));
+				break;
+			}
+			default:
+				break;
+			}
+			break;
+		}
+		case ANALOG: {
+			switch (pin) {
+			case PIN_POTENCIOMETRO: {
+				System.out.println("Potenciometro (" + pin + "): " + pinValue);
+				break;
+			}
+			default:
+				break;
+			}
+			break;
+		}
+		default:
+			break;
+		}
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see br.com.cams7.arduino.Arduino#recebimentoError()
-	 */
-	protected void recebimentoError() {
-		System.out
-				.println("O prototipo no Proteus nao esta rodando ou a porta '"
-						+ getSerialPort() + "' esta fechada");
+	@Override
+	protected short sendResponse(PinType pinType, byte pin, short pinValue) {
+		switch (pinType) {
+		case DIGITAL: {
+			switch (pin) {
+			case PIN_LED_AMARELA:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHA: {
+				pinValue = acendeApagaLEDPorBotao(pin, pinValue);
+				break;
+			}
+			default:
+				break;
+			}
+			break;
+		}
+		case ANALOG: {
+			break;
+		}
+		default:
+			break;
+		}
+		return pinValue;
+	}
+
+	@Override
+	public void mudaStatusLED(LedEntity.Cor cor, LedEntity.Status status) {
+
+		byte pin = cor.getPin();
+
+		boolean pinValue = (status == LedEntity.Status.ACESA);
+
+		try {
+			sendPinDigital(pin, pinValue, ArduinoStatus.Status.SEND_RESPONSE);
+			// sendPinPWM(pin, (short) (pinValue ? 255 :
+			// 0),Status.RESPONSE_RESPONSE);
+			// sendPinAnalog(pin, (short) (pinValue ? 1023 : 0),
+			// Status.RESPONSE);
+
+		} catch (ArduinoException e) {
+			e.printStackTrace();
+		}
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedAmarelaLigada
-	 * ()
-	 */
-	public boolean isLEDAmarelaAcesa() {
-		return ledAmarelaAcesa;
+	@Override
+	public LedEntity.Status getStatusLED(LedEntity.Cor cor) {
+		String key = getKeyCurrentStatus(ArduinoStatus.PinType.DIGITAL,
+				cor.getPin());
+
+		if (getCurrentStatus().isEmpty()
+				|| !getCurrentStatus().containsKey(key))
+			return null;
+
+		ArduinoStatus arduino = getCurrentStatus().get(key);
+
+		if (arduino.getTransmitter() != ArduinoStatus.Transmitter.ARDUINO)
+			return null;
+
+		if (arduino.getStatus() != ArduinoStatus.Status.RESPONSE)
+			return null;
+
+		short pinValue = arduino.getPinValue();
+		LedEntity.Status ledStatus = null;
+
+		switch (pinValue) {
+		case 0x0000:
+			ledStatus = LedEntity.Status.APAGADA;
+			break;
+		case 0x0001:
+			ledStatus = LedEntity.Status.ACESA;
+			break;
+		default:
+			break;
+		}
+
+		return ledStatus;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVerdeLigada
-	 * ()
-	 */
-	public boolean isLEDVerdeAcesa() {
-		return ledVerdeAcesa;
+	private short acendeApagaLEDPorBotao(byte pin, short pinValue) {
+		if (pinValue == 0x0001) {
+			// Verifica permissão para ACENDE ou APAGA o LED
+			return pinValue;
+		}
+		return pinValue;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * br.com.cams7.sisbarc.aal.jmx.service.ArduinoServiceMBean#isLedVermelhaLigada
-	 * ()
-	 */
-	public boolean isLEDVermelhaAcesa() {
-		return ledVermelhaAcesa;
-	}
-
 }

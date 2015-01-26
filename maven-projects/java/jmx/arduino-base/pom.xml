@@ -17,10 +17,14 @@
 	<properties>
 	</properties>
 
-	<dependencies>		
+	<dependencies>
 		<dependency>
 			<groupId>org.rxtx</groupId>
 			<artifactId>rxtx</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>sisbarc-base</artifactId>
 		</dependency>
 	</dependencies>
 

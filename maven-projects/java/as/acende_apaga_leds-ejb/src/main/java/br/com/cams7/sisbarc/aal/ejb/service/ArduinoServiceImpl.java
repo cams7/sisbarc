@@ -23,7 +23,6 @@ import javax.management.remote.JMXServiceURL;
 
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Status;
 import br.com.cams7.util.AppException;
 import br.com.cams7.util.AppUtil;
 
@@ -87,33 +86,9 @@ public class ArduinoServiceImpl implements ArduinoService {
 
 	@Asynchronous
 	public Future<LedEntity> mudaStatusLED(LedEntity led) {
-		boolean status = false;
-
-		switch (led.getStatus()) {
-		case ACESA:
-			status = true;
-			break;
-		case APAGADA:
-			status = false;
-			break;
-		default:
-			break;
-		}
 
 		if (mbeanProxy != null) {
-			switch (led.getCor()) {
-			case AMARELA:
-				mbeanProxy.mudaStatusLEDAmarela(status);
-				break;
-			case VERDE:
-				mbeanProxy.mudaStatusLEDVerde(status);
-				break;
-			case VERMELHA:
-				mbeanProxy.mudaStatusLEDVermelha(status);
-				break;
-			default:
-				break;
-			}
+			mbeanProxy.mudaStatusLED(led.getCor(), led.getStatus());
 
 			log.info("mudaStatusLED('" + led.getCor() + "','" + led.getStatus()
 					+ "') - Before sleep: " + DF.format(new Date()));
@@ -121,27 +96,17 @@ public class ArduinoServiceImpl implements ArduinoService {
 			log.info("mudaStatusLED('" + led.getCor() + "','" + led.getStatus()
 					+ "') - After sleep: " + DF.format(new Date()));
 
-			Boolean ledLigada = null;
+			LedEntity.Status ledLigada = mbeanProxy.getStatusLED(led.getCor());
 
-			switch (led.getCor()) {
-			case AMARELA:
-				ledLigada = mbeanProxy.isLEDAmarelaAcesa();
-				break;
-			case VERDE:
-				ledLigada = mbeanProxy.isLEDVerdeAcesa();
-				break;
-			case VERMELHA:
-				ledLigada = mbeanProxy.isLEDVermelhaAcesa();
-				break;
-			default:
-				break;
-			}
 			if (ledLigada != null) {
-				led.setStatus(ledLigada ? Status.ACESA : Status.APAGADA);
+				led.setStatus(ledLigada);
 
 				log.info("LED '" + led.getCor() + "' esta '" + led.getStatus()
 						+ "'");
-			}
+			} else
+				log.log(Level.WARNING,
+						"Ocorreu um erro ao tenta buscar o status do LED '"
+								+ led.getCor() + "'");
 
 			return new AsyncResult<LedEntity>(led);
 
@@ -151,7 +116,7 @@ public class ArduinoServiceImpl implements ArduinoService {
 
 	private void serialThreadTime() {
 		try {
-			Thread.sleep(mbeanProxy.getSerialThreadTime() + 250);
+			Thread.sleep(mbeanProxy.getSerialThreadTime());
 		} catch (InterruptedException e) {
 			log.log(Level.WARNING, e.getMessage());
 		}

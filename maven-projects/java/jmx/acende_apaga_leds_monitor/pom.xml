@@ -30,6 +30,10 @@
 			<groupId>br.com.cams7.sisbarc</groupId>
 			<artifactId>acende_apaga_leds_monitor-base</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>acende_apaga_leds-jpa</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

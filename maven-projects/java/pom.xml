@@ -69,6 +69,13 @@
 				<artifactId>acende_apaga_leds_monitor-base</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>br.com.cams7.sisbarc</groupId>
+				<artifactId>acende_apaga_leds-jpa</artifactId>
+				<version>${project.version}</version>
+				<type>jar</type>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

@@ -11,7 +11,19 @@ import gnu.io.UnsupportedCommOperationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.TooManyListenersException;
+
+import br.com.cams7.arduino.util.ArduinoProtocol;
+import br.com.cams7.arduino.util.ArduinoStatus;
+import br.com.cams7.arduino.util.ArduinoStatus.Transmitter;
+import br.com.cams7.arduino.util.Binary;
+import br.com.cams7.arduino.util.Bytes;
+import br.com.cams7.arduino.util.ArduinoStatus.Status;
+import br.com.cams7.arduino.util.ArduinoStatus.PinType;
 
 public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		SerialPortEventListener {
@@ -23,12 +35,9 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 	private int serialBaudRate;
 	private long serialThreadTime;
 
-	private int dadoEnviado = -1;
-	private int ultimoDadoRecebido = -1;
+	private List<Byte> serialData;
 
-	protected final byte EVENTO_NAO_INFORMADO = 0;
-
-	private byte eventoAtual = EVENTO_NAO_INFORMADO;
+	private Map<String, ArduinoStatus> currentStatus;
 
 	/**
 	 * Construtor da classe Arduino
@@ -46,6 +55,8 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		this.serialPort = serialPort;
 		this.serialBaudRate = serialBaudRate;
 		this.serialThreadTime = serialThreadTime;
+
+		currentStatus = new HashMap<String, ArduinoStatus>();
 
 		init();
 	}
@@ -126,14 +137,13 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 	 * @param opcao
 	 *            - Valor a ser enviado pela porta serial
 	 */
-	protected void serialWrite(int dado) throws ArduinoException {
+	private void serialWrite(byte[] data) throws ArduinoException {
 		if (output == null)
 			throw new ArduinoException("O 'OutputStream' nao foi inicializado");
 
 		try {
-			output.write(dado);// escreve o valor na porta serial para ser
-								// enviado
-			dadoEnviado = dado;
+			// escreve o valor na porta serial para ser enviado
+			output.write(data);
 		} catch (IOException e) {
 			throw new ArduinoException("Nao foi possivel enviar o dado",
 					e.getCause());
@@ -158,16 +168,12 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
 			break;
 		case SerialPortEvent.DATA_AVAILABLE:
-			int dadoRecebido = -1;
 			try {
 				while (input.available() > 0)
-					dadoRecebido = input.read();
+					receiveDataBySerial((byte) input.read());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			comparaDadoEnviadoRecebido(dadoRecebido);
-
 			break;
 		}
 	}
@@ -185,36 +191,137 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		}
 	}
 
-	private void comparaDadoEnviadoRecebido(int dadoRecebido) {
-		if (dadoRecebido == -1)
-			recebimentoError();
-		else if (dadoEnviado != -1) {
-			if (dadoEnviado == dadoRecebido)
-				envioOK();
-			else
-				envioError();
+	private void receiveDataBySerial(byte data) {
 
-			dadoEnviado = -1;
-		} else if (ultimoDadoRecebido != dadoRecebido)
-			setDadoRecebido(dadoRecebido);
+		byte lastBit = Binary.getLastBitByte(data);
 
-		ultimoDadoRecebido = dadoRecebido;
+		if (0x01 == lastBit) {
+			serialData = new ArrayList<Byte>();
+			serialData.add(data);
+		} else if (0x00 == lastBit && serialData != null) {
+			serialData.add(data);
+			if (serialData.size() == ArduinoProtocol.TOTAL_BYTES_PROTOCOL) {
+				byte[] values = Bytes.toArray(serialData);
+				try {
+					ArduinoStatus arduino = ArduinoProtocol.receive(values);
+					addCurrentStatus(arduino);
+					receiveDataBySerial(arduino);
+				} catch (ArduinoException e) {
+					e.printStackTrace();
+				}
+				serialData = null;
+			}
+
+		} else {
+			System.err.println("O dado '" + Integer.toBinaryString(data)
+					+ "' foi corrompido");
+		}
+
 	}
 
-	protected abstract void recebimentoError();
+	protected void addCurrentStatus(ArduinoStatus arduino) {
+		String key = getKeyCurrentStatus(arduino.getPinType(), arduino.getPin());
 
-	protected abstract void envioOK();
-
-	protected abstract void envioError();
-
-	protected abstract void setDadoRecebido(int dadoRecebido);
-
-	protected byte getEventoAtual() {
-		return eventoAtual;
+		if (currentStatus.isEmpty() || !currentStatus.containsKey(key))
+			currentStatus.put(key, arduino);
+		else
+			currentStatus.get(key).changeCurrentValues(arduino);
 	}
 
-	protected void setEventoAtual(byte eventoAtual) {
-		this.eventoAtual = eventoAtual;
+	protected String getKeyCurrentStatus(PinType pinType, byte pin) {
+		String key = pinType.getType() + "_" + pin;
+		return key;
+	}
+
+	private void receiveDataBySerial(ArduinoStatus arduino) {
+		if (Transmitter.ARDUINO != arduino.getTransmitter()) {
+			System.err.println("O dado não vem do Arduino");
+			return;
+		}
+
+		switch (arduino.getStatus()) {
+		case SEND:
+		case RESPONSE:
+			receive(arduino.getPinType(), arduino.getPin(),
+					arduino.getPinValue());
+			break;
+
+		case SEND_RESPONSE:
+		case RESPONSE_RESPONSE:
+			short pinValue = sendResponse(arduino.getPinType(),
+					arduino.getPin(), arduino.getPinValue());
+
+			try {
+				switch (arduino.getPinType()) {
+				case DIGITAL: {
+					boolean isPinPWD = false;
+					for (byte pinPWD : ArduinoStatus.getPinsDigitalPWM())
+						if (arduino.getPin() == pinPWD) {
+							isPinPWD = true;
+							break;
+						}
+
+					if (isPinPWD)
+						sendPinPWM(arduino.getPin(), pinValue,
+								Status.RESPONSE_RESPONSE);
+					else
+						sendPinDigital(arduino.getPin(), pinValue == 0x0001,
+								Status.RESPONSE_RESPONSE);
+					break;
+				}
+				case ANALOG: {
+					sendPinAnalog(arduino.getPin(), pinValue,
+							Status.RESPONSE_RESPONSE);
+					break;
+				}
+				default:
+					break;
+				}
+			} catch (ArduinoException e) {
+				e.printStackTrace();
+			}
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+	protected abstract void receive(PinType pinType, byte pin, short pinValue);
+
+	protected abstract short sendResponse(PinType pinType, byte pin,
+			short pinValue);
+
+	protected void sendPinDigital(byte pin, boolean pinValue, Status statusValue)
+			throws ArduinoException {
+		ArduinoStatus arduino = new ArduinoStatus(pin,
+				(short) (pinValue ? 0x0001 : 0x0000), statusValue);
+
+		byte[] data = ArduinoProtocol.sendPinDigital(arduino);
+		serialWrite(data);
+
+		addCurrentStatus(arduino);
+	}
+
+	protected void sendPinPWM(byte pin, short pinValue, Status statusValue)
+			throws ArduinoException {
+		ArduinoStatus arduino = new ArduinoStatus(pin, pinValue, statusValue);
+
+		byte[] data = ArduinoProtocol.sendPinPWM(arduino);
+		serialWrite(data);
+
+		addCurrentStatus(arduino);
+	}
+
+	protected void sendPinAnalog(byte pin, short pinValue, Status statusValue)
+			throws ArduinoException {
+		ArduinoStatus arduino = new ArduinoStatus(pin, pinValue, statusValue);
+
+		byte[] data = ArduinoProtocol.sendPinAnalog(arduino);
+		serialWrite(data);
+
+		addCurrentStatus(arduino);
 	}
 
 	public String getSerialPort() {
@@ -227,6 +334,10 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 
 	public long getSerialThreadTime() {
 		return serialThreadTime;
+	}
+
+	protected Map<String, ArduinoStatus> getCurrentStatus() {
+		return currentStatus;
 	}
 
 }
