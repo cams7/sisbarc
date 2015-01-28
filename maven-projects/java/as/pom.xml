@@ -44,8 +44,7 @@
 		<version.war.plugin>2.5</version.war.plugin>
 	</properties>
 
-	<modules>
-		<module>acende_apaga_leds-jpa</module>
+	<modules>		
 		<module>acende_apaga_leds-ejb</module>
 		<module>acende_apaga_leds-web</module>
 		<module>ear</module>

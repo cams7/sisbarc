@@ -11,6 +11,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.management.MBeanServerConnection;
@@ -23,11 +25,15 @@ import javax.management.remote.JMXServiceURL;
 
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Color;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Status;
 import br.com.cams7.util.AppException;
 import br.com.cams7.util.AppUtil;
 
 @Stateless
-public class ArduinoServiceImpl implements ArduinoService {
+@Local(ArduinoService.class)
+@Remote(AppWildflyService.class)
+public class ArduinoServiceImpl implements ArduinoService, AppWildflyService {
 
 	@Inject
 	private Logger log;
@@ -88,25 +94,26 @@ public class ArduinoServiceImpl implements ArduinoService {
 	public Future<LedEntity> mudaStatusLED(LedEntity led) {
 
 		if (mbeanProxy != null) {
-			mbeanProxy.mudaStatusLED(led.getCor(), led.getStatus());
+			mbeanProxy.changeStatusLED(led.getColor(), led.getStatus());
 
-			log.info("mudaStatusLED('" + led.getCor() + "','" + led.getStatus()
+			log.info("mudaStatusLED('" + led.getColor() + "','" + led.getStatus()
 					+ "') - Before sleep: " + DF.format(new Date()));
+
 			serialThreadTime();
-			log.info("mudaStatusLED('" + led.getCor() + "','" + led.getStatus()
+
+			LedEntity.Status status = mbeanProxy.getStatusLED(led.getColor());
+			led.setStatus(status);
+
+			log.info("mudaStatusLED('" + led.getColor() + "','" + led.getStatus()
 					+ "') - After sleep: " + DF.format(new Date()));
 
-			LedEntity.Status ledLigada = mbeanProxy.getStatusLED(led.getCor());
-
-			if (ledLigada != null) {
-				led.setStatus(ledLigada);
-
-				log.info("LED '" + led.getCor() + "' esta '" + led.getStatus()
+			if (status != null) {
+				log.info("LED '" + led.getColor() + "' esta '" + led.getStatus()
 						+ "'");
 			} else
 				log.log(Level.WARNING,
 						"Ocorreu um erro ao tenta buscar o status do LED '"
-								+ led.getCor() + "'");
+								+ led.getColor() + "'");
 
 			return new AsyncResult<LedEntity>(led);
 
@@ -120,6 +127,12 @@ public class ArduinoServiceImpl implements ArduinoService {
 		} catch (InterruptedException e) {
 			log.log(Level.WARNING, e.getMessage());
 		}
+	}
+
+	@Override
+	public LedEntity.Status getStatusActiveLED(LedEntity.Color ledCor) {
+		// TODO Auto-generated method stub
+		return Status.ON;
 	}
 
 }

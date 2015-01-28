@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -39,11 +40,17 @@ public class LedEntity extends BaseEntity<Byte> {
 	@NotNull
 	@Enumerated(EnumType.ORDINAL)
 	@Column(name = "cor_led")
-	private Cor cor;
+	private Color color;
 
 	@NotNull
 	@Enumerated(EnumType.ORDINAL)
-	@Column(name = "status_led")
+	@Column(name = "evento_led")
+	private Event event;
+
+	@Column(name = "led_ativa", nullable = false)
+	private boolean active;
+
+	@Transient
 	private Status status;
 
 	public LedEntity() {
@@ -58,12 +65,28 @@ public class LedEntity extends BaseEntity<Byte> {
 		this.id = id;
 	}
 
-	public Cor getCor() {
-		return cor;
+	public Color getColor() {
+		return color;
 	}
 
-	public void setCor(Cor cor) {
-		this.cor = cor;
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
+	public Event getEvent() {
+		return event;
+	}
+
+	public void setEvent(Event event) {
+		this.event = event;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
 	public Status getStatus() {
@@ -74,14 +97,14 @@ public class LedEntity extends BaseEntity<Byte> {
 		this.status = status;
 	}
 
-	public enum Cor {
-		AMARELA((byte) 0x0B), // Pin 11
-		VERDE((byte) 0x0A), // Pin 10
-		VERMELHA((byte) 0x09);// Pin 09
+	public enum Color {
+		YELLOW((byte) 0x0B), // Pin 11
+		GREEN((byte) 0x0A), // Pin 10
+		RED((byte) 0x09);// Pin 09
 
 		private byte pin;
 
-		private Cor(byte pin) {
+		private Color(byte pin) {
 			this.pin = pin;
 		}
 
@@ -91,7 +114,11 @@ public class LedEntity extends BaseEntity<Byte> {
 	}
 
 	public enum Status {
-		ACESA, APAGADA
+		ON, OFF
+	}
+
+	public enum Event {
+		ON_OFF, BLINK, FADE;
 	}
 
 }

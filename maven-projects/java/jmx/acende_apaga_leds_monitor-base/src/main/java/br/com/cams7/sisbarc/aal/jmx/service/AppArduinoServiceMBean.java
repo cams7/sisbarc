@@ -4,8 +4,7 @@
 package br.com.cams7.sisbarc.aal.jmx.service;
 
 import br.com.cams7.arduino.ArduinoService;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Status;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Cor;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
 
 /**
  * @author cesar
@@ -14,19 +13,19 @@ import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Cor;
 public interface AppArduinoServiceMBean extends ArduinoService {
 
 	/**
-	 * @param cor
+	 * @param color
 	 * @param status
 	 * 
 	 *            Altera o estado do LED ligado/desligado
 	 */
-	public void mudaStatusLED(Cor cor, Status status);
+	public void changeStatusLED(LedEntity.Color color, LedEntity.Status status);
 
 	/**
-	 * @param cor
+	 * @param color
 	 * @return
 	 * 
 	 *         Obtem o estado atual do LED informado
 	 */
-	public Status getStatusLED(Cor cor);
+	public LedEntity.Status getStatusLED(LedEntity.Color color);
 
 }

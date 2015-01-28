@@ -5,15 +5,13 @@
     <string name="btn_green">Green light</string>
     <string name="btn_yellow">Yellow light</string>
     <string name="msg_connected">You are connected</string>
-    <string name="msg_not_connected">You are NOT connected</string>
+    <string name="msg_not_connected">You are not connected</string>
     <string name="msg_error">Did not work!</string>
+    <string name="msg_error_wildfly">Wildfly is not working</string>
+    <string name="msg_error_monitor">JMX Monitor is not working</string>
+    <string name="msg_error_arduino">Arduino is not connected</string>
     <string name="msg_received">Received!</string>
     <string name="msg_is_connected">is connected?</string>
-    <!--
-    string name="msg_btn_red_clicked">Red button clicked</string>
-    <string name="msg_btn_green_clicked">Green button clicked</string>
-    <string name="msg_btn_yellow_clicked">Yellow button clicked</string
-    -->
     <string name="msg_led_on">LED %1$s turns ON</string>
     <string name="msg_led_off">LED %1$s turns OFF</string>
 

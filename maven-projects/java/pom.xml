@@ -27,6 +27,7 @@
 
 	<modules>
 		<module>sisbarc-base</module>
+		<module>acende_apaga_leds-jpa</module>
 		<module>jmx</module>
 		<module>as</module>
 	</modules>
@@ -75,6 +76,12 @@
 				<artifactId>acende_apaga_leds-jpa</artifactId>
 				<version>${project.version}</version>
 				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>br.com.cams7.sisbarc</groupId>
+				<artifactId>acende_apaga_leds-ejb</artifactId>
+				<version>${project.version}</version>
+				<type>ejb-client</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

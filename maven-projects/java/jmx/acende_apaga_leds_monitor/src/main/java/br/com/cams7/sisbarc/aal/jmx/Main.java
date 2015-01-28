@@ -5,6 +5,8 @@ package br.com.cams7.sisbarc.aal.jmx;
 
 import java.lang.management.ManagementFactory;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -23,6 +25,8 @@ import br.com.cams7.util.AppUtil;
  *
  */
 public class Main {
+	private static final Logger LOG = Logger.getLogger(Main.class.getName());
+
 	public static void main(String[] args) {
 		try {
 			Properties config = AppUtil.getPropertiesFile(Main.class,
@@ -44,14 +48,14 @@ public class Main {
 
 			mbs.registerMBean(service, name);
 
-			System.out.println("Waiting forever...");
+			LOG.info("Waiting forever...");
 
 			Thread.sleep(Long.MAX_VALUE);
 
 		} catch (MalformedObjectNameException | InstanceAlreadyExistsException
 				| MBeanRegistrationException | NotCompliantMBeanException
 				| InterruptedException | ArduinoException | AppException e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, e.getMessage());
 		}
 	}
 }

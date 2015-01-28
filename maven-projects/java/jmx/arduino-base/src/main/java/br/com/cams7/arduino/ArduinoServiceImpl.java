@@ -16,17 +16,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import br.com.cams7.arduino.util.ArduinoProtocol;
 import br.com.cams7.arduino.util.ArduinoStatus;
+import br.com.cams7.arduino.util.ArduinoStatus.PinType;
+import br.com.cams7.arduino.util.ArduinoStatus.Status;
 import br.com.cams7.arduino.util.ArduinoStatus.Transmitter;
 import br.com.cams7.arduino.util.Binary;
 import br.com.cams7.arduino.util.Bytes;
-import br.com.cams7.arduino.util.ArduinoStatus.Status;
-import br.com.cams7.arduino.util.ArduinoStatus.PinType;
 
 public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		SerialPortEventListener {
+
+	private static final Logger LOG = Logger.getLogger(ArduinoServiceImpl.class
+			.getName());
 
 	private OutputStream output;
 	private InputStream input;
@@ -172,7 +177,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 				while (input.available() > 0)
 					receiveDataBySerial((byte) input.read());
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOG.log(Level.SEVERE, e.getMessage());
 			}
 			break;
 		}
@@ -187,7 +192,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		try {
 			Thread.sleep(serialThreadTime);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, e.getMessage());
 		}
 	}
 
@@ -213,7 +218,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 			}
 
 		} else {
-			System.err.println("O dado '" + Integer.toBinaryString(data)
+			LOG.log(Level.WARNING, "O dado '" + Integer.toBinaryString(data)
 					+ "' foi corrompido");
 		}
 
@@ -235,7 +240,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 
 	private void receiveDataBySerial(ArduinoStatus arduino) {
 		if (Transmitter.ARDUINO != arduino.getTransmitter()) {
-			System.err.println("O dado não vem do Arduino");
+			LOG.log(Level.WARNING, "O dado não vem do Arduino");
 			return;
 		}
 
@@ -278,7 +283,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 					break;
 				}
 			} catch (ArduinoException e) {
-				e.printStackTrace();
+				LOG.log(Level.WARNING, e.getMessage());
 			}
 			break;
 

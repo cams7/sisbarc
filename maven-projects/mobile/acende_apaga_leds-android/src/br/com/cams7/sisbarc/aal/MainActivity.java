@@ -25,7 +25,9 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import br.com.cams7.sisbarc.aal.vo.Led;
-import br.com.cams7.sisbarc.aal.vo.Led.Cor;
+import br.com.cams7.sisbarc.aal.vo.Led.Color;
+import br.com.cams7.sisbarc.aal.vo.Led.Status;
+import br.com.cams7.util.AppException;
 import br.com.cams7.util.RestUtil;
 
 /**
@@ -35,18 +37,17 @@ import br.com.cams7.util.RestUtil;
 public class MainActivity extends Activity implements OnClickListener {
 
 	private static final String TAG = "MainActivity";
-	private static final String URL = "http://192.168.1.7:8080/acende_apaga_leds/rest/arduino/led?";
+	private static final String URL = "http://192.168.1.7:8080/acende_apaga_leds/rest/arduino/led";
 
-	private static final String[] LEDs = { Cor.AMARELA.name(),
-			Cor.VERDE.name(), Cor.VERMELHA.name() };
+	private static final Color[] LEDs = Color.values();
 	private static final byte TOTAL_LEDS = (byte) LEDs.length;
 
 	private TextView tvResponse;
 
 	private ImageButton[] btnSwitch;
 
-	private Led.Status[] statusLEDs = { Led.Status.APAGADA, Led.Status.APAGADA,
-			Led.Status.APAGADA };
+	private Led.Status[] currentStatus;
+	private boolean statusChanged;
 
 	private boolean isConnected;
 	private MediaPlayer mp;
@@ -75,12 +76,14 @@ public class MainActivity extends Activity implements OnClickListener {
 		isConnected = RestUtil.isConnected(this);
 
 		// check if you are connected or not
-		if (isConnected) {
-			tvResponse.setBackgroundColor(0x0000FF);
+		if (isConnected)
 			tvResponse.setText(R.string.msg_connected);
-		} else {
+		else
 			tvResponse.setText(R.string.msg_not_connected);
-		}
+
+		currentStatus = new Status[TOTAL_LEDS];
+		for (byte i = 0x00; i < TOTAL_LEDS; i++)
+			currentStatus[i] = Led.Status.OFF;
 
 	}
 
@@ -101,7 +104,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 
 		if (ledIndex != null) {
-			if (statusLEDs[ledIndex] == Led.Status.ACESA)
+			if (currentStatus[ledIndex] == Led.Status.ON)
 				// turn off flash
 				turnOffLED(ledIndex);
 			else
@@ -145,66 +148,77 @@ public class MainActivity extends Activity implements OnClickListener {
 		 * @see android.os.AsyncTask#doInBackground(java.lang.Object[])
 		 */
 		protected String doInBackground(String... urls) {
-			return GET(urls[0], getString(R.string.msg_error));
+			return GET(urls[0], getString(R.string.msg_error_wildfly));
 		}
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
 		protected void onPostExecute(String result) {
-			String errorMsg = getString(R.string.msg_error);
+			statusChanged = false;
 
-			tvResponse.setBackgroundColor(0x0000FF);
-			if (!errorMsg.equals(result)) {
-				try {
-					JSONObject json = new JSONObject(result);
+			String wildflyError = getString(R.string.msg_error_wildfly);
 
-					Cor cor = Cor.valueOf(json.getString("cor"));
-					Led.Status status = Led.Status.valueOf(json
-							.getString("status"));
+			try {
+				if (wildflyError.equals(result))
+					throw new AppException(wildflyError);
 
-					Led led = new Led();
-					led.setCor(cor);
-					led.setStatus(status);
+				JSONObject json = new JSONObject(result);
 
-					if (led.getStatus() != null) {
-						switch (led.getCor()) {
-						case AMARELA:
-							statusLEDs[0] = led.getStatus();
-							break;
-						case VERDE:
-							statusLEDs[1] = led.getStatus();
-							break;
-						case VERMELHA:
-							statusLEDs[2] = led.getStatus();
-							break;
-						default:
-							break;
-						}
+				Led led = new Led();
 
-						switch (led.getStatus()) {
-						case ACESA:
-							tvResponse.setText(getString(R.string.msg_led_on,
-									led.getCor().name()));
-							break;
-						case APAGADA:
-							tvResponse.setText(getString(R.string.msg_led_off,
-									led.getCor().name()));
-							break;
-						default:
-							break;
-						}
-					} else {
-						tvResponse.setBackgroundColor(0xF7F7F7);
-						tvResponse.setText(R.string.msg_error);
-					}
+				final String STRING_NULL = "null";
 
-				} catch (JSONException e) {
-					Log.d(TAG, e.getLocalizedMessage(), e.getCause());
+				String jsonColor = json.getString("color");
+				if (!STRING_NULL.equals(jsonColor))
+					led.setColor(Color.valueOf(jsonColor));
+
+				String jsonStatus = json.getString("status");
+				if (!STRING_NULL.equals(jsonStatus))
+					led.setStatus(Led.Status.valueOf(jsonStatus));
+
+				if (led.getColor() == null)
+					throw new AppException(getString(R.string.msg_error));
+
+				if (led.getStatus() == null)
+					throw new AppException(
+							getString(R.string.msg_error_arduino));
+
+				switch (led.getColor()) {
+				case YELLOW:
+					currentStatus[0] = led.getStatus();
+					break;
+				case GREEN:
+					currentStatus[1] = led.getStatus();
+					break;
+				case RED:
+					currentStatus[2] = led.getStatus();
+					break;
+				default:
+					break;
 				}
-			} else {
-				tvResponse.setBackgroundColor(0xF7F7F7);
-				tvResponse.setText(errorMsg);
+
+				switch (led.getStatus()) {
+				case ON:
+					tvResponse.setText(getString(R.string.msg_led_on, led
+							.getColor().name()));
+					break;
+				case OFF:
+					tvResponse.setText(getString(R.string.msg_led_off, led
+							.getColor().name()));
+					break;
+				default:
+					break;
+				}
+
+				statusChanged = true;
+			} catch (JSONException e) {
+				tvResponse.setText(R.string.msg_error_monitor);
+				Log.d(TAG, e.getLocalizedMessage(), e.getCause());
+			} catch (AppException e) {
+				tvResponse.setText(e.getMessage());
+				Log.d(TAG, e.getLocalizedMessage(), e.getCause());
 			}
+
 		}
 	}
 
@@ -212,17 +226,15 @@ public class MainActivity extends Activity implements OnClickListener {
 	 * Turning On flash
 	 */
 	private void turnOnLED(byte ledIndex) {
-		if (statusLEDs[ledIndex] == Led.Status.APAGADA) {
+		if (currentStatus[ledIndex] == Led.Status.OFF) {
 			// play sound
 			playSound(ledIndex);
 
-			new HttpAsyncTask().execute(URL + "led=" + LEDs[ledIndex]
-					+ "&status=" + Led.Status.ACESA);
+			new HttpAsyncTask().execute(URL + "?led=" + LEDs[ledIndex].name()
+					+ "&status=" + Led.Status.ON.name());
 
-			// isLEDsOn[ledIndex] = true;
-
-			// changing button/switch image
-			toggleButtonImage(ledIndex);
+			if (statusChanged)
+				toggleButtonImage(ledIndex);
 		}
 	}
 
@@ -230,16 +242,14 @@ public class MainActivity extends Activity implements OnClickListener {
 	 * Turning Off flash
 	 */
 	private void turnOffLED(byte ledIndex) {
-		if (statusLEDs[ledIndex] == Led.Status.ACESA) {
+		if (currentStatus[ledIndex] == Led.Status.ON) {
 			playSound(ledIndex);
 
-			new HttpAsyncTask().execute(URL + "led=" + LEDs[ledIndex]
-					+ "&status=" + Led.Status.APAGADA);
+			new HttpAsyncTask().execute(URL + "?led=" + LEDs[ledIndex].name()
+					+ "&status=" + Led.Status.OFF.name());
 
-			// isLEDsOn[ledIndex] = false;
-
-			// changing button/switch image
-			toggleButtonImage(ledIndex);
+			if (statusChanged)
+				toggleButtonImage(ledIndex);
 		}
 	}
 
@@ -247,7 +257,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	 * Playing sound will play button toggle sound on flash on / off
 	 */
 	private void playSound(byte ledIndex) {
-		if (statusLEDs[ledIndex] == Led.Status.ACESA)
+		if (currentStatus[ledIndex] == Led.Status.ON)
 			mp = MediaPlayer.create(MainActivity.this, R.raw.light_switch_off);
 		else
 			mp = MediaPlayer.create(MainActivity.this, R.raw.light_switch_on);
@@ -265,7 +275,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	 * Toggle switch button images changing image states to on / off
 	 */
 	private void toggleButtonImage(byte ledIndex) {
-		if (statusLEDs[ledIndex] == Led.Status.ACESA)
+		if (currentStatus[ledIndex] == Led.Status.ON)
 			btnSwitch[ledIndex].setImageResource(R.drawable.btn_switch_off);
 		else
 			btnSwitch[ledIndex].setImageResource(R.drawable.btn_switch_on);

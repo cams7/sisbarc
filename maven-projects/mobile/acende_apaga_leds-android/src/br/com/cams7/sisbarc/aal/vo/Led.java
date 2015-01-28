@@ -1,19 +1,19 @@
 package br.com.cams7.sisbarc.aal.vo;
 
 public class Led {
-	private Cor cor;
+	private Color color;
 	private Status status;
 
 	public Led() {
 		super();
 	}
 
-	public Cor getCor() {
-		return cor;
+	public Color getColor() {
+		return color;
 	}
 
-	public void setCor(Cor cor) {
-		this.cor = cor;
+	public void setColor(Color color) {
+		this.color = color;
 	}
 
 	public Status getStatus() {
@@ -24,12 +24,12 @@ public class Led {
 		this.status = status;
 	}
 
-	public enum Cor {
-		AMARELA, VERDE, VERMELHA;
+	public enum Color {
+		YELLOW, GREEN, RED;
 	}
 
 	public enum Status {
-		ACESA, APAGADA
+		ON, OFF
 	}
 
 }
