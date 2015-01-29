@@ -17,19 +17,9 @@
 						value="#{msg['label.led.color']}" /></label>
 				<div class="controls">
 					<h:selectOneMenu id="color" value="#{ledBean.led.color}"
-						label="#{msg['label.led.color']}" styleClass="input-large">
+						label="#{msg['label.led.color']}" styleClass="input-large"
+						disabled="true">
 						<f:selectItems value="#{ledBean.colors}" />
-					</h:selectOneMenu>
-				</div>
-			</div>
-
-			<div class="control-group">
-				<label class="control-label"><h:outputText
-						value="#{msg['label.led.event']}" /></label>
-				<div class="controls">
-					<h:selectOneMenu id="event" value="#{ledBean.led.event}"
-						label="#{msg['label.led.event']}" styleClass="input-large">
-						<f:selectItems value="#{ledBean.events}" />
 					</h:selectOneMenu>
 				</div>
 			</div>
@@ -41,10 +31,21 @@
 					<h:selectOneRadio id="activeByButton"
 						value="#{ledBean.led.activeByButton}"
 						label="#{msg['label.led.activeByButton']}"
-						styleClass="input-small">
+						styleClass="input-small" disabled="true">
 						<f:selectItem itemValue="#{true}" itemLabel="Yes" />
 						<f:selectItem itemValue="#{false}" itemLabel="No" />
 					</h:selectOneRadio>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label class="control-label"><h:outputText
+						value="#{msg['label.led.event']}" /></label>
+				<div class="controls">
+					<h:selectOneMenu id="event" value="#{ledBean.led.event}"
+						label="#{msg['label.led.event']}" styleClass="input-large">
+						<f:selectItems value="#{ledBean.events}" />
+					</h:selectOneMenu>
 				</div>
 			</div>
 
@@ -69,9 +70,9 @@
 					rendered="#{ledBean.led != null}" />
 				<p:button value="#{msg['button.cancel']}" outcome="led_list"
 					styleClass="btn" />
-				<p:commandButton value="#{msg['button.delete']}"
+				<!--  p:commandButton value="#{msg['button.delete']}"
 					onclick="confirmation.show()" rendered="#{ledBean.led.id != null}"
-					immediate="true" styleClass="btn btn-danger" />
+					immediate="true" styleClass="btn btn-danger" / -->
 			</div>
 		</div>
 
@@ -80,15 +81,15 @@
 			<h:outputText value="#{msg['dialog.running.wait']}" />
 		</p:dialog>
 
-		<p:confirmDialog id="confirmDialog"
+		<!-- p:confirmDialog id="confirmDialog"
 			message="#{msg['confirm.led.delete']}" header="#{msg['led.delete']}"
-			severity="alert" widgetVar="confirmation">
+			severity="alert" widgetVar="confirmation" >
 			<p:commandButton id="confirm" value="#{msg['confirm.yes']}"
 				update="messages" oncomplete="confirmation.hide()"
 				action="#{ledBean.removeEntity}" />
 			<p:commandButton id="decline" value="#{msg['confirm.no']}"
 				onclick="confirmation.hide()" type="button" />
-		</p:confirmDialog>
+		</p:confirmDialog -->
 
 		<p:messages id="messages" showDetail="false" autoUpdate="true"
 			closable="true" />
