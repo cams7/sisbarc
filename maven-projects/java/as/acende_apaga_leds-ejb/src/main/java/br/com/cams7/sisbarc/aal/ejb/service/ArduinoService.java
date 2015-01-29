@@ -13,7 +13,7 @@ import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
  * @author cams7
  *
  */
-public interface ArduinoService extends BaseService<LedEntity, Byte> {
+public interface ArduinoService extends BaseService<LedEntity, Short> {
 	public static final String YEARS_TO_MILLIS = "dd/MM/yyyy HH:mm:ss.SSS";
 	public static final SimpleDateFormat DF = new SimpleDateFormat(
 			YEARS_TO_MILLIS);

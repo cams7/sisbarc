@@ -140,6 +140,7 @@
 						<clientExcludes>META-INF/beans.xml</clientExcludes>
 						<clientExcludes>config.properties</clientExcludes>
 						<clientExcludes>org/</clientExcludes>
+						<clientExclude>br/com/yaw/</clientExclude>
 					</clientExcludes>
 					<!--clientIncludes> <clientIncludes>br/com/cams7/sisbarc/aal/ejb/service/RemoteArduinoService.class</clientIncludes> 
 						</clientIncludes -->

@@ -38,7 +38,7 @@ import br.com.cams7.util.AppUtil;
 @Stateless
 @Local(ArduinoService.class)
 @Remote(AppWildflyService.class)
-public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, Byte>
+public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, Short>
 		implements ArduinoService, AppWildflyService {
 
 	@Inject

@@ -1,0 +1,64 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/layout/template.xhtml">
+	<ui:define name="pageTitle">
+		<h:outputText value="#{msg['page.title.led.list']}" />
+	</ui:define>
+
+	<ui:define name="content">
+		<div style="border-bottom: 1px solid #E5E5E5;">
+			<h3>
+				<h:outputText value="#{msg['label.leds']}" />
+				<small> <h:outputText value="#{msg['label.list']}" /></small>
+			</h3>
+		</div>
+		<h:form>
+			<p:dataTable id="dataTable" var="led" value="#{ledBean.leds}"
+				paginator="true" rows="5"
+				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				rowsPerPageTemplate="5,10,15">
+				<p:column>
+					<f:facet name="header">#</f:facet>
+					<h:outputText value="#{led.id}" />
+				</p:column>
+
+				<p:column sortBy="#{led.color}">
+					<f:facet name="header">
+						<h:outputText value="#{msg['label.led.color']}" />
+					</f:facet>
+					<h:link outcome="led_edit" value="#{led.color}"
+						title="#{msg['label.edit']} #{led.color}">
+						<f:param name="id" value="#{led.id}" />
+					</h:link>
+				</p:column>
+
+				<p:column sortBy="#{led.event}">
+					<f:facet name="header">
+						<h:outputText value="#{msg['label.led.event']}" />
+					</f:facet>
+					<h:outputText value="#{led.event}" />
+				</p:column>
+
+				<p:column sortBy="#{led.activeByButton}">
+					<f:facet name="header">
+						<h:outputText value="#{msg['label.led.activeByButton']}" />
+					</f:facet>
+					<h:outputText value="#{led.activeByButton}" />
+				</p:column>
+
+				<p:column sortBy="#{led.active}">
+					<f:facet name="header">
+						<h:outputText value="#{msg['label.led.active']}" />
+					</f:facet>
+					<h:outputText value="#{led.active}" />
+				</p:column>
+			</p:dataTable>
+		</h:form>
+		<h:messages />
+	</ui:define>
+</ui:composition>
+</html>

@@ -21,7 +21,9 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 
 	public long count();
 
-	public void delete(E entity);
+	public void remove(E entity);
+	
+	public void remove(ID id);
 
 	public Class<E> getEntityType();
 }

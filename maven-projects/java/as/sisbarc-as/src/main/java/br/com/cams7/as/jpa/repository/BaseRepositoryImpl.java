@@ -43,8 +43,12 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 		return entity;
 	}
 
-	public void delete(E entity) {
+	public void remove(E entity) {
 		getEntityManager().remove(getEntityManager().merge(entity));
+	}
+
+	public void remove(ID id) {
+		getEntityManager().remove(findOne(id));
 	}
 
 	public E findOne(ID id) {

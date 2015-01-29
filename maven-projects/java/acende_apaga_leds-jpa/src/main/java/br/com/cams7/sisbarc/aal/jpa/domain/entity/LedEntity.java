@@ -27,7 +27,7 @@ import br.com.cams7.jpa.domain.BaseEntity;
 @Entity
 @Table(name = "led")
 @NamedQuery(name = "Led.findAll", query = "SELECT led FROM LedEntity led")
-public class LedEntity extends BaseEntity<Byte> {
+public class LedEntity extends BaseEntity<Short> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -35,7 +35,7 @@ public class LedEntity extends BaseEntity<Byte> {
 	@SequenceGenerator(name = "led_seq", sequenceName = "led_seq", initialValue = INITIAL_VALUE, allocationSize = ALLOCATION_SIZE)
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "led_seq")
 	@Column(name = "id_led")
-	private Byte id;
+	private Short id;
 
 	@NotNull
 	@Enumerated(EnumType.ORDINAL)
@@ -60,11 +60,11 @@ public class LedEntity extends BaseEntity<Byte> {
 		super();
 	}
 
-	public Byte getId() {
+	public Short getId() {
 		return id;
 	}
 
-	public void setId(Byte id) {
+	public void setId(Short id) {
 		this.id = id;
 	}
 
