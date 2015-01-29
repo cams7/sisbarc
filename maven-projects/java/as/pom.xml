@@ -44,7 +44,8 @@
 		<version.war.plugin>2.5</version.war.plugin>
 	</properties>
 
-	<modules>		
+	<modules>	
+		<module>sisbarc-as</module>
 		<module>acende_apaga_leds-ejb</module>
 		<module>acende_apaga_leds-web</module>
 		<module>ear</module>
@@ -59,7 +60,14 @@
 	</repositories>
 
 	<dependencyManagement>
-		<dependencies>			
+		<dependencies>		
+			<dependency>
+				<groupId>br.com.cams7.sisbarc</groupId>
+				<artifactId>sisbarc-as</artifactId>
+				<version>${project.version}</version>
+				<type>jar</type>
+			</dependency>
+		
 			<!-- Define the version of the EJB jar so that we don't need to repeat 
 				ourselves in every module -->
 			<dependency>

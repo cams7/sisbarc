@@ -59,16 +59,19 @@
 				<groupId>br.com.cams7.sisbarc</groupId>
 				<artifactId>sisbarc-base</artifactId>
 				<version>${project.version}</version>
+				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>br.com.cams7.sisbarc</groupId>
 				<artifactId>arduino-base</artifactId>
 				<version>${project.version}</version>
+				<type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>br.com.cams7.sisbarc</groupId>
 				<artifactId>acende_apaga_leds_monitor-base</artifactId>
 				<version>${project.version}</version>
+				<type>jar</type>
 			</dependency>
 			
 			<dependency>

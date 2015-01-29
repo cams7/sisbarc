@@ -35,6 +35,7 @@
 			<artifactId>sisbarc-base</artifactId>
 			<type>jar</type>
 		</dependency>
+		
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
 			<artifactId>arduino-base</artifactId>
@@ -58,15 +59,21 @@
 			<artifactId>acende_apaga_leds-jpa</artifactId>
 			<type>jar</type>
 		</dependency>
+		
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
-			<artifactId>acende_apaga_leds-web</artifactId>
-			<type>war</type>
+			<artifactId>sisbarc-as</artifactId>
+			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
 			<artifactId>acende_apaga_leds-ejb</artifactId>
 			<type>ejb</type>
+		</dependency>
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>acende_apaga_leds-web</artifactId>
+			<type>war</type>
 		</dependency>
 	</dependencies>
 

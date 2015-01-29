@@ -41,27 +41,27 @@ public class ArduinoResourceRESTService {
 	@GET
 	@Path("/led")
 	@Produces(MediaType.APPLICATION_JSON)
-	public LedEntity mudaStatusLED(@QueryParam("led") String stringLed,
+	public LedEntity changeStatusLED(@QueryParam("led") String stringLed,
 			@QueryParam("status") String stringStatus) {
 
-		LedEntity.Color ledCor = LedEntity.Color.valueOf(stringLed);
+		LedEntity.Color ledColor = LedEntity.Color.valueOf(stringLed);
 		LedEntity.Status ledStatus = LedEntity.Status.valueOf(stringStatus);
 
 		LedEntity led = new LedEntity();
-		led.setColor(ledCor);
+		led.setColor(ledColor);
 		led.setStatus(ledStatus);
 
 		log.info("mudaStatusLED('" + led.getColor() + "', '" + led.getStatus()
 				+ "') - Before sleep: " + ArduinoService.DF.format(new Date()));
 
-		Future<LedEntity> call = service.mudaStatusLED(led);
+		Future<LedEntity> call = service.changeStatusLED(led);
 
 		if (call != null)
 			try {
 				led = call.get();
 
-				log.info("LED '" + led.getColor() + "' esta '" + led.getStatus()
-						+ "'");
+				log.info("LED '" + led.getColor() + "' esta '"
+						+ led.getStatus() + "'");
 			} catch (InterruptedException | ExecutionException e) {
 				log.log(Level.WARNING, e.getMessage());
 			}

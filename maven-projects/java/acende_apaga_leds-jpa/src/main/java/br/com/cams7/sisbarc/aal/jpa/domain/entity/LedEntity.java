@@ -17,7 +17,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import br.com.cams7.apps.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.BaseEntity;
 
 /**
  * @author cams7
@@ -49,6 +49,9 @@ public class LedEntity extends BaseEntity<Byte> {
 
 	@Column(name = "led_ativa", nullable = false)
 	private boolean active;
+
+	@Column(name = "ativada_por_botao", nullable = false)
+	private boolean activeByButton;
 
 	@Transient
 	private Status status;
@@ -89,6 +92,14 @@ public class LedEntity extends BaseEntity<Byte> {
 		this.active = active;
 	}
 
+	public boolean isActiveByButton() {
+		return activeByButton;
+	}
+
+	public void setActiveByButton(boolean activeByButton) {
+		this.activeByButton = activeByButton;
+	}
+
 	public Status getStatus() {
 		return status;
 	}
@@ -113,12 +124,12 @@ public class LedEntity extends BaseEntity<Byte> {
 		}
 	}
 
-	public enum Status {
-		ON, OFF
+	public enum Event {
+		ON_OFF, BLINK, FADE
 	}
 
-	public enum Event {
-		ON_OFF, BLINK, FADE;
+	public enum Status {
+		ON, OFF
 	}
 
 }

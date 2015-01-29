@@ -55,6 +55,13 @@
 			<scope>provided</scope>
 			<type>jar</type>
 		</dependency>
+		
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>sisbarc-as</artifactId>
+			<scope>provided</scope>
+			<type>jar</type>
+		</dependency>
 
 		<!-- Import the CDI API, we use provided scope as the API is included in 
 			JBoss WildFly -->
