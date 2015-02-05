@@ -15,6 +15,7 @@ For Windows VAIO:
 	WildFly
 	cd C:\Users\cams7\Desenv\java\jboss\wildfly-8.2.0.Final\bin
 	standalone.bat -b 192.168.1.7 -bmanagement 192.168.1.7
+	standalone.bat -b 0.0.0.0 -bmanagement 0.0.0.0
 	
 	Jboss-AS
 	cd C:\Users\cams7\Desenv\java\jboss\jboss-eap-6.3\bin

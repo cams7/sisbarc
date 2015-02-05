@@ -11,12 +11,13 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import br.com.cams7.arduino.ArduinoException;
-import br.com.cams7.arduino.ArduinoServiceImpl;
-import br.com.cams7.arduino.util.ArduinoStatus;
-import br.com.cams7.arduino.util.ArduinoStatus.PinType;
 import br.com.cams7.sisbarc.aal.ejb.service.AppWildflyService;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.arduino.ArduinoException;
+import br.com.cams7.sisbarc.arduino.ArduinoServiceImpl;
+import br.com.cams7.sisbarc.arduino.status.ArduinoStatus;
+import br.com.cams7.sisbarc.arduino.status.ArduinoUSART;
+import br.com.cams7.sisbarc.arduino.status.ArduinoStatus.PinType;
 
 /**
  * @author cesar
@@ -62,8 +63,11 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 				break;
 			}
 			case PIN_LED_BLINK: {
-				// LOG.info("LED Pisca (" + pin + "): " + (pinValue == 0x0001 ?
-				// LedEntity.Status.ON : LedEntity.Status.OFF));
+				LOG.info("LED Pisca ("
+						+ pin
+						+ "): "
+						+ (pinValue == 0x0001 ? LedEntity.Status.ON
+								: LedEntity.Status.OFF));
 				break;
 			}
 			default:
@@ -145,7 +149,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		if (arduino.getStatus() != ArduinoStatus.Status.RESPONSE)
 			return null;
 
-		short pinValue = arduino.getPinValue();
+		short pinValue = ((ArduinoUSART) arduino).getPinValue();
 		LedEntity.Status ledStatus = null;
 
 		switch (pinValue) {

@@ -1,0 +1,29 @@
+/**
+ * 
+ */
+package br.com.cams7.sisbarc.as.jpa.repository;
+
+import java.io.Serializable;
+
+import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+
+/**
+ * @author cesar
+ *
+ */
+public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializable> {
+
+	public E save(E entity);
+
+	public E findOne(ID id);
+
+	public Iterable<E> findAll();
+
+	public long count();
+
+	public void remove(E entity);
+	
+	public void remove(ID id);
+
+	public Class<E> getEntityType();
+}

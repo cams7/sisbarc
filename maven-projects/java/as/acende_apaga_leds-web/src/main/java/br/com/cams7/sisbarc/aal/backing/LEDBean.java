@@ -104,7 +104,7 @@ public class LEDBean implements Serializable {
 			return "";
 		}
 		// log.debug("Salvour mercadoria "+mercadoria.getId());
-		return "led_list";
+		return "ledList";
 	}
 
 	public String removeEntity() {
@@ -117,7 +117,7 @@ public class LEDBean implements Serializable {
 			return "";
 		}
 		// log.debug("Removeu mercadoria "+mercadoria.getId());
-		return "led_list";
+		return "ledList";
 	}
 
 	/**

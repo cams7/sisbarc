@@ -3,8 +3,8 @@
  */
 package br.com.cams7.sisbarc.aal.jmx.service;
 
-import br.com.cams7.arduino.ArduinoService;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.arduino.ArduinoService;
 
 /**
  * @author cesar

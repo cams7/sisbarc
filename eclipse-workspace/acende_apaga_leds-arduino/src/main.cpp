@@ -18,11 +18,16 @@
  */
 
 #include <Arduino.h>
-#include <ArduinoProtocol.h>
-#include <Binary.h>
-#include <ArduinoStatus.h>
+
 #include <Thread.h>
 #include <ThreadController.h>
+
+#include <ArduinoStatus.h>
+#include <ArduinoUSART.h>
+
+#include <SisbarcProtocol.h>
+#include <SisbarcUSART.h>
+#include <SisbarcEEPROM.h>
 
 #define BAUD_RATE 9600
 
@@ -38,7 +43,7 @@
 
 #define PIN_POTENCIOMETRO      0  //Pino 0 Analogico
 
-#define LED_PISCA_TIME     3000 // 1 segundo
+#define LED_PISCA_TIME     1000 // 1 segundo
 #define BOTAO_TIME         500  // 1/2 segundo
 #define POTENCIOMETRO_TIME 100  // 1/10 de segundo
 //#define LED_TIME           500  // 1/2 segundo
@@ -54,17 +59,8 @@ int atexit(void (*func)()) {
 // May be redefined by variant files.
 void initVariant() __attribute__((weak));
 
-void sendPinDigital(uint8_t pin, bool pinValue, status statusValue);
-void sendPinPWM(uint8_t pin, uint8_t pinValue, status statusValue);
-void sendPinAnalog(uint8_t pin, uint16_t pinValue, status statusValue);
+bool acendeApagaLEDPorSerial(ArduinoStatus* arduino);
 
-void receiveDataBySerial(uint8_t data);
-void receiveDataBySerial(ArduinoStatus* arduino);
-
-uint8_t* serialDataReceive;
-uint8_t serialDataReceiveIndex = 0x00;
-
-void acendeApagaLEDPorSerial(ArduinoStatus* arduino);
 void acendeApagaLEDPorBotao(void);
 void changeValuePotenciometro(void);
 
@@ -84,7 +80,6 @@ const uint8_t PIN_LEDS[] = { PIN_LED_AMARELA, PIN_LED_VERDE, PIN_LED_VERMELHA };
 const uint8_t PIN_BOTOES[] = { PIN_BOTAO_LED_AMARELA, PIN_BOTAO_LED_VERDE,
 PIN_BOTAO_LED_VERMELHA };
 
-//uint8_t lastValuesBotoes[TOTAL_LEDS];
 uint16_t lastValuePotenciometro = 0x0000;
 
 int8_t lastValueLEDPisca = (int8_t) HIGH;
@@ -143,6 +138,8 @@ void setup(void) {
 	controll->add(botaoThread);
 	controll->add(potenciometroThread);
 	controll->add(ledPiscaThread);
+
+	SISBARC_USART.onRun(acendeApagaLEDPorSerial);
 }
 
 void loop(void) {
@@ -150,104 +147,45 @@ void loop(void) {
 }
 
 void serialEventRun(void) {
-	uint8_t data = (uint8_t) Serial.read(); //lê os dados da porta serial - Maximo 64 bytes
-	receiveDataBySerial(data);
+	SISBARC_USART.receiveDataBySerial((uint8_t) Serial.read());	//lê os dados da porta serial - Maximo 64 bytes
 }
 
-void sendPinDigital(uint8_t pin, bool pinValue, status statusValue) {
-	uint8_t* serialDataSend;
-	serialDataSend = ArduinoProtocol::sendPinDigital(pin, pinValue,
-			statusValue);
-	if (serialDataSend != NULL) {
-		Serial.write(serialDataSend, ArduinoProtocol::TOTAL_BYTES_PROTOCOL);
-		free(serialDataSend);
-	}
-}
-
-void sendPinPWM(uint8_t pin, uint8_t pinValue, status statusValue) {
-	uint8_t* serialDataSend;
-	serialDataSend = ArduinoProtocol::sendPinPWM(pin, pinValue, statusValue);
-	if (serialDataSend != NULL) {
-		Serial.write(serialDataSend, ArduinoProtocol::TOTAL_BYTES_PROTOCOL);
-		free(serialDataSend);
-	}
-}
-
-void sendPinAnalog(uint8_t pin, uint16_t pinValue, status statusValue) {
-	uint8_t* serialDataSend;
-	serialDataSend = ArduinoProtocol::sendPinAnalog(pin, pinValue, statusValue);
-	if (serialDataSend != NULL) {
-		Serial.write(serialDataSend, ArduinoProtocol::TOTAL_BYTES_PROTOCOL);
-		free(serialDataSend);
-	}
-}
-
-void receiveDataBySerial(uint8_t data) {
-	uint8_t lastBit = data & 0x80;
-
-	if (lastBit) {
-		serialDataReceive = (uint8_t*) malloc(
-				ArduinoProtocol::TOTAL_BYTES_PROTOCOL);
-		*(serialDataReceive) = data;
-
-		serialDataReceiveIndex = 0x01;
-	} else if (serialDataReceiveIndex > 0x00 && serialDataReceive != NULL) {
-		*(serialDataReceive + serialDataReceiveIndex) = data;
-
-		if (serialDataReceiveIndex
-				== (ArduinoProtocol::TOTAL_BYTES_PROTOCOL - 1)) {
-			ArduinoStatus* arduino = ArduinoProtocol::receive(
-					serialDataReceive);
-			if (arduino != NULL) {
-				receiveDataBySerial(arduino);
-				free(arduino);
-			}
-			free(serialDataReceive);
-		} else
-			serialDataReceiveIndex++;
-	} else {
-	}
-
-}
-
-void receiveDataBySerial(ArduinoStatus* arduino) {
+bool acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
 	if (ArduinoStatus::PC != arduino->getTransmitterValue())
-		return;
+		return false;
 
-	if (ArduinoStatus::SEND_RESPONSE != arduino->getStatusValue()
-			&& ArduinoStatus::RESPONSE_RESPONSE != arduino->getStatusValue())
-		return;
+	if (!(ArduinoStatus::SEND_RESPONSE == arduino->getStatusValue()
+			|| ArduinoStatus::RESPONSE_RESPONSE == arduino->getStatusValue()))
+		return false;
 
-	if (arduino->getPinType() == ArduinoStatus::DIGITAL) {
-		switch (arduino->getPin()) {
-		case PIN_LED_AMARELA:
-		case PIN_LED_VERDE:
-		case PIN_LED_VERMELHA: {
-			acendeApagaLEDPorSerial(arduino);
-			break;
-		}
-		default:
-			break;
-		}
-	} else if (arduino->getPinType() == ArduinoStatus::ANALOG) {
-	}
+	if (arduino->getEventValue() != ArduinoStatus::EXECUTE)
+		return false;
 
-}
+	if (arduino->getPinType() != ArduinoStatus::DIGITAL)
+		return false;
 
-void acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
-	digitalWrite(arduino->getPin(), (uint8_t) arduino->getPinValue());
-	sendPinDigital(arduino->getPin(), arduino->getPinValue(),
-			ArduinoStatus::RESPONSE);
+	if (!(arduino->getPin() == PIN_LED_AMARELA
+			|| arduino->getPin() == PIN_LED_VERDE
+			|| arduino->getPin() == PIN_LED_VERMELHA))
+		return false;
+
+	digitalWrite(arduino->getPin(),
+			(uint8_t) ((ArduinoUSART*) arduino)->getPinValue());
+	SISBARC_USART.sendPinDigital(ArduinoStatus::RESPONSE, arduino->getPin(),
+			((ArduinoUSART*) arduino)->getPinValue());
+
+	return true;
 }
 
 void acendeApagaLEDPorBotao(void) {
 	for (uint8_t i = 0x00; i < TOTAL_LEDS; i++)
 		if (digitalRead(PIN_BOTOES[i]) == LOW) {
 			if (digitalRead(PIN_LEDS[i]) == LOW)
-				sendPinDigital(PIN_LEDS[i], HIGH, ArduinoStatus::SEND_RESPONSE);
+				SISBARC_USART.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
+						PIN_LEDS[i], HIGH);
 			else
-				//digitalWrite(PIN_LEDS[i], LOW);
-				sendPinDigital(PIN_LEDS[i], LOW, ArduinoStatus::SEND_RESPONSE);
+				SISBARC_USART.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
+						PIN_LEDS[i], LOW);
 		}
 }
 
@@ -255,8 +193,8 @@ void changeValuePotenciometro(void) {
 	uint16_t potenciometroValue = (uint16_t) analogRead(PIN_POTENCIOMETRO);
 	if (potenciometroValue != lastValuePotenciometro) {
 		lastValuePotenciometro = potenciometroValue;
-		sendPinAnalog(PIN_POTENCIOMETRO, potenciometroValue,
-				ArduinoStatus::SEND);
+		SISBARC_USART.sendPinAnalog(ArduinoStatus::SEND, PIN_POTENCIOMETRO,
+				potenciometroValue);
 	}
 }
 
@@ -274,7 +212,8 @@ void acendeApagaLEDPisca(void) {
 
 	digitalWrite(PIN_LED_PISCA, lastValueLEDPisca);
 
-	sendPinDigital(PIN_LED_PISCA, lastValueLEDPisca, ArduinoStatus::SEND);
+	SISBARC_USART.sendPinDigital(ArduinoStatus::SEND, PIN_LED_PISCA,
+			lastValueLEDPisca);
 
 }
 

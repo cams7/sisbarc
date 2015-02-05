@@ -17,11 +17,8 @@
 
 	<application>
 		<!-- configuracoes do locale (i18n) -->
-		<locale-config>
-			<default-locale>pt_BR</default-locale>
-			<supported-locale>en</supported-locale>
-			<supported-locale>pt_BR</supported-locale>
-		</locale-config>
+		<!-- locale-config> <default-locale>pt_BR</default-locale> <supported-locale>en</supported-locale> 
+			<supported-locale>pt_BR</supported-locale> </locale-config -->
 
 		<resource-bundle>
 			<base-name>messages</base-name>
@@ -31,7 +28,7 @@
 
 	<navigation-rule>
 		<navigation-case>
-			<from-outcome>led_list</from-outcome>
+			<from-outcome>ledList</from-outcome>
 			<to-view-id>/led_list.xhtml</to-view-id>
 			<redirect />
 		</navigation-case>

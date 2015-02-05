@@ -15,10 +15,10 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import br.com.cams7.arduino.ArduinoException;
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoService;
-import br.com.cams7.util.AppException;
-import br.com.cams7.util.AppUtil;
+import br.com.cams7.sisbarc.arduino.ArduinoException;
+import br.com.cams7.sisbarc.util.AppException;
+import br.com.cams7.sisbarc.util.AppUtil;
 
 /**
  * @author cesar

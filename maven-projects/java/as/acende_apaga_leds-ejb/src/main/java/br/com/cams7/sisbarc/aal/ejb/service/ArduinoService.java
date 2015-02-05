@@ -6,8 +6,8 @@ package br.com.cams7.sisbarc.aal.ejb.service;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.Future;
 
-import br.com.cams7.as.service.BaseService;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.as.service.BaseService;
 
 /**
  * @author cams7

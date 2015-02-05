@@ -17,7 +17,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import br.com.cams7.jpa.domain.BaseEntity;
+import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
 
 /**
  * @author cams7
