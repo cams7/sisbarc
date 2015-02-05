@@ -150,7 +150,7 @@ void serialEventRun(void) {
 	SISBARC_USART.receiveDataBySerial((uint8_t) Serial.read());	//lê os dados da porta serial - Maximo 64 bytes
 }
 
-bool acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
+bool executeFromPC(ArduinoStatus* arduino) {
 	if (ArduinoStatus::PC != arduino->getTransmitterValue())
 		return false;
 
@@ -159,6 +159,14 @@ bool acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
 		return false;
 
 	if (arduino->getEventValue() != ArduinoStatus::EXECUTE)
+		return false;
+
+	return true;
+}
+
+bool acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
+
+	if (!executeFromPC(arduino))
 		return false;
 
 	if (arduino->getPinType() != ArduinoStatus::DIGITAL)

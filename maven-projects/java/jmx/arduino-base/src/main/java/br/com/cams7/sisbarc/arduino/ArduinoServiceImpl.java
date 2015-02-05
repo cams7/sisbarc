@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import br.com.cams7.sisbarc.arduino.status.ArduinoStatus;
+import br.com.cams7.sisbarc.arduino.status.ArduinoStatus.Event;
 import br.com.cams7.sisbarc.arduino.status.ArduinoStatus.PinType;
 import br.com.cams7.sisbarc.arduino.status.ArduinoStatus.Status;
 import br.com.cams7.sisbarc.arduino.status.ArduinoStatus.Transmitter;
@@ -225,7 +226,8 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 	}
 
 	protected void addCurrentStatus(ArduinoStatus arduino) {
-		String key = getKeyCurrentStatus(arduino.getPinType(), arduino.getPin());
+		String key = getKeyCurrentStatus(arduino.getEvent(),
+				arduino.getPinType(), arduino.getPin());
 
 		if (currentStatus.isEmpty() || !currentStatus.containsKey(key))
 			currentStatus.put(key, arduino);
@@ -233,8 +235,8 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 			currentStatus.get(key).changeCurrentValues(arduino);
 	}
 
-	protected String getKeyCurrentStatus(PinType pinType, byte pin) {
-		String key = pinType.getType() + "_" + pin;
+	protected String getKeyCurrentStatus(Event event, PinType pinType, byte pin) {
+		String key = event.getType() + pinType.getType() + "_" + pin;
 		return key;
 	}
 

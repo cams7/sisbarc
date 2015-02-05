@@ -7,17 +7,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.NamedQuery;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin;
 
 /**
  * @author cams7
@@ -27,25 +23,23 @@ import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
 @Entity
 @Table(name = "led")
 @NamedQuery(name = "Led.findAll", query = "SELECT led FROM LedEntity led")
-public class LedEntity extends BaseEntity<Short> {
+public class LedEntity extends Pin {
 
 	private static final long serialVersionUID = 1L;
-
-	@Id
-	@SequenceGenerator(name = "led_seq", sequenceName = "led_seq", initialValue = INITIAL_VALUE, allocationSize = ALLOCATION_SIZE)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "led_seq")
-	@Column(name = "id_led")
-	private Short id;
 
 	@NotNull
 	@Enumerated(EnumType.ORDINAL)
 	@Column(name = "cor_led")
 	private Color color;
 
-	@NotNull
+	// @NotNull
 	@Enumerated(EnumType.ORDINAL)
 	@Column(name = "evento_led")
 	private Event event;
+
+	@Enumerated(EnumType.ORDINAL)
+	@Column(name = "duracao_evento")
+	private EventTime eventTime;
 
 	@Column(name = "led_ativa", nullable = false)
 	private boolean active;
@@ -60,12 +54,8 @@ public class LedEntity extends BaseEntity<Short> {
 		super();
 	}
 
-	public Short getId() {
-		return id;
-	}
-
-	public void setId(Short id) {
-		this.id = id;
+	public LedEntity(PinType pinType, Short pin) {
+		super(pinType, pin);
 	}
 
 	public Color getColor() {
@@ -82,6 +72,14 @@ public class LedEntity extends BaseEntity<Short> {
 
 	public void setEvent(Event event) {
 		this.event = event;
+	}
+
+	public EventTime getEventTime() {
+		return eventTime;
+	}
+
+	public void setEventTime(EventTime eventTime) {
+		this.eventTime = eventTime;
 	}
 
 	public boolean isActive() {
@@ -109,9 +107,9 @@ public class LedEntity extends BaseEntity<Short> {
 	}
 
 	public enum Color {
-		YELLOW((byte) 0x0B), // Pin 11
-		GREEN((byte) 0x0A), // Pin 10
-		RED((byte) 0x09);// Pin 09
+		YELLOW((byte) 0x0B), // LED Amarela - Pin 11
+		GREEN((byte) 0x0A), // LED Verde - Pin 10
+		RED((byte) 0x09);// LED Vermelha - Pin 09
 
 		private byte pin;
 
@@ -124,12 +122,25 @@ public class LedEntity extends BaseEntity<Short> {
 		}
 	}
 
-	public enum Event {
-		ON_OFF, BLINK, FADE
-	}
-
 	public enum Status {
-		ON, OFF
+		ON, // Acende
+		OFF;// Apaga
 	}
 
+	public enum Event {
+		ON_OFF, // Acende ou apaga
+		BLINK, // Pisca-pisca
+		FADE;// Acende ao poucos
+	}
+
+	public enum EventTime {
+		TIME_100MILLIS, // 1/10 de segundo
+		TIME_250MILLIS, // 1/4 de segundo
+		TIME_500MILLIS, // 1/2 de segundo
+		TIME_1SECOUND, // 1 segundo
+		TIME_2SECOUNDS, // 2 segundos
+		TIME_3SECOUNDS, // 3 segundos
+		TIME_5SECOUNDS, // 5 segundos
+		TIME_10SECOUNDS;// 10 segundos
+	}
 }

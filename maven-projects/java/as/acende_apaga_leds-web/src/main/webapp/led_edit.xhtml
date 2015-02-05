@@ -9,7 +9,9 @@
 	</ui:define>
 
 	<f:metadata>
-		<f:viewParam name="id" value="#{ledBean.selectedID}" />
+		<f:viewParam name="pinType" value="#{ledBean.selectedPinType}" />
+		<f:viewParam name="pin" value="#{ledBean.selectedPin}" />
+
 		<f:event type="preRenderView" listener="#{ledBean.editEntity}" />
 	</f:metadata>
 

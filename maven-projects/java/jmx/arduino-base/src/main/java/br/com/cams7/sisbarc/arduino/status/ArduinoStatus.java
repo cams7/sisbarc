@@ -141,7 +141,22 @@ public abstract class ArduinoStatus {
 	}
 
 	public enum Event {
-		EXECUTE, WRITE, READ, MESSAGE;
+		EXECUTE('x'), // Executa uma ação, ex: ACENDE ou APAGA um LED
+		WRITE('w'), // Escreve o TIME e EVENTO para um determinado PINO no
+					// Arduino
+		READ('r'), // Lê o TIME e EVENTO para um determinado PINO no Arduino
+		MESSAGE('m');// Caso aconteca algo fora do previsto o Arduino manda uma
+		// mensagem
+
+		private char type;
+
+		private Event(char type) {
+			this.type = type;
+		}
+
+		public char getType() {
+			return type;
+		}
 	}
 
 	public enum PinType {

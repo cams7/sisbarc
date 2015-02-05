@@ -14,6 +14,16 @@
 			</legend>
 			<div class="control-group">
 				<label class="control-label"><h:outputText
+						value="#{msg['label.led.pin']}" /></label>
+				<div class="controls">
+					<h:outputText id="pin"
+						value="#{ledBean.led.id.pinType} #{ledBean.led.id.pin}"
+						label="#{msg['label.led.active']}" styleClass="input-small" />
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label class="control-label"><h:outputText
 						value="#{msg['label.led.color']}" /></label>
 				<div class="controls">
 					<h:selectOneMenu id="color" value="#{ledBean.led.color}"
@@ -51,6 +61,17 @@
 
 			<div class="control-group">
 				<label class="control-label"><h:outputText
+						value="#{msg['label.led.eventTime']}" /></label>
+				<div class="controls">
+					<h:selectOneMenu id="eventTime" value="#{ledBean.led.eventTime}"
+						label="#{msg['label.led.event']}" styleClass="input-large">
+						<f:selectItems value="#{ledBean.times}" />
+					</h:selectOneMenu>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label class="control-label"><h:outputText
 						value="#{msg['label.led.active']}" /></label>
 				<div class="controls">
 					<h:selectOneRadio id="active" value="#{ledBean.led.active}"
@@ -65,13 +86,12 @@
 		<div class="control-group">
 			<div class="controls">
 				<p:commandButton value="#{msg['button.save']}"
-					action="#{ledBean.saveEntity}" styleClass="btn btn-success"
-					onclick="dlg.show();" oncomplete="dlg.hide();"
+					onclick="confirmationArduino.show()" styleClass="btn btn-success"
 					rendered="#{ledBean.led != null}" />
 				<p:button value="#{msg['button.cancel']}" outcome="led_list"
 					styleClass="btn" />
 				<!--  p:commandButton value="#{msg['button.delete']}"
-					onclick="confirmation.show()" rendered="#{ledBean.led.id != null}"
+					onclick="confirmationDelete.show()" rendered="#{ledBean.led.id != null}"
 					immediate="true" styleClass="btn btn-danger" / -->
 			</div>
 		</div>
@@ -81,15 +101,19 @@
 			<h:outputText value="#{msg['dialog.running.wait']}" />
 		</p:dialog>
 
-		<!-- p:confirmDialog id="confirmDialog"
-			message="#{msg['confirm.led.delete']}" header="#{msg['led.delete']}"
-			severity="alert" widgetVar="confirmation" >
+		<p:confirmDialog id="confirmArduinoDialog"
+			message="#{msg['confirm.update.pin.arduino']}"
+			header="#{msg['led.event.update.arduino']}" severity="alert"
+			widgetVar="confirmationArduino">
 			<p:commandButton id="confirm" value="#{msg['confirm.yes']}"
-				update="messages" oncomplete="confirmation.hide()"
-				action="#{ledBean.removeEntity}" />
+				update="messages" action="#{ledBean.updateArduino}"
+				onclick="dlg.show();"
+				oncomplete="confirmationArduino.hide();dlg.hide();" />
 			<p:commandButton id="decline" value="#{msg['confirm.no']}"
-				onclick="confirmation.hide()" type="button" />
-		</p:confirmDialog -->
+				update="messages" action="#{ledBean.saveEntity}"
+				onclick="dlg.show();"
+				oncomplete="confirmationArduino.hide();dlg.hide();" />
+		</p:confirmDialog>
 
 		<p:messages id="messages" showDetail="false" autoUpdate="true"
 			closable="true" />

@@ -11,9 +11,12 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
 import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Color;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Event;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.EventTime;
+import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 
 /**
  * Componente responsável por integrar o front-end (páginas JSF) c/ camada de
@@ -45,7 +48,8 @@ public class LEDBean implements Serializable {
 	@EJB
 	private ArduinoService service;
 
-	private Short selectedID;
+	private Pin.PinType selectedPinType;
+	private Short selectedPin;
 
 	/**
 	 * Lista com a(s) <code>Mercadoria</code>(s) apresentandas no
@@ -62,12 +66,30 @@ public class LEDBean implements Serializable {
 		super();
 	}
 
-	public void setSelectedID(Short selectedID) {
-		this.selectedID = selectedID;
+	/**
+	 * @return the selectedPinType
+	 */
+	public Pin.PinType getSelectedPinType() {
+		return selectedPinType;
 	}
 
-	public Short getSelectedID() {
-		return selectedID;
+	/**
+	 * @param selectedPinType
+	 *            the selectedPinType to set
+	 */
+	public void setSelectedPinType(Pin.PinType selectedPinType) {
+		this.selectedPinType = selectedPinType;
+	}
+
+	/**
+	 * @return the selectedPin
+	 */
+	public Short getSelectedPin() {
+		return selectedPin;
+	}
+
+	public void setSelectedPin(Short selectedPin) {
+		this.selectedPin = selectedPin;
 	}
 
 	public LedEntity getLed() {
@@ -80,10 +102,11 @@ public class LEDBean implements Serializable {
 	}
 
 	public void editEntity() {
-		if (selectedID == null) {
+		if (getSelectedPinType() == null || getSelectedPin() == null) {
 			return;
 		}
-		led = service.findOne(selectedID);
+		led = service
+				.findOne(new PinPK(getSelectedPinType(), getSelectedPin()));
 		// log.debug("Pronto pra editar");
 	}
 
@@ -105,6 +128,11 @@ public class LEDBean implements Serializable {
 		}
 		// log.debug("Salvour mercadoria "+mercadoria.getId());
 		return "ledList";
+	}
+	
+	public String updateArduino() {
+		
+		return saveEntity();
 	}
 
 	public String removeEntity() {
@@ -150,6 +178,10 @@ public class LEDBean implements Serializable {
 
 	public Event[] getEvents() {
 		return Event.values();
+	}
+
+	public EventTime[] getTimes() {
+		return EventTime.values();
 	}
 
 }

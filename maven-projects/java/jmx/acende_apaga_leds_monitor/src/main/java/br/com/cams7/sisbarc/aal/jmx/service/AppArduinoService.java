@@ -13,11 +13,15 @@ import javax.naming.NamingException;
 
 import br.com.cams7.sisbarc.aal.ejb.service.AppWildflyService;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Event;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.EventTime;
+import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.ArduinoException;
 import br.com.cams7.sisbarc.arduino.ArduinoServiceImpl;
 import br.com.cams7.sisbarc.arduino.status.ArduinoStatus;
 import br.com.cams7.sisbarc.arduino.status.ArduinoUSART;
 import br.com.cams7.sisbarc.arduino.status.ArduinoStatus.PinType;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin;
 
 /**
  * @author cesar
@@ -118,14 +122,14 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public void changeStatusLED(LedEntity.Color color, LedEntity.Status status) {
-
-		byte pin = color.getPin();
+	public void changeStatusLED(PinPK pin, LedEntity.Status status) {
 
 		boolean pinValue = (status == LedEntity.Status.ON);
 
 		try {
-			sendPinDigital(pin, pinValue, ArduinoStatus.Status.SEND_RESPONSE);
+			if (pin.getPinType() == Pin.PinType.DIGITAL)
+				sendPinDigital(pin.getPin().byteValue(), pinValue,
+						ArduinoStatus.Status.SEND_RESPONSE);
 		} catch (ArduinoException e) {
 			LOG.log(Level.SEVERE, e.getMessage());
 		}
@@ -133,9 +137,12 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public LedEntity.Status getStatusLED(LedEntity.Color color) {
-		String key = getKeyCurrentStatus(ArduinoStatus.PinType.DIGITAL,
-				color.getPin());
+	public LedEntity.Status getStatusLED(PinPK pin) {
+		ArduinoStatus.PinType pinType = (pin.getPinType() == Pin.PinType.DIGITAL) ? ArduinoStatus.PinType.DIGITAL
+				: ArduinoStatus.PinType.ANALOG;
+
+		String key = getKeyCurrentStatus(ArduinoStatus.Event.EXECUTE, pinType,
+				pin.getPin().byteValue());
 
 		if (getCurrentStatus().isEmpty()
 				|| !getCurrentStatus().containsKey(key))
@@ -164,6 +171,18 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		}
 
 		return ledStatus;
+	}
+
+	@Override
+	public void changeEventLED(PinPK pin, Event event, EventTime eventTime) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Event getEventLED(PinPK pin) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private short turnsOnOffLEDByButton(byte pin, short pinValue) {
@@ -206,4 +225,5 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 						+ AppWildflyService.class.getName());
 
 	}
+
 }

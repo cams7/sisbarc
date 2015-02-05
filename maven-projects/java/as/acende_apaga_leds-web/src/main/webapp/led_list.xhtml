@@ -22,18 +22,22 @@
 				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 				rowsPerPageTemplate="5,10,15">
 				<p:column>
-					<f:facet name="header">#</f:facet>
-					<h:outputText value="#{led.id}" />
+					<f:facet name="header">
+						<h:outputText value="#{msg['label.led.pin']}" />
+					</f:facet>
+					<h:link outcome="led_edit" value="#{led.id.pinType} #{led.id.pin}"
+						title="#{msg['label.edit']} '#{led.id.pinType} #{led.id.pin}'">
+						<f:param name="pinType" value="#{led.id.pinType}" />
+						<f:param name="pin" value="#{led.id.pin}" />
+					</h:link>
+
 				</p:column>
 
 				<p:column sortBy="#{led.color}">
 					<f:facet name="header">
 						<h:outputText value="#{msg['label.led.color']}" />
 					</f:facet>
-					<h:link outcome="led_edit" value="#{led.color}"
-						title="#{msg['label.edit']} #{led.color}">
-						<f:param name="id" value="#{led.id}" />
-					</h:link>
+					<h:outputText value="#{led.color}" />
 				</p:column>
 
 				<p:column sortBy="#{led.event}">
@@ -41,6 +45,13 @@
 						<h:outputText value="#{msg['label.led.event']}" />
 					</f:facet>
 					<h:outputText value="#{led.event}" />
+				</p:column>
+
+				<p:column sortBy="#{led.event}">
+					<f:facet name="header">
+						<h:outputText value="#{msg['label.led.eventTime']}" />
+					</f:facet>
+					<h:outputText value="#{led.eventTime}" />
 				</p:column>
 
 				<p:column sortBy="#{led.activeByButton}">

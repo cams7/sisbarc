@@ -31,6 +31,7 @@ import javax.persistence.criteria.Root;
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity_;
+import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.as.service.BaseServiceImpl;
 import br.com.cams7.sisbarc.util.AppException;
 import br.com.cams7.sisbarc.util.AppUtil;
@@ -38,7 +39,7 @@ import br.com.cams7.sisbarc.util.AppUtil;
 @Stateless
 @Local(ArduinoService.class)
 @Remote(AppWildflyService.class)
-public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, Short>
+public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, PinPK>
 		implements ArduinoService, AppWildflyService {
 
 	@Inject
@@ -100,7 +101,7 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, Short>
 	public Future<LedEntity> changeStatusLED(LedEntity led) {
 
 		if (mbeanProxy != null) {
-			mbeanProxy.changeStatusLED(led.getColor(), led.getStatus());
+			mbeanProxy.changeStatusLED(led.getId(), led.getStatus());
 
 			log.info("mudaStatusLED('" + led.getColor() + "','"
 					+ led.getStatus() + "') - Before sleep: "
@@ -108,7 +109,7 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, Short>
 
 			serialThreadTime();
 
-			LedEntity.Status status = mbeanProxy.getStatusLED(led.getColor());
+			LedEntity.Status status = mbeanProxy.getStatusLED(led.getId());
 			led.setStatus(status);
 
 			log.info("mudaStatusLED('" + led.getColor() + "','"
