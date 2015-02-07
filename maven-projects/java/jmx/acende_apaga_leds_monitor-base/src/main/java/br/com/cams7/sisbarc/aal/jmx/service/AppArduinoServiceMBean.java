@@ -3,7 +3,9 @@
  */
 package br.com.cams7.sisbarc.aal.jmx.service;
 
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEvent;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEventTime;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedStatus;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.ArduinoService;
 
@@ -19,7 +21,7 @@ public interface AppArduinoServiceMBean extends ArduinoService {
 	 * 
 	 *            Altera o estado do LED ligado/desligado
 	 */
-	public void changeStatusLED(PinPK pin, LedEntity.Status status);
+	public void changeStatusLED(PinPK pin, LedStatus status);
 
 	/**
 	 * @param color
@@ -27,11 +29,10 @@ public interface AppArduinoServiceMBean extends ArduinoService {
 	 * 
 	 *         Obtem o estado atual do LED informado
 	 */
-	public LedEntity.Status getStatusLED(PinPK pin);
+	public LedStatus getStatusLED(PinPK pin);
 
-	public void changeEventLED(PinPK pin, LedEntity.Event event,
-			LedEntity.EventTime eventTime);
+	public void changeEventLED(PinPK pin, LedEvent event, LedEventTime eventTime);
 
-	public LedEntity.Event getEventLED(PinPK pin);
+	public LedEvent getEventLED(PinPK pin);
 
 }

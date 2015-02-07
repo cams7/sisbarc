@@ -25,6 +25,12 @@
 			<scope>provided</scope>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+			<groupId>br.com.cams7.sisbarc</groupId>
+			<artifactId>arduino-base</artifactId>
+			<scope>provided</scope>
+			<type>jar</type>
+		</dependency>
 		
 		<!-- Import the CDI API, we use provided scope as the API is included in 
 			JBoss WildFly -->

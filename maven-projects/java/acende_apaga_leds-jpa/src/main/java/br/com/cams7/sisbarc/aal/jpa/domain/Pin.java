@@ -4,6 +4,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.MappedSuperclass;
 
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
+import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
 import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
 
 @MappedSuperclass
@@ -18,7 +19,7 @@ public abstract class Pin extends BaseEntity<PinPK> {
 		super();
 	}
 
-	public Pin(PinType pinType, Short pin) {
+	public Pin(ArduinoPinType pinType, Short pin) {
 		super(new PinPK(pinType, pin));
 	}
 
@@ -37,8 +38,4 @@ public abstract class Pin extends BaseEntity<PinPK> {
 		this.id = id;
 	}
 
-	public enum PinType {
-		DIGITAL, // Pino DIGITAL
-		ANALOG;// Pino ANALOGICO
-	}
 }

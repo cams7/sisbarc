@@ -14,7 +14,7 @@ public class ArduinoEEPROMRead extends ArduinoEEPROM {
 	 */
 	public ArduinoEEPROMRead() {
 		super();
-		setEvent(Event.READ);
+		setEvent(ArduinoEvent.READ);
 	}
 
 	/**
@@ -25,9 +25,9 @@ public class ArduinoEEPROMRead extends ArduinoEEPROM {
 	 * @param threadTime
 	 * @param actionEvent
 	 */
-	public ArduinoEEPROMRead(Status status, PinType pinType, byte pin,
+	public ArduinoEEPROMRead(ArduinoStatus status, ArduinoPinType pinType, byte pin,
 			byte threadTime, byte actionEvent) {
-		super(status, Event.READ, pinType, pin, threadTime, actionEvent);
+		super(status, ArduinoEvent.READ, pinType, pin, threadTime, actionEvent);
 	}
 
 }

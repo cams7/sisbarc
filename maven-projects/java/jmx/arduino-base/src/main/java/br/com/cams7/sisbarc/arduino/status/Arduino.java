@@ -12,7 +12,7 @@ import br.com.cams7.sisbarc.util.AppUtil;
  * @author cams7
  *
  */
-public abstract class ArduinoStatus {
+public abstract class Arduino {
 
 	// Numero maximo da PORTA DIGITAL e 63
 	public static final byte DIGITAL_PIN_MAX = 0x3F;
@@ -25,7 +25,7 @@ public abstract class ArduinoStatus {
 
 	static {
 		try {
-			Properties pins = AppUtil.getPropertiesFile(ArduinoStatus.class,
+			Properties pins = AppUtil.getPropertiesFile(Arduino.class,
 					"pins.properties");
 			final String SEPARATE = ",";
 
@@ -40,22 +40,23 @@ public abstract class ArduinoStatus {
 		}
 	}
 
-	private Transmitter transmitter;
-	private Status status;
-	private Event event;
+	private ArduinoTransmitter transmitter;
+	private ArduinoStatus status;
+	private ArduinoEvent event;
 
-	private PinType pinType;
+	private ArduinoPinType pinType;
 
 	private byte pin;
 
-	public ArduinoStatus() {
+	public Arduino() {
 		super();
 
-		setTransmitter(Transmitter.PC);
+		setTransmitter(ArduinoTransmitter.PC);
 		setPin((byte) 0x00);
 	}
 
-	public ArduinoStatus(Status status, Event event, PinType pinType, byte pin) {
+	public Arduino(ArduinoStatus status, ArduinoEvent event,
+			ArduinoPinType pinType, byte pin) {
 		this();
 
 		setStatus(status);
@@ -64,7 +65,7 @@ public abstract class ArduinoStatus {
 		setPin(pin);
 	}
 
-	public void changeCurrentValues(ArduinoStatus arduino) {
+	public void changeCurrentValues(Arduino arduino) {
 		setTransmitter(arduino.getTransmitter());
 		setStatus(arduino.getStatus());
 		setEvent(arduino.getEvent());
@@ -88,35 +89,35 @@ public abstract class ArduinoStatus {
 				+ getPin() + "]";
 	}
 
-	public Transmitter getTransmitter() {
+	public ArduinoTransmitter getTransmitter() {
 		return transmitter;
 	}
 
-	public void setTransmitter(Transmitter transmitter) {
+	public void setTransmitter(ArduinoTransmitter transmitter) {
 		this.transmitter = transmitter;
 	}
 
-	public Status getStatus() {
+	public ArduinoStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(Status status) {
+	public void setStatus(ArduinoStatus status) {
 		this.status = status;
 	}
 
-	public Event getEvent() {
+	public ArduinoEvent getEvent() {
 		return event;
 	}
 
-	public void setEvent(Event event) {
+	public void setEvent(ArduinoEvent event) {
 		this.event = event;
 	}
 
-	public PinType getPinType() {
+	public ArduinoPinType getPinType() {
 		return pinType;
 	}
 
-	public void setPinType(PinType pinType) {
+	public void setPinType(ArduinoPinType pinType) {
 		this.pinType = pinType;
 	}
 
@@ -128,19 +129,19 @@ public abstract class ArduinoStatus {
 		this.pin = pin;
 	}
 
-	public enum Transmitter {
+	public enum ArduinoTransmitter {
 		ARDUINO, // Mensagem enviada do Arduino
 		PC; // Mensagem enviada do PC
 	}
 
-	public enum Status {
+	public enum ArduinoStatus {
 		SEND, // Mensagem de envio que nao exige uma resposta
 		SEND_RESPONSE, // Mensagem de envio que exige uma resposta
 		RESPONSE, // Mensagem de resposta
 		RESPONSE_RESPONSE;// Mensagem de resposta que exige outra resposta
 	}
 
-	public enum Event {
+	public enum ArduinoEvent {
 		EXECUTE('x'), // Executa uma ação, ex: ACENDE ou APAGA um LED
 		WRITE('w'), // Escreve o TIME e EVENTO para um determinado PINO no
 					// Arduino
@@ -150,7 +151,7 @@ public abstract class ArduinoStatus {
 
 		private char type;
 
-		private Event(char type) {
+		private ArduinoEvent(char type) {
 			this.type = type;
 		}
 
@@ -159,13 +160,13 @@ public abstract class ArduinoStatus {
 		}
 	}
 
-	public enum PinType {
+	public enum ArduinoPinType {
 		DIGITAL('d'), // Porta Digital
 		ANALOG('a'); // Porta Analogica
 
 		private char type;
 
-		private PinType(char type) {
+		private ArduinoPinType(char type) {
 			this.type = type;
 		}
 

@@ -7,7 +7,7 @@ package br.com.cams7.sisbarc.arduino.status;
  * @author cams7
  *
  */
-public class ArduinoUSART extends ArduinoStatus {
+public class ArduinoUSART extends Arduino {
 
 	// Valor maximo da PORTA DIGITAL e 255
 	public static final short DIGITAL_PIN_VALUE_MAX = 0xFF;
@@ -19,19 +19,20 @@ public class ArduinoUSART extends ArduinoStatus {
 	public ArduinoUSART() {
 		super();
 
-		setEvent(Event.EXECUTE);
+		setEvent(ArduinoEvent.EXECUTE);
 		setPinValue((short) 0x0000);
 	}
 
-	protected ArduinoUSART(Status status, Event event, PinType pinType,
-			byte pin, short pinValue) {
+	protected ArduinoUSART(ArduinoStatus status, ArduinoEvent event,
+			ArduinoPinType pinType, byte pin, short pinValue) {
 		super(status, event, pinType, pin);
 
 		setPinValue(pinValue);
 	}
 
-	public ArduinoUSART(Status status, PinType pinType, byte pin, short pinValue) {
-		this(status, Event.EXECUTE, pinType, pin, pinValue);
+	public ArduinoUSART(ArduinoStatus status, ArduinoPinType pinType, byte pin,
+			short pinValue) {
+		this(status, ArduinoEvent.EXECUTE, pinType, pin, pinValue);
 	}
 
 	public void changeCurrentValues(ArduinoUSART arduino) {

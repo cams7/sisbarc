@@ -7,7 +7,7 @@ package br.com.cams7.sisbarc.arduino.status;
  * @author cams7
  *
  */
-public abstract class ArduinoEEPROM extends ArduinoStatus {
+public abstract class ArduinoEEPROM extends Arduino {
 
 	public static final byte THREAD_TIME_MAX = 0x07; // 7
 
@@ -33,8 +33,8 @@ public abstract class ArduinoEEPROM extends ArduinoStatus {
 	 * @param pinType
 	 * @param pin
 	 */
-	public ArduinoEEPROM(Status status, Event event, PinType pinType, byte pin,
-			byte threadTime, byte actionEvent) {
+	public ArduinoEEPROM(ArduinoStatus status, ArduinoEvent event,
+			ArduinoPinType pinType, byte pin, byte threadTime, byte actionEvent) {
 		super(status, event, pinType, pin);
 
 		setThreadTime(threadTime);

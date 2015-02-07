@@ -3,20 +3,26 @@ package br.com.cams7.sisbarc.aal.backing;
 import static javax.faces.context.FacesContext.getCurrentInstance;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.inject.Inject;
 
 import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
-import br.com.cams7.sisbarc.aal.jpa.domain.Pin;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Color;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.Event;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.EventTime;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedColor;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEvent;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEventTime;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
+import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
 
 /**
  * Componente responsável por integrar o front-end (páginas JSF) c/ camada de
@@ -42,13 +48,16 @@ import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 @ViewScoped
 public class LEDBean implements Serializable {
 
+	@Inject
+	private Logger log;
+
 	/**
 	 * Container injeta a referencia p/ o ejb MercadoriaService
 	 */
 	@EJB
 	private ArduinoService service;
 
-	private Pin.PinType selectedPinType;
+	private ArduinoPinType selectedPinType;
 	private Short selectedPin;
 
 	/**
@@ -69,7 +78,7 @@ public class LEDBean implements Serializable {
 	/**
 	 * @return the selectedPinType
 	 */
-	public Pin.PinType getSelectedPinType() {
+	public ArduinoPinType getSelectedPinType() {
 		return selectedPinType;
 	}
 
@@ -77,7 +86,7 @@ public class LEDBean implements Serializable {
 	 * @param selectedPinType
 	 *            the selectedPinType to set
 	 */
-	public void setSelectedPinType(Pin.PinType selectedPinType) {
+	public void setSelectedPinType(ArduinoPinType selectedPinType) {
 		this.selectedPinType = selectedPinType;
 	}
 
@@ -129,9 +138,34 @@ public class LEDBean implements Serializable {
 		// log.debug("Salvour mercadoria "+mercadoria.getId());
 		return "ledList";
 	}
-	
+
 	public String updateArduino() {
-		
+
+		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
+				+ led.getId().getPinType() + " " + led.getId().getPin()
+				+ "', event = '" + led.getEvent() + "', time = '"
+				+ led.getEventTime() + "') - Before sleep: "
+				+ ArduinoService.DF.format(new Date()));
+
+		Future<LedEntity> call = service.changeEventLED(led);
+
+		if (call != null)
+			try {
+				led = call.get();
+
+				log.info("O evento do LED '" + led.getColor()
+						+ "' foi alterado '" + led.getEvent()
+						+ "' e o time e '" + led.getEventTime() + "'");
+			} catch (InterruptedException | ExecutionException e) {
+				log.log(Level.WARNING, e.getMessage());
+			}
+
+		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
+				+ led.getId().getPinType() + " " + led.getId().getPin()
+				+ "', event = '" + led.getEvent() + "', time = '"
+				+ led.getEventTime() + "') - After sleep: "
+				+ ArduinoService.DF.format(new Date()));
+
 		return saveEntity();
 	}
 
@@ -172,16 +206,16 @@ public class LEDBean implements Serializable {
 						.concat(detail)));
 	}
 
-	public Color[] getColors() {
-		return Color.values();
+	public LedColor[] getColors() {
+		return LedColor.values();
 	}
 
-	public Event[] getEvents() {
-		return Event.values();
+	public LedEvent[] getEvents() {
+		return LedEvent.values();
 	}
 
-	public EventTime[] getTimes() {
-		return EventTime.values();
+	public LedEventTime[] getTimes() {
+		return LedEventTime.values();
 	}
 
 }

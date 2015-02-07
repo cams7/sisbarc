@@ -6,6 +6,7 @@
  */
 
 #include "Binary.h"
+#include <Arduino.h>
 
 namespace SISBARC {
 
@@ -19,7 +20,7 @@ uint8_t *Binary::intToBytes(uint32_t value, uint8_t totalBytes) {
 
 	uint8_t *pointer;
 
-	pointer = (uint8_t*) malloc(totalBytes);
+	pointer = ((uint8_t*) malloc(totalBytes));
 	if (pointer == NULL)
 		return NULL;
 
@@ -101,7 +102,7 @@ unsigned char *Binary::intToStringBytes(uint8_t totalBits, uint32_t value) {
 
 	unsigned char *pointer;
 
-	pointer = (unsigned char*) malloc(totalBits + 1);
+	pointer = ((unsigned char*) malloc(totalBits + 1));
 
 	int count = 0;
 

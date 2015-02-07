@@ -14,7 +14,7 @@ public class ArduinoEEPROMWrite extends ArduinoEEPROM {
 	 */
 	public ArduinoEEPROMWrite() {
 		super();
-		setEvent(Event.WRITE);
+		setEvent(ArduinoEvent.WRITE);
 	}
 
 	/**
@@ -25,9 +25,9 @@ public class ArduinoEEPROMWrite extends ArduinoEEPROM {
 	 * @param threadTime
 	 * @param actionEvent
 	 */
-	public ArduinoEEPROMWrite(Status status, PinType pinType, byte pin,
+	public ArduinoEEPROMWrite(ArduinoStatus status, ArduinoPinType pinType, byte pin,
 			byte threadTime, byte actionEvent) {
-		super(status, Event.WRITE, pinType, pin, threadTime, actionEvent);
+		super(status, ArduinoEvent.WRITE, pinType, pin, threadTime, actionEvent);
 	}
 
 }

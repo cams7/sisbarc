@@ -21,4 +21,6 @@ public interface ArduinoService extends BaseService<LedEntity, PinPK> {
 
 	public Future<LedEntity> changeStatusLED(LedEntity led);
 
+	public Future<LedEntity> changeEventLED(LedEntity led);
+
 }

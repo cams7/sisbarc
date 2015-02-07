@@ -11,7 +11,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
 
-import br.com.cams7.sisbarc.aal.jpa.domain.Pin.PinType;
+import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
+
 
 /**
  * @author cams7
@@ -25,7 +26,7 @@ public class PinPK implements Serializable {
 	@NotNull
 	@Enumerated(EnumType.ORDINAL)
 	@Column(name = "tipo_pino", insertable = false, updatable = false)
-	private PinType pinType;
+	private ArduinoPinType pinType;
 
 	@NotNull
 	@Column(name = "pino_arduino", insertable = false, updatable = false)
@@ -38,7 +39,7 @@ public class PinPK implements Serializable {
 		super();
 	}
 
-	public PinPK(PinType pinType, Short pin) {
+	public PinPK(ArduinoPinType pinType, Short pin) {
 		this();
 
 		this.pinType = pinType;
@@ -78,7 +79,7 @@ public class PinPK implements Serializable {
 	/**
 	 * @return the pinType
 	 */
-	public PinType getPinType() {
+	public ArduinoPinType getPinType() {
 		return pinType;
 	}
 
@@ -86,7 +87,7 @@ public class PinPK implements Serializable {
 	 * @param pinType
 	 *            the pinType to set
 	 */
-	public void setPinType(PinType pinType) {
+	public void setPinType(ArduinoPinType pinType) {
 		this.pinType = pinType;
 	}
 

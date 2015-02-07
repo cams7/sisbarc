@@ -14,7 +14,7 @@ public class ArduinoUSARTMessage extends ArduinoUSART {
 	 */
 	public ArduinoUSARTMessage() {
 		super();
-		setEvent(Event.MESSAGE);
+		setEvent(ArduinoEvent.MESSAGE);
 	}
 
 	/**
@@ -23,9 +23,9 @@ public class ArduinoUSARTMessage extends ArduinoUSART {
 	 * @param pin
 	 * @param pinValue
 	 */
-	public ArduinoUSARTMessage(Status status, PinType pinType, byte pin,
-			short pinValue) {
-		super(status, Event.MESSAGE, pinType, pin, pinValue);
+	public ArduinoUSARTMessage(ArduinoStatus status, ArduinoPinType pinType,
+			byte pin, short pinValue) {
+		super(status, ArduinoEvent.MESSAGE, pinType, pin, pinValue);
 	}
 
 }

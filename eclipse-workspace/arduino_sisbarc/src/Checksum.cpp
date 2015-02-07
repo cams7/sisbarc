@@ -7,6 +7,9 @@
 
 #include "Checksum.h"
 
+#include <Arduino.h>
+#include "Binary.h"
+
 namespace SISBARC {
 
 const uint8_t Checksum::POLYNOMIAL = 0xD8; /* 11011 followed by 0's */

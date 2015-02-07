@@ -8,7 +8,7 @@
 #ifndef ARDUINOSTATUS_H_
 #define ARDUINOSTATUS_H_
 
-#include <Arduino.h>
+#include <inttypes.h>
 
 namespace SISBARC {
 

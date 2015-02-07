@@ -8,10 +8,9 @@
 #ifndef SISBARCUSART_H_
 #define SISBARCUSART_H_
 
-#include <Arduino.h>
-
+#include <inttypes.h>
+#include "EEPROMData.h"
 #include "ArduinoStatus.h"
-#include "SisbarcProtocol.h"
 
 namespace SISBARC {
 
@@ -37,10 +36,14 @@ class SisbarcUSART {
 private:
 	CallbackNode* root;
 
-	uint8_t* serialDataReceive;
-	uint8_t serialDataReceiveIndex;
+	uint8_t* serialData;
+	uint8_t serialDataIndex;
 
 	void run(ArduinoStatus* arduino);
+
+	static void serialWrite(uint8_t* data);
+
+	static ArduinoStatus *receive(uint8_t const message[]);
 
 public:
 	SisbarcUSART();
@@ -50,6 +53,8 @@ public:
 	void onRun(bool (*callback)(ArduinoStatus*));
 
 	void receiveDataBySerial(uint8_t data);
+
+	static void send(ArduinoStatus* arduino);
 
 	static void sendPinDigital(status statusValue, uint8_t pin, bool pinValue);
 	static void sendPinPWM(status statusValue, uint8_t pin, uint8_t pinValue);

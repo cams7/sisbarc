@@ -19,9 +19,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
-import br.com.cams7.sisbarc.aal.jpa.domain.Pin;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
+import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
 
 /**
  * @author cams7
@@ -46,9 +46,9 @@ public class ArduinoResourceRESTService {
 	public LedEntity changeStatusLED(@QueryParam("pin_type") String pinType,
 			@QueryParam("pin") String pin, @QueryParam("status") String status) {
 
-		Pin.PinType ledPinType = Pin.PinType.valueOf(pinType);
+		ArduinoPinType ledPinType = ArduinoPinType.valueOf(pinType);
 		Short ledPin = Short.valueOf(pin);
-		LedEntity.Status ledStatus = LedEntity.Status.valueOf(status);
+		LedEntity.LedStatus ledStatus = LedEntity.LedStatus.valueOf(status);
 
 		LedEntity led = new LedEntity();
 		led.setId(new PinPK(ledPinType, ledPin));

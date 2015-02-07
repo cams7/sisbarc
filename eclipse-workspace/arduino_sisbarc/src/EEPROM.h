@@ -22,13 +22,13 @@
 
 #include <inttypes.h>
 
-class EEPROMClass {
+class EEPROM {
 public:
-	uint8_t read(int);
-	void write(int, uint8_t);
+	static uint8_t read(int);
+	static void write(int, uint8_t);
 };
 
-extern EEPROMClass EEPROM;
+//extern EEPROMClass EEPROM;
 
 #endif
 

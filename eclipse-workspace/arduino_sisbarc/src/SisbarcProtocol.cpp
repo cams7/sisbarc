@@ -7,6 +7,13 @@
 
 #include "SisbarcProtocol.h"
 
+#include <Arduino.h>
+
+#include "ArduinoEEPROM.h"
+#include "Binary.h"
+#include "Checksum.h"
+#include "ArduinoUSART.h"
+
 namespace SISBARC {
 
 const uint32_t SisbarcProtocol::EMPTY_BITS = 0x00000000;
@@ -217,7 +224,7 @@ uint32_t SisbarcProtocol::encode(ArduinoStatus* arduino) {
 	protocol |= (aux & 0x000000FF); //00000000 00000000 00000000 11111111
 
 	uint8_t *pointer;
-	pointer = (uint8_t*) malloc(TOTAL_BYTES_PROTOCOL);
+	pointer = ((uint8_t*) malloc(TOTAL_BYTES_PROTOCOL));
 
 	if (pointer == NULL)
 		return EMPTY_BITS;
@@ -242,11 +249,12 @@ uint32_t SisbarcProtocol::encode(ArduinoStatus* arduino) {
 	return protocol;
 }
 
-uint8_t *SisbarcProtocol::send(ArduinoStatus* arduino) {
+uint8_t *SisbarcProtocol::getProtocol(ArduinoStatus* arduino) {
 	if (arduino == NULL)
 		return NULL;
 
 	uint32_t protocol = encode(arduino);
+	//free(arduino);
 
 	if (protocol == EMPTY_BITS)
 		return NULL;
@@ -254,7 +262,7 @@ uint8_t *SisbarcProtocol::send(ArduinoStatus* arduino) {
 	return Binary::intTo4Bytes(protocol);
 }
 
-uint8_t *SisbarcProtocol::sendUSART(status statusValue, event eventValue,
+uint8_t *SisbarcProtocol::getProtocolUSART(status statusValue, event eventValue,
 		pin_type pinType, uint8_t pin, uint16_t pinValue) {
 	ArduinoStatus* arduino = NULL;
 
@@ -263,15 +271,18 @@ uint8_t *SisbarcProtocol::sendUSART(status statusValue, event eventValue,
 	else if (eventValue == ArduinoStatus::MESSAGE)
 		arduino = new ArduinoUSARTMessage(statusValue, pinType, pin, pinValue);
 
-	uint8_t *bytes;
-	bytes = send(arduino);
+	if (arduino == NULL)
+		return NULL;
+
+	uint8_t *data;
+	data = getProtocol(arduino);
 	free(arduino);
 
-	return bytes;
+	return data;
 }
 
-uint8_t *SisbarcProtocol::sendEEPROM(status statusValue, event eventValue,
-		pin_type pinType, uint8_t pin, uint8_t threadTime,
+uint8_t *SisbarcProtocol::getProtocolEEPROM(status statusValue,
+		event eventValue, pin_type pinType, uint8_t pin, uint8_t threadTime,
 		uint8_t actionEvent) {
 	ArduinoStatus* arduino = NULL;
 
@@ -282,81 +293,14 @@ uint8_t *SisbarcProtocol::sendEEPROM(status statusValue, event eventValue,
 		arduino = new ArduinoEEPROMRead(statusValue, pinType, pin, threadTime,
 				actionEvent);
 
-	uint8_t *bytes;
-	bytes = send(arduino);
+	if (arduino == NULL)
+		return NULL;
+
+	uint8_t *data;
+	data = getProtocol(arduino);
 	free(arduino);
 
-	return bytes;
-}
-
-uint8_t *SisbarcProtocol::sendPinDigital(status statusValue, uint8_t pinDigital,
-		bool pinValue) {
-	bool pinOk = false;
-	for (int8_t i = 0x00; i < ArduinoUSART::PINS_DIGITAL_SIZE; i++)
-		if (pinDigital == ArduinoUSART::PINS_DIGITAL[i]) {
-			pinOk = true;
-			break;
-		}
-
-	if (!pinOk)
-		for (int8_t i = 0x00; i < ArduinoUSART::PINS_DIGITAL_PWM_SIZE; i++)
-			if (pinDigital == ArduinoUSART::PINS_DIGITAL_PWM[i]) {
-				pinOk = true;
-				break;
-			}
-
-	if (!pinOk)
-		return NULL;
-
-	//printf("pin: %u, pinValue: %u, status: %u\n", pinDigital, pinValue, statusValue);
-
-	return sendUSART(statusValue, ArduinoUSART::EXECUTE, ArduinoUSART::DIGITAL,
-			pinDigital, (pinValue ? 0x0001 : 0x0000));
-}
-
-uint8_t *SisbarcProtocol::sendPinPWM(status statusValue, uint8_t pinPWM,
-		uint8_t pinValue) {
-	bool pinOk = false;
-	for (int8_t i = 0x00; i < ArduinoUSART::PINS_DIGITAL_PWM_SIZE; i++)
-		if (pinPWM == ArduinoUSART::PINS_DIGITAL_PWM[i]) {
-			pinOk = true;
-			break;
-		}
-
-	if (!pinOk)
-		return NULL;
-
-	if (pinValue < 0x00)
-		return NULL;
-
-	if (pinValue > ArduinoUSART::DIGITAL_PIN_VALUE_MAX)
-		return NULL;
-
-	return sendUSART(statusValue, ArduinoUSART::EXECUTE, ArduinoUSART::DIGITAL,
-			pinPWM, pinValue);
-
-}
-
-uint8_t *SisbarcProtocol::sendPinAnalog(status statusValue, uint8_t pinAnalog,
-		uint16_t pinValue) {
-	bool pinOk = false;
-	for (int8_t i = 0x00; i < ArduinoUSART::PINS_ANALOG_SIZE; i++)
-		if (pinAnalog == ArduinoUSART::PINS_ANALOG[i]) {
-			pinOk = true;
-			break;
-		}
-
-	if (!pinOk)
-		return NULL;
-
-	if (pinValue < 0x00)
-		return NULL;
-
-	if (pinValue > ArduinoUSART::ANALOG_PIN_VALUE_MAX)
-		return NULL;
-
-	return sendUSART(statusValue, ArduinoUSART::EXECUTE, ArduinoUSART::ANALOG,
-			pinAnalog, pinValue);
+	return data;
 }
 
 //Decodifica o protocolo
@@ -485,11 +429,6 @@ ArduinoStatus *SisbarcProtocol::decode(uint8_t const values[]) {
 	}
 
 	return arduino;
-}
-
-//Recebe protocolo
-ArduinoStatus *SisbarcProtocol::receive(uint8_t const message[]) {
-	return decode(message);
 }
 
 } /* namespace SISBARC */

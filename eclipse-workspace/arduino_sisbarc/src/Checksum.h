@@ -8,7 +8,7 @@
 #ifndef CHECKSUM_H_
 #define CHECKSUM_H_
 
-#include "Binary.h"
+#include <inttypes.h>
 
 namespace SISBARC {
 

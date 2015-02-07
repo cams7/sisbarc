@@ -8,9 +8,10 @@
 #ifndef SISBARCEEPROM_H_
 #define SISBARCEEPROM_H_
 
-#include "EEPROM.h"
-#include "Binary.h"
+#include <inttypes.h>
+
 #include "ArduinoEEPROM.h"
+#include "EEPROMData.h"
 
 namespace SISBARC {
 
@@ -40,7 +41,7 @@ private:
 	static void setTotalBytesUsed(uint16_t totalBytesUsed);
 
 	//Ler o registro pelo endereco da EEPROM informado
-	static ArduinoEEPROMRead *read(uint16_t address);
+	static EEPROMData *read(uint16_t address);
 
 public:
 	//Numero maximo de bytes gravado na EEPROM
@@ -49,7 +50,7 @@ public:
 	static const uint8_t TOTAL_BYTES_BY_RECORD;
 
 	//Ler o registro pelo PINO informado
-	static ArduinoEEPROMRead *read(pin_type pinType, uint8_t pin);
+	static EEPROMData *read(pin_type pinType, uint8_t pin);
 	//Grava o registro
 	static int16_t write(ArduinoEEPROMWrite* arduino);
 

@@ -30,6 +30,8 @@ import javax.persistence.criteria.Root;
 
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEvent;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedStatus;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity_;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.as.service.BaseServiceImpl;
@@ -100,34 +102,74 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, PinPK>
 	@Asynchronous
 	public Future<LedEntity> changeStatusLED(LedEntity led) {
 
-		if (mbeanProxy != null) {
-			mbeanProxy.changeStatusLED(led.getId(), led.getStatus());
+		if (mbeanProxy == null)
+			return null;
 
-			log.info("mudaStatusLED('" + led.getColor() + "','"
-					+ led.getStatus() + "') - Before sleep: "
-					+ DF.format(new Date()));
+		mbeanProxy.changeStatusLED(led.getId(), led.getStatus());
 
-			serialThreadTime();
+		log.info("LED " + led.getColor() + " -> changeStatusLED(pin = '"
+				+ led.getId().getPinType() + " " + led.getId().getPin()
+				+ "', status = '" + led.getStatus() + "') - Before sleep: "
+				+ DF.format(new Date()));
 
-			LedEntity.Status status = mbeanProxy.getStatusLED(led.getId());
-			led.setStatus(status);
+		serialThreadTime();
 
-			log.info("mudaStatusLED('" + led.getColor() + "','"
-					+ led.getStatus() + "') - After sleep: "
-					+ DF.format(new Date()));
+		LedStatus status = mbeanProxy.getStatusLED(led.getId());
+		led.setStatus(status);
 
-			if (status != null) {
-				log.info("LED '" + led.getColor() + "' esta '"
-						+ led.getStatus() + "'");
-			} else
-				log.log(Level.WARNING,
-						"Ocorreu um erro ao tenta buscar o status do LED '"
-								+ led.getColor() + "'");
+		log.info("LED " + led.getColor() + " -> changeStatusLED(pin = '"
+				+ led.getId().getPinType() + " " + led.getId().getPin()
+				+ "', status = '" + led.getStatus() + "') - After sleep: "
+				+ DF.format(new Date()));
 
-			return new AsyncResult<LedEntity>(led);
+		if (status != null) {
+			log.info("LED '" + led.getColor() + "' esta '" + led.getStatus()
+					+ "'");
+		} else
+			log.log(Level.WARNING,
+					"Ocorreu um erro ao tenta buscar o status do LED '"
+							+ led.getColor() + "'");
 
-		}
-		return null;
+		return new AsyncResult<LedEntity>(led);
+
+	}
+
+	@Override
+	public Future<LedEntity> changeEventLED(LedEntity led) {
+		if (mbeanProxy == null)
+			return null;
+
+		mbeanProxy.changeEventLED(led.getId(), led.getEvent(),
+				led.getEventTime());
+
+		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
+				+ led.getId().getPinType() + " " + led.getId().getPin()
+				+ "', event = '" + led.getEvent() + "', time = '"
+				+ led.getEventTime() + "') - Before sleep: "
+				+ DF.format(new Date()));
+
+		serialThreadTime();
+
+		LedEvent event = mbeanProxy.getEventLED(led.getId());
+		//TODO: Quando implementa o getEventLED,descomenta linha abaixo
+		//led.setEvent(event);
+
+		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
+				+ led.getId().getPinType() + " " + led.getId().getPin()
+				+ "', event = '" + led.getEvent() + "', time = '"
+				+ led.getEventTime() + "') - After sleep: "
+				+ DF.format(new Date()));
+
+		if (event != null) {
+			log.info("O evento do LED '" + led.getColor() + "' foi alterado '"
+					+ led.getEvent() + "' e o time e '" + led.getEventTime()
+					+ "'");
+		} else
+			log.log(Level.WARNING,
+					"Ocorreu um erro ao tenta buscar o evento do LED '"
+							+ led.getColor() + "'");
+
+		return new AsyncResult<LedEntity>(led);
 	}
 
 	private void serialThreadTime() {
@@ -139,7 +181,7 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, PinPK>
 	}
 
 	@Override
-	public LedEntity.Status getStatusActiveLED(LedEntity.Color ledCor) {
+	public LedStatus getStatusActiveLED(LedEntity.LedColor ledCor) {
 		CriteriaBuilder builder = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Boolean> criteria = builder.createQuery(Boolean.class);
 
@@ -159,9 +201,9 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, PinPK>
 		TypedQuery<Boolean> query = getEntityManager().createQuery(criteria);
 		Boolean active = query.getSingleResult();
 		if (active == Boolean.TRUE)
-			return LedEntity.Status.ON;
+			return LedStatus.ON;
 
-		return LedEntity.Status.OFF;
+		return LedStatus.OFF;
 	}
 
 }

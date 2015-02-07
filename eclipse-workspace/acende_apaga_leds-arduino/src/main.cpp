@@ -18,16 +18,16 @@
  */
 
 #include <Arduino.h>
-
+#include <ArduinoEEPROM.h>
 #include <Thread.h>
 #include <ThreadController.h>
 
+#include <EEPROMData.h>
 #include <ArduinoStatus.h>
 #include <ArduinoUSART.h>
-
+#include <SisbarcEEPROM.h>
 #include <SisbarcProtocol.h>
 #include <SisbarcUSART.h>
-#include <SisbarcEEPROM.h>
 
 #define BAUD_RATE 9600
 
@@ -48,6 +48,21 @@
 #define POTENCIOMETRO_TIME 100  // 1/10 de segundo
 //#define LED_TIME           500  // 1/2 segundo
 
+#define RETURN_ERROR -1
+
+#define ON_OFF 0 // Acende ou apaga
+#define BLINK  1 // Pisca-pisca
+#define FADE   2// Acende ao poucos
+
+#define TIME_100MILLIS  0 // 1/10 de segundo
+#define TIME_250MILLIS  1 // 1/4 de segundo
+#define TIME_500MILLIS  2 // 1/2 de segundo
+#define TIME_1SECOUND   3 // 1 segundo
+#define TIME_2SECOUNDS  4 // 2 segundos
+#define TIME_3SECOUNDS  5 // 3 segundos
+#define TIME_5SECOUNDS  6 // 5 segundos
+#define NO_TIME         7 // Não roda dentro da thread
+
 using namespace SISBARC;
 
 //Declared weak in Arduino.h to allow user redefinitions.
@@ -61,10 +76,17 @@ void initVariant() __attribute__((weak));
 
 bool acendeApagaLEDPorSerial(ArduinoStatus* arduino);
 
+bool writeLEDEvent(ArduinoStatus* arduino);
+bool readLEDEvent(ArduinoStatus* arduino);
+
 void acendeApagaLEDPorBotao(void);
 void changeValuePotenciometro(void);
 
 void acendeApagaLEDPisca(void);
+
+int16_t getThreadTime(uint8_t threadTime);
+void changeThreadTime(pin_type pinType, uint8_t pin, int8_t threadTime);
+void changeThreadTime(pin_type pinType, uint8_t pin);
 
 ThreadController* controll = new ThreadController();
 
@@ -132,7 +154,8 @@ void setup(void) {
 	potenciometroThread->setInterval(POTENCIOMETRO_TIME);
 
 	ledPiscaThread->onRun(acendeApagaLEDPisca);
-	ledPiscaThread->setInterval(LED_PISCA_TIME);
+	//ledPiscaThread->setInterval(LED_PISCA_TIME);
+	changeThreadTime(ArduinoEEPROM::DIGITAL, PIN_LED_PISCA);
 
 	//controll->add(ledThread);
 	controll->add(botaoThread);
@@ -140,6 +163,8 @@ void setup(void) {
 	controll->add(ledPiscaThread);
 
 	SISBARC_USART.onRun(acendeApagaLEDPorSerial);
+	SISBARC_USART.onRun(writeLEDEvent);
+	SISBARC_USART.onRun(readLEDEvent);
 }
 
 void loop(void) {
@@ -177,10 +202,98 @@ bool acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
 			|| arduino->getPin() == PIN_LED_VERMELHA))
 		return false;
 
-	digitalWrite(arduino->getPin(),
-			(uint8_t) ((ArduinoUSART*) arduino)->getPinValue());
-	SISBARC_USART.sendPinDigital(ArduinoStatus::RESPONSE, arduino->getPin(),
-			((ArduinoUSART*) arduino)->getPinValue());
+	ArduinoUSART* arduinoUSART;
+	arduinoUSART = (ArduinoUSART*) arduino;
+
+	digitalWrite(arduinoUSART->getPin(), (uint8_t) arduinoUSART->getPinValue());
+	SISBARC_USART.sendPinDigital(ArduinoUSART::RESPONSE, arduinoUSART->getPin(),
+			arduinoUSART->getPinValue());
+
+	return true;
+}
+
+bool writeLEDEvent(ArduinoStatus* arduino) {
+	if (ArduinoStatus::PC != arduino->getTransmitterValue())
+		return false;
+
+	if (!(ArduinoStatus::SEND_RESPONSE == arduino->getStatusValue()
+			|| ArduinoStatus::RESPONSE_RESPONSE == arduino->getStatusValue()))
+		return false;
+
+	if (arduino->getEventValue() != ArduinoStatus::WRITE)
+		return false;
+
+	if (arduino->getPinType() != ArduinoStatus::DIGITAL)
+		return false;
+
+	if (!(arduino->getPin() == PIN_LED_AMARELA
+			|| arduino->getPin() == PIN_LED_VERDE
+			|| arduino->getPin() == PIN_LED_VERMELHA
+			|| arduino->getPin() == PIN_LED_PISCA))
+		return false;
+
+	ArduinoEEPROMWrite* arduinoEEPROMWrite;
+	arduinoEEPROMWrite = ((ArduinoEEPROMWrite*) arduino);
+
+	int16_t returnValue = SisbarcEEPROM::write(arduinoEEPROMWrite);
+	if (returnValue == 0x0000 || returnValue == 0x0001) {
+		//arduinoEEPROMWrite->setStatusValue(ArduinoEEPROM::RESPONSE);
+		//SISBARC_USART.send(arduinoEEPROMWrite);
+
+		EEPROMData* data;
+		data = SisbarcEEPROM::read(arduinoEEPROMWrite->getPinType(),
+				arduinoEEPROMWrite->getPin());
+
+		if (data != NULL) {
+			changeThreadTime(arduinoEEPROMWrite->getPinType(),
+					arduinoEEPROMWrite->getPin(), data->getThreadTime());
+
+			ArduinoEEPROMRead* arduinoEEPROMRead;
+			arduinoEEPROMRead = new ArduinoEEPROMRead(ArduinoEEPROM::RESPONSE,
+					arduinoEEPROMWrite->getPinType(),
+					arduinoEEPROMWrite->getPin(), data);
+
+			SISBARC_USART.send(arduinoEEPROMRead);
+
+			free(arduinoEEPROMRead);
+			free(data);
+		}
+	}
+
+	return true;
+}
+
+bool readLEDEvent(ArduinoStatus* arduino) {
+	if (ArduinoStatus::PC != arduino->getTransmitterValue())
+		return false;
+
+	if (!(ArduinoStatus::SEND_RESPONSE == arduino->getStatusValue()
+			|| ArduinoStatus::RESPONSE_RESPONSE == arduino->getStatusValue()))
+		return false;
+
+	if (arduino->getEventValue() != ArduinoStatus::READ)
+		return false;
+
+	if (arduino->getPinType() != ArduinoStatus::DIGITAL)
+		return false;
+
+	if (!(arduino->getPin() == PIN_LED_AMARELA
+			|| arduino->getPin() == PIN_LED_VERDE
+			|| arduino->getPin() == PIN_LED_VERMELHA
+			|| arduino->getPin() == PIN_LED_PISCA))
+		return false;
+	/*
+	 ArduinoEEPROMRead* arduinoEEPROM;
+	 arduinoEEPROM = ((ArduinoEEPROMRead*) arduino);
+
+	 arduinoEEPROM = SisbarcEEPROM::read(arduinoEEPROM->getPinType(),
+	 arduinoEEPROM->getPin());
+
+	 if (arduinoEEPROM != NULL) {
+	 arduinoEEPROM->setStatusValue(ArduinoEEPROM::RESPONSE);
+	 SISBARC_USART.send(arduinoEEPROM);
+	 }
+	 */
 
 	return true;
 }
@@ -225,3 +338,72 @@ void acendeApagaLEDPisca(void) {
 
 }
 
+int16_t getThreadTime(uint8_t threadTime) {
+	int16_t timeInMillis = RETURN_ERROR;
+	switch (threadTime) {
+	case TIME_100MILLIS:
+		timeInMillis = 100;		//100 millis
+		break;
+	case TIME_250MILLIS:
+		timeInMillis = 250;		//250 millis
+		break;
+	case TIME_500MILLIS:
+		timeInMillis = 500;		//500 millis
+		break;
+	case TIME_1SECOUND:
+		timeInMillis = 1000; //1 segundo
+		break;
+	case TIME_2SECOUNDS:
+		timeInMillis = 2000; //2 segundos
+		break;
+	case TIME_3SECOUNDS:
+		timeInMillis = 3000; //3 segundos
+		break;
+	case TIME_5SECOUNDS:
+		timeInMillis = 5000; //5 segundos
+		break;
+	case NO_TIME:
+		timeInMillis = 10000; //10 segundos
+		break;
+	default:
+		break;
+	}
+	return timeInMillis;
+}
+
+void changeThreadTime(pin_type pinType, uint8_t pin, int8_t threadTime) {
+	if (threadTime == RETURN_ERROR) {
+		EEPROMData* data;
+		data = SisbarcEEPROM::read(pinType, pin);
+		if (data != NULL) {
+			threadTime = data->getThreadTime();
+			free(data);
+		} else
+			threadTime = TIME_1SECOUND;
+
+	}
+
+	int16_t millis = getThreadTime(threadTime);
+
+	switch (pin) {
+	case PIN_LED_PISCA:
+		if (millis != RETURN_ERROR)
+			ledPiscaThread->setInterval(millis);
+		else
+			ledPiscaThread->setInterval(LED_PISCA_TIME);
+		break;
+	case PIN_LED_AMARELA:
+		break;
+	case PIN_LED_VERDE:
+		break;
+	case PIN_LED_VERMELHA:
+		break;
+	default:
+		break;
+	}
+
+}
+
+void changeThreadTime(pin_type pinType, uint8_t pin) {
+	changeThreadTime(pinType, pin, RETURN_ERROR);
+}

@@ -8,11 +8,8 @@
 #ifndef SISBARCPROTOCOL_H_
 #define SISBARCPROTOCOL_H_
 
-#include "Binary.h"
-#include "Checksum.h"
+#include <inttypes.h>
 #include "ArduinoStatus.h"
-#include "ArduinoUSART.h"
-#include "ArduinoEEPROM.h"
 
 namespace SISBARC {
 
@@ -39,30 +36,19 @@ private:
 
 	static uint32_t encode(ArduinoStatus* arduino);
 
-	static uint8_t *send(ArduinoStatus* arduino);
-
-	static ArduinoStatus *decode(uint8_t const message[]);
-
 public:
 	static const uint8_t TOTAL_BYTES_PROTOCOL;
 
-	static uint8_t *sendUSART(status statusValue, event eventValue,
+	static uint8_t *getProtocol(ArduinoStatus* arduino);
+
+	static uint8_t *getProtocolUSART(status statusValue, event eventValue,
 			pin_type pinType, uint8_t pin, uint16_t pinValue);
 
-	static uint8_t *sendEEPROM(status statusValue, event eventValue,
+	static uint8_t *getProtocolEEPROM(status statusValue, event eventValue,
 			pin_type pinType, uint8_t pin, uint8_t threadTime,
 			uint8_t actionEvent);
 
-	static uint8_t *sendPinDigital(status statusValue, uint8_t pinDigital,
-			bool pinValue);
-
-	static uint8_t *sendPinPWM(status statusValue, uint8_t pinPWM,
-			uint8_t pinValue);
-
-	static uint8_t *sendPinAnalog(status statusValue, uint8_t pinAnalog,
-			uint16_t pinValue);
-
-	static ArduinoStatus *receive(uint8_t const message[]);
+	static ArduinoStatus *decode(uint8_t const message[]);
 };
 
 } /* namespace SISBARC */

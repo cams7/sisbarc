@@ -7,6 +7,10 @@
 
 #include "SisbarcEEPROM.h"
 
+#include <Arduino.h>
+#include "Binary.h"
+#include "EEPROM.h"
+
 namespace SISBARC {
 
 const uint16_t SisbarcEEPROM::TOTAL_BYTES_EEPROM = 0x0400; //1024
@@ -34,10 +38,11 @@ bool SisbarcEEPROM::isPinValid(pin_type pinType, uint8_t pin) {
 
 uint8_t *SisbarcEEPROM::getBytesRecord(uint16_t address) {
 	uint8_t *bytes;
-	bytes = (uint8_t*) malloc(TOTAL_BYTES_BY_RECORD);
+	bytes = ((uint8_t*) malloc(TOTAL_BYTES_BY_RECORD));
 
-	*(bytes) = EEPROM.read(address);
-	*(bytes + 1) = EEPROM.read(address + 1);
+	*(bytes) = EEPROM::read(address);
+	*(bytes + 1) = EEPROM::read(address + 1);
+
 	return bytes;
 }
 
@@ -47,6 +52,7 @@ uint16_t SisbarcEEPROM::getRecord(uint16_t address) {
 
 	uint16_t record = Binary::bytesToInt16(bytes);
 	free(bytes);
+
 	return record;
 }
 
@@ -81,7 +87,6 @@ int16_t SisbarcEEPROM::getAddress(pin_type pinType, uint8_t pin) {
 		return RETURN_ERROR;
 
 	uint16_t totalBytes = getTotalBytesUsed();
-	//printf("total records: %u\n", totalRecords);
 
 	for (uint16_t address = ADDRESS_TOTAL_BYTES + TOTAL_BYTES_BY_RECORD;
 			address < totalBytes; address += TOTAL_BYTES_BY_RECORD) {
@@ -100,27 +105,17 @@ int16_t SisbarcEEPROM::getAddress(pin_type pinType, uint8_t pin) {
 		uint16_t recordPin = record;
 		recordPin <<= 2;
 
-		//bool isRecordValid = false;
-
 		if (pinType == ArduinoEEPROM::DIGITAL) {
+			//00000000 00111111
 			mask = 0x003F;
 			recordPin >>= 10;
-			recordPin &= mask; //00000000 00111111
-
-			//if (recordPin == pin)
-			//	isRecordValid = true;
-
-			//if (isRecordValid && record == 0x0000)
-			//	return RETURN_ERROR;
+			recordPin &= mask;
 
 		} else if (pinType == ArduinoEEPROM::ANALOG) {
+			//00000000 00001111
 			mask = 0x000F;
 			recordPin >>= 12;
-			recordPin &= mask; //00000000 00001111
-
-			//if (recordPin == pin)
-			//	isRecordValid = true;
-
+			recordPin &= mask;
 		}
 
 		if (recordPin == pin)
@@ -140,13 +135,13 @@ void SisbarcEEPROM::setTotalBytesUsed(uint16_t totalBytesUsed) {
 	uint8_t *bytes;
 	bytes = Binary::intTo2Bytes(totalBytesUsed);
 
-	EEPROM.write(ADDRESS_TOTAL_BYTES, *(bytes));
-	EEPROM.write(ADDRESS_TOTAL_BYTES + 1, *(bytes + 1));
+	EEPROM::write(ADDRESS_TOTAL_BYTES, *(bytes));
+	EEPROM::write(ADDRESS_TOTAL_BYTES + 1, *(bytes + 1));
 
 	free(bytes);
 }
 
-ArduinoEEPROMRead *SisbarcEEPROM::read(uint16_t address) {
+EEPROMData *SisbarcEEPROM::read(uint16_t address) {
 	//O valor do registro não pode ser 0
 	uint16_t record = getRecord(address);
 	//if (record == 0x0000)
@@ -193,52 +188,40 @@ ArduinoEEPROMRead *SisbarcEEPROM::read(uint16_t address) {
 
 	//printf("pin: %u\n", pin);
 
-	ArduinoEEPROMRead* arduino = new ArduinoEEPROMRead(ArduinoEEPROM::RESPONSE,
-			pinType, pin, (uint8_t) threadTime, (uint8_t) actionEvent);
+	EEPROMData* data = new EEPROMData((uint8_t) threadTime,
+			(uint8_t) actionEvent);
 
-	return arduino;
+	return data;
 }
 
-ArduinoEEPROMRead *SisbarcEEPROM::read(pin_type pinType, uint8_t pin) {
+EEPROMData *SisbarcEEPROM::read(pin_type pinType, uint8_t pin) {
 	int16_t address = getAddress(pinType, pin);
 
 	if (address == RETURN_ERROR)
 		return NULL;
 
-	ArduinoEEPROMRead* arduino = read(address);
-	return arduino;
+	return read(address);
 
 }
 int16_t SisbarcEEPROM::write(ArduinoEEPROMWrite* arduino) {
 	if (!isPinValid(arduino->getPinType(), arduino->getPin()))
 		return RETURN_ERROR;
 
-	//printf("pinType: %u, pin: %u\n", arduino->getPinType(), arduino->getPin());
-
-	//Quando o PINO DIGITAL for '0', o valor minimo para o 'actionEvent' e '1'
-	//if (arduino->getPinType() == ArduinoEEPROM::DIGITAL && arduino->getPin() == 0x00 && arduino->getActionEvent() < ArduinoEEPROM::DIGITAL_ACTION_EVENT_PIN0_MIN)
-	//	return RETURN_ERROR;
-
 	int16_t address = getAddress(arduino->getPinType(), arduino->getPin());
 	bool isNewRecord = false;
 
 	uint16_t record = 0x8000; //10000000 00000000
 
-	//printf("address: %i\n", address);
-
 	if (address == RETURN_ERROR) {
 		address = getTotalBytesUsed();
 
-		if (address == TOTAL_BYTES_EEPROM)
+		if (((uint16_t) address) == TOTAL_BYTES_EEPROM)
 			return RETURN_ERROR;
 
 		isNewRecord = true;
 
 		record = 0x0000; //00000000 00000000
-
-		//printf("Address: %i, Error: %i\n", address, RETURN_ERROR);
 	}
-	//printf("address: %i, record: %s\n", address, Binary::intToString2Bytes(record));
 
 	//0/1 pin_type pin threadTime actionEvent
 	//DIGITAL
@@ -246,59 +229,60 @@ int16_t SisbarcEEPROM::write(ArduinoEEPROMWrite* arduino) {
 	//ANALOG
 	//1 1 1111 111 1111111 / update analog 15 7 127
 
+	//01000000 00000000
+	uint16_t mask = 0x4000;
 	uint16_t aux = arduino->getPinType();
 	aux <<= 14;
-	record |= (aux & 0x4000); //01000000 00000000
+	record |= (aux & mask);
 
 	//printf("1) record: %s\n", Binary::intToString2Bytes(record));
 
 	if (arduino->getPinType() == ArduinoEEPROM::DIGITAL) {
+		//00111111 00000000
+		mask = 0x3F00;
 		aux = arduino->getPin();
 		aux <<= 8;
-		record |= (aux & 0x3F00); //00111111 00000000
+		record |= (aux & mask);
 
-		//printf("2) record: %s\n", Binary::intToString2Bytes(record));
-
+		//00000000 11100000
+		mask = 0x00E0;
 		aux = arduino->getThreadTime();
 		aux <<= 5;
-		record |= (aux & 0x00E0); //00000000 11100000
+		record |= (aux & mask);
 
-		//printf("3) record: %s\n", Binary::intToString2Bytes(record));
-
+		//00000000 00011111
+		mask = 0x001F;
 		aux = arduino->getActionEvent();
-		record |= (aux & 0x001F); //00000000 00011111
+		record |= (aux & mask);
 
 	} else if (arduino->getPinType() == ArduinoEEPROM::ANALOG) {
+		//00111100 00000000
+		mask = 0x3C00;
 		aux = arduino->getPin();
 		aux <<= 10;
-		record |= (aux & 0x3C00); //00111100 00000000
+		record |= (aux & mask);
 
-		//printf("2) record: %s\n", Binary::intToString2Bytes(record));
-
+		//00000011 10000000
+		mask = 0x0380;
 		aux = arduino->getThreadTime();
 		aux <<= 7;
-		record |= (aux & 0x0380); //00000011 10000000
+		record |= (aux & mask);
 
-		//printf("3) record: %s\n", Binary::intToString2Bytes(record));
-
+		//00000000 01111111
+		mask = 0x007F;
 		aux = arduino->getActionEvent();
-		record |= (aux & 0x007F); //00000000 01111111
+		record |= (aux & mask);
 	}
-
-	//printf("4) record: %s\n", Binary::intToString2Bytes(record));
-	//printf("new record: %i,address: %i, record: %s\n", isNewRecord, address, Binary::intToString2Bytes(record));
 
 	uint8_t *bytes;
 	bytes = Binary::intTo2Bytes(record);
 
-	EEPROM.write(address, *(bytes));
-	EEPROM.write(address + 1, *(bytes + 1));
-
-	//printf("Address(%u %u)-> (%u %u)\n", address, address + 1, *(bytes), *(bytes + 1));
+	EEPROM::write(address, *(bytes));
+	EEPROM::write(address + 1, *(bytes + 1));
 
 	free(bytes);
 
-	uint16_t returnValue = 0x0001; //00000000 00000001
+	int16_t returnValue = 0x0001; //00000000 00000001
 
 	if (isNewRecord) {
 		setTotalBytesUsed(address + TOTAL_BYTES_BY_RECORD);
@@ -323,14 +307,14 @@ bool SisbarcEEPROM::clean(pin_type pinType, uint8_t pin) {
 
 	//printf("totalBytes: %u\n", totalBytes);
 
-	for (int16_t address = addressRemoved + TOTAL_BYTES_BY_RECORD;
+	for (uint16_t address = addressRemoved + TOTAL_BYTES_BY_RECORD;
 			address < totalBytes; address += TOTAL_BYTES_BY_RECORD) {
 
 		uint8_t *bytes;
 		bytes = getBytesRecord(address);
 
-		EEPROM.write(addressRemoved, *(bytes));
-		EEPROM.write(addressRemoved + 1, *(bytes + 1));
+		EEPROM::write(addressRemoved, *(bytes));
+		EEPROM::write(addressRemoved + 1, *(bytes + 1));
 
 		//printf("Removed %u, address %u -> (%u %u)\n", addressRemoved, address, *(bytes), *(bytes + 1));
 
@@ -339,8 +323,8 @@ bool SisbarcEEPROM::clean(pin_type pinType, uint8_t pin) {
 		addressRemoved += TOTAL_BYTES_BY_RECORD;
 	}
 
-	EEPROM.write(addressRemoved, 0x00);
-	EEPROM.write(addressRemoved + 1, 0x00);
+	EEPROM::write(addressRemoved, 0x00);
+	EEPROM::write(addressRemoved + 1, 0x00);
 
 	setTotalBytesUsed(totalBytes - TOTAL_BYTES_BY_RECORD);
 
@@ -351,7 +335,7 @@ void SisbarcEEPROM::cleanAll() {
 	//uint16_t totalBytes = TOTAL_BYTES_EEPROM;
 
 	for (uint16_t address = 0x0000; address < totalBytes; address++)
-		EEPROM.write(address, 0x00);
+		EEPROM::write(address, 0x00);
 
 	setTotalBytesUsed(TOTAL_BYTES_BY_RECORD);
 }

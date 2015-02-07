@@ -8,31 +8,22 @@
 #ifndef ARDUINOEEPROM_H_
 #define ARDUINOEEPROM_H_
 
+#include <inttypes.h>
 #include "ArduinoStatus.h"
+#include "EEPROMData.h"
 
 namespace SISBARC {
 
-class ArduinoEEPROM: public ArduinoStatus {
-private:
-	uint8_t threadTime;
-	uint8_t actionEvent;
+class ArduinoEEPROM: public ArduinoStatus, public EEPROMData {
 public:
-	static const uint8_t THREAD_TIME_MAX;
-	static const uint8_t DIGITAL_ACTION_EVENT_MAX;
-	//static const uint8_t DIGITAL_ACTION_EVENT_PIN0_MIN;
-	static const uint8_t ANALOG_ACTION_EVENT_MAX;
-
 	ArduinoEEPROM();
 	ArduinoEEPROM(status statusValue, event eventValue, pin_type pinType,
 			uint8_t pin, uint8_t threadTime, uint8_t actionEvent);
+	ArduinoEEPROM(status statusValue, event eventValue, pin_type pinType,
+			uint8_t pin, EEPROMData* data);
 
 	virtual ~ArduinoEEPROM();
 
-	uint8_t getThreadTime(void);
-	void setThreadTime(uint8_t threadTime);
-
-	uint8_t getActionEvent(void);
-	void setActionEvent(uint8_t actionEvent);
 };
 
 class ArduinoEEPROMRead: public ArduinoEEPROM {
@@ -40,6 +31,8 @@ public:
 	ArduinoEEPROMRead();
 	ArduinoEEPROMRead(status statusValue, pin_type pinType, uint8_t pin,
 			uint8_t threadTime, uint8_t actionEvent);
+	ArduinoEEPROMRead(status statusValue, pin_type pinType, uint8_t pin,
+			EEPROMData* data);
 	virtual ~ArduinoEEPROMRead();
 };
 
@@ -48,6 +41,8 @@ public:
 	ArduinoEEPROMWrite();
 	ArduinoEEPROMWrite(status statusValue, pin_type pinType, uint8_t pin,
 			uint8_t threadTime, uint8_t actionEvent);
+	ArduinoEEPROMWrite(status statusValue, pin_type pinType, uint8_t pin,
+			EEPROMData* data);
 	virtual ~ArduinoEEPROMWrite();
 };
 
