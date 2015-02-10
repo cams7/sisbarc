@@ -29,7 +29,7 @@ private:
 
 public:
 	static const transmitter ARDUINO; //Mensagem enviada do Arduino
-	static const transmitter PC; //Mensagem enviada do PC
+	static const transmitter OTHER_DEVICE; //Mensagem enviada do PC
 
 	static const status SEND; //Mensagem de envio que nao exige uma resposta
 	static const status SEND_RESPONSE; //Mensagem de envio que exige uma resposta

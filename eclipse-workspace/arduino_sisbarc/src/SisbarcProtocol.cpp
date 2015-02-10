@@ -7,11 +7,11 @@
 
 #include "SisbarcProtocol.h"
 
-#include <Arduino.h>
-
 #include "ArduinoEEPROM.h"
-#include "Binary.h"
-#include "Checksum.h"
+#include "util/Binary.h"
+#include "util/Checksum.h"
+#include <stdlib.h>
+
 #include "ArduinoUSART.h"
 
 namespace SISBARC {
@@ -276,7 +276,7 @@ uint8_t *SisbarcProtocol::getProtocolUSART(status statusValue, event eventValue,
 
 	uint8_t *data;
 	data = getProtocol(arduino);
-	free(arduino);
+	delete arduino;
 
 	return data;
 }
@@ -298,7 +298,7 @@ uint8_t *SisbarcProtocol::getProtocolEEPROM(status statusValue,
 
 	uint8_t *data;
 	data = getProtocol(arduino);
-	free(arduino);
+	delete arduino;
 
 	return data;
 }

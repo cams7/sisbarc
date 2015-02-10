@@ -7,17 +7,26 @@
 #include "SisbarcUSART.h"
 
 #include <Arduino.h>
-#include "ArduinoUSART.h"
 #include "SisbarcProtocol.h"
 #include "SisbarcEEPROM.h"
 
+#include "util/Iterator.h"
+
+#include <stdlib.h>
+
+#include "ArduinoUSART.h"
+//#include <stdio.h>
+//#include "Serial.h"
+
 namespace SISBARC {
 
-CallbackUSART::CallbackUSART(bool (*callback)(ArduinoStatus*)) {
-	onRun = callback;
+CallbackUSART::CallbackUSART(bool (*callback)(ArduinoStatus*)) :
+		onRun(callback) {
+	//printf("New CallbackUSART\n");
 }
 
 CallbackUSART::~CallbackUSART() {
+	//printf("Delete CallbackUSART\n");
 }
 
 bool CallbackUSART::run(ArduinoStatus* arduino) {
@@ -28,73 +37,54 @@ bool CallbackUSART::run(ArduinoStatus* arduino) {
 }
 
 SisbarcUSART::SisbarcUSART() :
-		root(NULL), serialData(NULL), serialDataIndex(0x00) {
+		_calls(new List<CallbackUSART>()), _serialData(NULL), _serialDataIndex(
+				0x00) {
+	//printf("New SisbarcUSART\n");
 }
 
 SisbarcUSART::~SisbarcUSART() {
+	delete _calls;
+	free(_serialData);
+
+	//printf("Delete SisbarcUSART\n");
 }
 
 void SisbarcUSART::onRun(bool (*callback)(ArduinoStatus*)) {
-	struct CallbackNode *previous;
-	struct CallbackNode *next;
-
-	if (root != NULL) {
-		previous = root;
-		next = root->next;
-
-		while (next != NULL) {
-			previous = next;
-			next = next->next;
-		}
-
-		next = ((CallbackNode*) malloc(sizeof(struct CallbackNode)));
-		previous->next = next;
-	} else {
-		root = ((CallbackNode*) malloc(sizeof(struct CallbackNode)));
-		next = root;
-		previous = NULL;
-	}
-
-	next->callback = new CallbackUSART(callback);
-	next->next = NULL;
-	next->previous = previous;
+	_calls->add(new CallbackUSART(callback));
 }
 
 void SisbarcUSART::run(ArduinoStatus* arduino) {
-	struct CallbackNode *next;
-	next = root;
-
-	if (next != NULL)
-		do {
-			if (next->callback->run(arduino))
+	if (!_calls->isEmpty()) {
+		Iterator<CallbackUSART>* i = _calls->iterator();
+		while (i->hasNext()) {
+			CallbackUSART* callback = i->next();
+			if (callback->run(arduino))
 				break;
-
-			next = next->next;
-		} while (next != NULL);
+		}
+	}
 }
 
 void SisbarcUSART::receiveDataBySerial(uint8_t data) {
 	uint8_t lastBit = data & 0x80;
 
 	if (lastBit) {
-		if (serialData == NULL)
-			serialData = ((uint8_t*) malloc(
+		if (_serialData == NULL)
+			_serialData = ((uint8_t*) malloc(
 					SisbarcProtocol::TOTAL_BYTES_PROTOCOL));
-		*(serialData) = data;
+		*(_serialData) = data;
 
-		serialDataIndex = 0x01;
-	} else if (serialDataIndex > 0x00 && serialData != NULL) {
-		*(serialData + serialDataIndex) = data;
+		_serialDataIndex = 0x01;
+	} else if (_serialDataIndex > 0x00 && _serialData != NULL) {
+		*(_serialData + _serialDataIndex) = data;
 
-		if (serialDataIndex == (SisbarcProtocol::TOTAL_BYTES_PROTOCOL - 1)) {
-			ArduinoStatus* arduino = receive(serialData);
+		if (_serialDataIndex == (SisbarcProtocol::TOTAL_BYTES_PROTOCOL - 1)) {
+			ArduinoStatus* arduino = receive(_serialData);
 			if (arduino != NULL) {
 				run(arduino);
-				free(arduino);
+				delete arduino;
 			}
-			//free(serialData);
 		} else
-			serialDataIndex++;
+			_serialDataIndex++;
 	} else {
 
 	}

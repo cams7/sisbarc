@@ -7,9 +7,11 @@
 
 #include "SisbarcEEPROM.h"
 
-#include <Arduino.h>
-#include "Binary.h"
+#include "util/Binary.h"
 #include "EEPROM.h"
+
+//#include <Arduino.h>
+#include <stdlib.h>
 
 namespace SISBARC {
 

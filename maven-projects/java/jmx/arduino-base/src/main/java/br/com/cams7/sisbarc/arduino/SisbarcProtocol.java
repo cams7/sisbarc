@@ -155,7 +155,7 @@ public final class SisbarcProtocol {
 
 		// 00000000 00001000 00000000 00000000
 		int mask = 0x00080000;
-		int transmitterValue = ArduinoTransmitter.PC.ordinal();
+		int transmitterValue = ArduinoTransmitter.OTHER_DEVICE.ordinal();
 		transmitterValue <<= (TOTAL_BITS_DATA - 1);
 		protocol |= (transmitterValue & mask);
 
@@ -431,7 +431,7 @@ public final class SisbarcProtocol {
 			transmitter = ArduinoTransmitter.ARDUINO;
 			break;
 		case 1:
-			transmitter = ArduinoTransmitter.PC;
+			transmitter = ArduinoTransmitter.OTHER_DEVICE;
 			break;
 		default:
 			break;

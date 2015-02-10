@@ -9,8 +9,10 @@
 #define SISBARCUSART_H_
 
 #include <inttypes.h>
-#include "EEPROMData.h"
+
 #include "ArduinoStatus.h"
+#include "EEPROMData.h"
+#include "util/List.h"
 
 namespace SISBARC {
 
@@ -25,19 +27,12 @@ public:
 	bool run(ArduinoStatus* arduino);
 };
 
-struct CallbackNode {
-	CallbackUSART* callback;
-
-	struct CallbackNode *next;
-	struct CallbackNode *previous;
-};
-
 class SisbarcUSART {
 private:
-	CallbackNode* root;
+	List<CallbackUSART>* _calls;
 
-	uint8_t* serialData;
-	uint8_t serialDataIndex;
+	uint8_t* _serialData;
+	uint8_t _serialDataIndex;
 
 	void run(ArduinoStatus* arduino);
 

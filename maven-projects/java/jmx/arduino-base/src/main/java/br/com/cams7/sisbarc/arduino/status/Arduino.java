@@ -51,7 +51,7 @@ public abstract class Arduino {
 	public Arduino() {
 		super();
 
-		setTransmitter(ArduinoTransmitter.PC);
+		setTransmitter(ArduinoTransmitter.OTHER_DEVICE);
 		setPin((byte) 0x00);
 	}
 
@@ -131,7 +131,7 @@ public abstract class Arduino {
 
 	public enum ArduinoTransmitter {
 		ARDUINO, // Mensagem enviada do Arduino
-		PC; // Mensagem enviada do PC
+		OTHER_DEVICE; // Mensagem enviada do PC
 	}
 
 	public enum ArduinoStatus {

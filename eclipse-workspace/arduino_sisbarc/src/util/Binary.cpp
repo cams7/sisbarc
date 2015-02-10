@@ -6,7 +6,8 @@
  */
 
 #include "Binary.h"
-#include <Arduino.h>
+//#include <Arduino.h>
+#include <stdlib.h>
 
 namespace SISBARC {
 

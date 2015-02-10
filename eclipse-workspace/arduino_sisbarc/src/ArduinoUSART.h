@@ -9,6 +9,7 @@
 #define ARDUINOUSART_H_
 
 #include <inttypes.h>
+
 #include "ArduinoStatus.h"
 
 namespace SISBARC {

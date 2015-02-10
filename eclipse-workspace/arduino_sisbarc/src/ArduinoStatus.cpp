@@ -10,7 +10,7 @@
 namespace SISBARC {
 
 const transmitter ArduinoStatus::ARDUINO = 0x00;
-const transmitter ArduinoStatus::PC = 0x01;
+const transmitter ArduinoStatus::OTHER_DEVICE = 0x01;
 
 const status ArduinoStatus::SEND = 0x00;
 const status ArduinoStatus::SEND_RESPONSE = 0x01;
@@ -25,7 +25,7 @@ const event ArduinoStatus::MESSAGE = 0x03;
 const pin_type ArduinoStatus::DIGITAL = 0x00;
 const pin_type ArduinoStatus::ANALOG = 0x01;
 
-const uint8_t ArduinoStatus::TRANSMITTER_MAX = PC;
+const uint8_t ArduinoStatus::TRANSMITTER_MAX = OTHER_DEVICE;
 const uint8_t ArduinoStatus::STATUS_MAX = RESPONSE_RESPONSE;
 const uint8_t ArduinoStatus::EVENT_MAX = MESSAGE;
 const uint8_t ArduinoStatus::PIN_TYPE_MAX = ANALOG;
