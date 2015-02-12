@@ -50,7 +50,7 @@ namespace SISBARC {
 	}
 
 	template<typename T>
-	void Iterator<T>::add(T* const element) {
+	void Iterator<T>::push(T* const element) {
 		if (!isEmpty()) {
 			Node<T>* previous;
 			Node<T>* next;

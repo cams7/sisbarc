@@ -36,9 +36,9 @@ private:
 
 	void run(ArduinoStatus* arduino);
 
-	static void serialWrite(uint8_t* data);
+	void serialWrite(uint8_t* data);
 
-	static ArduinoStatus *receive(uint8_t const message[]);
+	ArduinoStatus *receive(uint8_t const message[]);
 
 public:
 	SisbarcUSART();
@@ -49,12 +49,11 @@ public:
 
 	void receiveDataBySerial(uint8_t data);
 
-	static void send(ArduinoStatus* arduino);
+	void send(ArduinoStatus* arduino);
 
-	static void sendPinDigital(status statusValue, uint8_t pin, bool pinValue);
-	static void sendPinPWM(status statusValue, uint8_t pin, uint8_t pinValue);
-	static void sendPinAnalog(status statusValue, uint8_t pin,
-			uint16_t pinValue);
+	void sendPinDigital(status statusValue, uint8_t pin, bool pinValue);
+	void sendPinPWM(status statusValue, uint8_t pin, uint8_t pinValue);
+	void sendPinAnalog(status statusValue, uint8_t pin, uint16_t pinValue);
 };
 
 extern SisbarcUSART SISBARC_USART;

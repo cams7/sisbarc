@@ -14,14 +14,11 @@ namespace SISBARC {
 template<typename T>
 class Stack {
 private:
-	Node<T>* root;
+	Node<T>* _root;
 
 public:
 	Stack();
 	virtual ~Stack();
-
-	Node<T>* getRoot() const;
-	void setRoot(Node<T>* const);
 
 	void push(T* const /*&*/); // push element
 	void pop();          // pop element

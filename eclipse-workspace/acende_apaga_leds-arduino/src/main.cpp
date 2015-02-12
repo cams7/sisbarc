@@ -18,13 +18,15 @@
  */
 
 #include <Arduino.h>
-#include <ArduinoEEPROM.h>
-#include <ArduinoStatus.h>
-#include <Thread.h>
-#include <ThreadController.h>
 
+#include <ArduinoStatus.h>
 #include <EEPROMData.h>
 #include <ArduinoUSART.h>
+#include <ArduinoEEPROM.h>
+
+#include <thread/Thread.h>
+#include <thread/ThreadController.h>
+
 #include <SisbarcEEPROM.h>
 #include <SisbarcProtocol.h>
 #include <SisbarcUSART.h>
@@ -87,8 +89,6 @@ void acendeApagaLEDPisca(void);
 int16_t getThreadTime(uint8_t threadTime);
 void changeThreadTime(pin_type pinType, uint8_t pin, int8_t threadTime);
 void changeThreadTime(pin_type pinType, uint8_t pin);
-
-ThreadController* controll = new ThreadController();
 
 //Thread* ledThread = new Thread();
 Thread* botaoThread = new Thread();
@@ -157,10 +157,10 @@ void setup(void) {
 	//ledPiscaThread->setInterval(LED_PISCA_TIME);
 	changeThreadTime(ArduinoEEPROM::DIGITAL, PIN_LED_PISCA);
 
-	//controll->add(ledThread);
-	controll->add(botaoThread);
-	controll->add(potenciometroThread);
-	controll->add(ledPiscaThread);
+	//THREAD_CONTROLLER.add(ledThread);
+	THREAD_CONTROLLER.add(botaoThread);
+	THREAD_CONTROLLER.add(potenciometroThread);
+	THREAD_CONTROLLER.add(ledPiscaThread);
 
 	SISBARC_USART.onRun(acendeApagaLEDPorSerial);
 	SISBARC_USART.onRun(writeLEDEvent);
@@ -168,7 +168,7 @@ void setup(void) {
 }
 
 void loop(void) {
-	controll->run();
+	THREAD_CONTROLLER.run();
 }
 
 void serialEventRun(void) {
@@ -206,7 +206,7 @@ bool acendeApagaLEDPorSerial(ArduinoStatus* arduino) {
 	arduinoUSART = (ArduinoUSART*) arduino;
 
 	digitalWrite(arduinoUSART->getPin(), (uint8_t) arduinoUSART->getPinValue());
-	SisbarcUSART::sendPinDigital(ArduinoUSART::RESPONSE, arduinoUSART->getPin(),
+	SISBARC_USART.sendPinDigital(ArduinoUSART::RESPONSE, arduinoUSART->getPin(),
 			arduinoUSART->getPinValue());
 
 	return true;
@@ -238,7 +238,7 @@ bool writeLEDEvent(ArduinoStatus* arduino) {
 	int16_t returnValue = SisbarcEEPROM::write(arduinoEEPROMWrite);
 	if (returnValue == 0x0000 || returnValue == 0x0001) {
 		//arduinoEEPROMWrite->setStatusValue(ArduinoEEPROM::RESPONSE);
-		//SisbarcUSART::send(arduinoEEPROMWrite);
+		//SISBARC_USART.send(arduinoEEPROMWrite);
 
 		EEPROMData* data;
 		data = SisbarcEEPROM::read(arduinoEEPROMWrite->getPinType(),
@@ -253,7 +253,7 @@ bool writeLEDEvent(ArduinoStatus* arduino) {
 					arduinoEEPROMWrite->getPinType(),
 					arduinoEEPROMWrite->getPin(), data);
 
-			SisbarcUSART::send(arduinoEEPROMRead);
+			SISBARC_USART.send(arduinoEEPROMRead);
 
 			free(arduinoEEPROMRead);
 			free(data);
@@ -291,7 +291,7 @@ bool readLEDEvent(ArduinoStatus* arduino) {
 
 	 if (arduinoEEPROM != NULL) {
 	 arduinoEEPROM->setStatusValue(ArduinoEEPROM::RESPONSE);
-	 SisbarcUSART::send(arduinoEEPROM);
+	 SISBARC_USART.send(arduinoEEPROM);
 	 }
 	 */
 
@@ -302,11 +302,12 @@ void acendeApagaLEDPorBotao(void) {
 	for (uint8_t i = 0x00; i < TOTAL_LEDS; i++)
 		if (digitalRead(PIN_BOTOES[i]) == LOW) {
 			if (digitalRead(PIN_LEDS[i]) == LOW)
-				SisbarcUSART::sendPinDigital(ArduinoStatus::SEND_RESPONSE,
+				SISBARC_USART.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
 						PIN_LEDS[i], HIGH);
 			else
-				SisbarcUSART::sendPinDigital(ArduinoStatus::SEND_RESPONSE,
+				SISBARC_USART.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
 						PIN_LEDS[i], LOW);
+
 		}
 }
 
@@ -314,7 +315,7 @@ void changeValuePotenciometro(void) {
 	uint16_t potenciometroValue = (uint16_t) analogRead(PIN_POTENCIOMETRO);
 	if (potenciometroValue != lastValuePotenciometro) {
 		lastValuePotenciometro = potenciometroValue;
-		SisbarcUSART::sendPinAnalog(ArduinoStatus::SEND, PIN_POTENCIOMETRO,
+		SISBARC_USART.sendPinAnalog(ArduinoStatus::SEND, PIN_POTENCIOMETRO,
 				potenciometroValue);
 	}
 }
@@ -333,7 +334,7 @@ void acendeApagaLEDPisca(void) {
 
 	digitalWrite(PIN_LED_PISCA, lastValueLEDPisca);
 
-	SisbarcUSART::sendPinDigital(ArduinoStatus::SEND, PIN_LED_PISCA,
+	SISBARC_USART.sendPinDigital(ArduinoStatus::SEND, PIN_LED_PISCA,
 			lastValueLEDPisca);
 
 }

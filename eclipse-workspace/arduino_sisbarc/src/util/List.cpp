@@ -25,7 +25,7 @@ namespace SISBARC {
 
 	template<typename T>
 	void List<T>::add(T* const element) {
-		Iterator<T>::add(element);
+		Iterator<T>::push(element);
 	}
 
 	template<typename T>

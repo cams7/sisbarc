@@ -8,10 +8,8 @@
 #include "SisbarcEEPROM.h"
 
 #include "util/Binary.h"
-#include "EEPROM.h"
-
-//#include <Arduino.h>
 #include <stdlib.h>
+#include "EEPROM.h"
 
 namespace SISBARC {
 

@@ -6,7 +6,6 @@
  */
 #include "SisbarcUSART.h"
 
-#include <Arduino.h>
 #include "SisbarcProtocol.h"
 #include "SisbarcEEPROM.h"
 
@@ -14,9 +13,10 @@
 
 #include <stdlib.h>
 
+#include <Arduino.h>
+//#include "_Serial.h"
 #include "ArduinoUSART.h"
 //#include <stdio.h>
-//#include "Serial.h"
 
 namespace SISBARC {
 
@@ -96,7 +96,6 @@ void SisbarcUSART::serialWrite(uint8_t* data) {
 
 	Serial.write(data, SisbarcProtocol::TOTAL_BYTES_PROTOCOL);
 	free(data);
-
 }
 
 void SisbarcUSART::send(ArduinoStatus* arduino) {

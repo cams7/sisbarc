@@ -15,7 +15,7 @@
 namespace SISBARC {
 	template<typename T>
 	Stack<T>::Stack() :
-	root(NULL) {
+	_root(NULL) {
 		//printf("New Stack\n");
 	}
 
@@ -24,18 +24,7 @@ namespace SISBARC {
 		while (!empty()) {
 			pop();
 		}
-
 		//printf("Delete Stack\n");
-	}
-
-	template<typename T>
-	Node<T>* Stack<T>::getRoot() const {
-		return root;
-	}
-
-	template<typename T>
-	void Stack<T>::setRoot(Node<T>* const root) {
-		this->root = root;
 	}
 
 	template<typename T>
@@ -44,8 +33,8 @@ namespace SISBARC {
 			Node<T>* previous;
 			Node<T>* next;
 
-			previous = getRoot();
-			next = getRoot()->getNext();
+			previous = _root;
+			next = _root->getNext();
 
 			while (next != NULL) {
 				previous = next;
@@ -56,7 +45,7 @@ namespace SISBARC {
 			previous->setNext(next);
 			next->setPrevious(previous);
 		} else {
-			setRoot(new Node<T>(element));
+			_root=new Node<T>(element);
 		}
 	}
 
@@ -66,8 +55,8 @@ namespace SISBARC {
 			Node<T>* previous;
 			Node<T>* next;
 
-			previous = getRoot();
-			next = getRoot()->getNext();
+			previous = _root;
+			next = _root->getNext();
 
 			while (next != NULL) {
 				previous = next;
@@ -77,7 +66,7 @@ namespace SISBARC {
 			if (previous->getPrevious() != NULL) {
 				previous->getPrevious()->setNext(NULL);
 			} else if (previous->getNext() == NULL) {
-				setRoot(NULL);
+				_root=NULL;
 			}
 			delete previous;
 		}
@@ -89,8 +78,8 @@ namespace SISBARC {
 			Node<T>* previous;
 			Node<T>* next;
 
-			previous = getRoot();
-			next = getRoot()->getNext();
+			previous = _root;
+			next = _root->getNext();
 
 			while (next != NULL) {
 				previous = next;
@@ -105,7 +94,7 @@ namespace SISBARC {
 
 	template<typename T>
 	bool Stack<T>::empty() const {
-		return (getRoot() == NULL);
+		return (_root == NULL);
 	}
 
 } /* namespace SISBARC */
