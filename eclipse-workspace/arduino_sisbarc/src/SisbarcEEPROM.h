@@ -10,8 +10,9 @@
 
 #include <inttypes.h>
 
-#include "ArduinoEEPROM.h"
-#include "EEPROMData.h"
+#include "vo/ArduinoPin.h"
+#include "vo/ArduinoEEPROM.h"
+#include "vo/EEPROMData.h"
 
 namespace SISBARC {
 
@@ -49,6 +50,8 @@ public:
 	//Total de bytes por registro
 	static const uint8_t TOTAL_BYTES_BY_RECORD;
 
+
+	static EEPROMData *read(ArduinoPin* pin);
 	//Ler o registro pelo PINO informado
 	static EEPROMData *read(pin_type pinType, uint8_t pin);
 	//Grava o registro

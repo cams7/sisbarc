@@ -66,8 +66,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 				break;
 			}
 			case PIN_LED_BLINK: {
-				// LOG.info("USART -> LED Pisca (" + pin + "): " + (pinValue ==
-				// 0x0001 ? LedStatus.ON : LedStatus.OFF));
+				//LOG.info("USART -> LED Pisca (" + pin + "): " + (pinValue == 0x0001 ? LedStatus.ON : LedStatus.OFF));
 				break;
 			}
 			default:

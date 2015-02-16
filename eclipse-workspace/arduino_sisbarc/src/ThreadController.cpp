@@ -7,18 +7,16 @@
 
 #include "ThreadController.h"
 
-#include "../util/Iterator.h"
+#include "util/Iterator.h"
 
 #include <Arduino.h>
+//#include "util/_arduino_time.h"
 //#include <stdio.h>
-//#include "../util/_arduino_time.h"
 
 namespace SISBARC {
 
 ThreadController::ThreadController(long interval) :
-		Thread(), _threads(new List<Thread>) {
-
-	setInterval(interval);
+		Thread(NULL, interval), _threads(new List<Thread>) {
 
 	//printf("New ThreadController\n");
 }
@@ -28,13 +26,18 @@ ThreadController::~ThreadController() {
 	//printf("Delete ThreadController\n");
 }
 
+List<Thread>* ThreadController::getThreads(void) const {
+	return _threads;
+}
+
 /*
  ThreadController run() (cool stuf)
  */
 void ThreadController::run(void) {
+
 	// Run this thread before
-	if (_onRun != NULL)
-		_onRun();
+	if (Thread::_callback != NULL)
+		Thread::_callback(NULL);
 
 	if (!_threads->isEmpty()) {
 		long time = millis();
@@ -93,7 +96,7 @@ void ThreadController::clear(void) {
 	}
 }
 
-int ThreadController::size(void) const {
+uint16_t ThreadController::size(void) const {
 	return _threads->size();
 }
 
@@ -104,6 +107,6 @@ Thread* ThreadController::get(uint16_t const& index) const {
 	return NULL;
 }
 
-ThreadController THREAD_CONTROLLER;
+//ThreadController THREAD_CONTROLLER;
 
 } /* namespace SISBARC */
