@@ -4,6 +4,8 @@
  *  Created on: 04/02/2015
  *      Author: cams7
  */
+#include "Sisbarc.h"
+
 #include "SisbarcProtocol.h"
 #include "SisbarcEEPROM.h"
 
@@ -12,31 +14,33 @@
 
 #include "util/Iterator.h"
 
-#include <Arduino.h>
-
-#include "Sisbarc.h"
-
-//#include "_Serial.h"
-
 //#include <stdio.h>
 
 namespace SISBARC {
 
+unsigned long const SisbarcClass::BAUD_RATE = 9600;
+
 SisbarcClass::SisbarcClass() :
 		ThreadController(), _serialData(
-				(uint8_t*) malloc(SisbarcProtocol::TOTAL_BYTES_PROTOCOL)), _serialDataIndex(
+				new uint8_t[SisbarcProtocol::TOTAL_BYTES_PROTOCOL]), _serialDataIndex(
 				0x00), _threadIntervals(
 				new uint16_t[ArduinoEEPROM::THREAD_INTERVAL_MAX + 1]), _totalThreadIntervals(
-				0x00) {
+				0x00), _serial(NULL) {
 
 //printf("New Sisbarc\n");
 }
 
 SisbarcClass::~SisbarcClass() {
-	free(_serialData);
-	free(_threadIntervals);
+	delete _serialData;
+	delete _threadIntervals;
 
 //printf("Delete Sisbarc\n");
+}
+
+void SisbarcClass::begin(HardwareSerial* const serial,
+		unsigned long const baudRate) {
+	_serial = serial;
+	_serial->begin(baudRate); //frequência da porta serial - USART
 }
 
 //Recebe protocolo
@@ -77,13 +81,14 @@ void SisbarcClass::receiveDataBySerial(ArduinoStatus* const arduino) {
 }
 
 void SisbarcClass::serialEventRun(void) {
-	uint8_t data = (uint8_t) Serial.read();
+	//uint8_t data = (uint8_t) Serial.read();
+	uint8_t data = _serial->read();
 
 	if (data & 0x80) { //Last bit
-		*(_serialData) = data;
+		_serialData[0] = data;
 		_serialDataIndex = 0x01;
 	} else if (_serialDataIndex > 0x00) {
-		*(_serialData + _serialDataIndex) = data;
+		_serialData[_serialDataIndex] = data;
 		_serialDataIndex++;
 
 		if (_serialDataIndex == SisbarcProtocol::TOTAL_BYTES_PROTOCOL) {
@@ -101,7 +106,7 @@ void SisbarcClass::serialWrite(uint8_t* const data) {
 	if (data == NULL)
 		return;
 
-	Serial.write(data, SisbarcProtocol::TOTAL_BYTES_PROTOCOL);
+	_serial->write(data, SisbarcProtocol::TOTAL_BYTES_PROTOCOL);
 	free(data);
 }
 
@@ -242,10 +247,10 @@ int16_t SisbarcClass::onRun(pin_type const pinType, uint8_t const pin,
 void SisbarcClass::run(void) {
 	ThreadController::run();
 
-	if (Serial.available() > 0) //verifica se existe comunicação com a porta serial
+	if (_serial->available() > 0) //verifica se existe comunicação com a porta serial
 		serialEventRun(); //lê os dados da porta serial - Maximo 64 bytes
 }
 
-//SisbarcClass Sisbarc;
+SisbarcClass Sisbarc;
 
 } /* namespace SISBARC */

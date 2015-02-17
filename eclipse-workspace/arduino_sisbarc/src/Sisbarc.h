@@ -12,15 +12,22 @@
 #include "vo/ArduinoStatus.h"
 #include "vo/EEPROMData.h"
 
+#include <HardwareSerial.h>
+//#include "_Serial.h"
+
 namespace SISBARC {
 
 class SisbarcClass: public ThreadController {
 private:
+	static unsigned long const BAUD_RATE;
+
 	uint8_t* _serialData;
 	uint8_t _serialDataIndex;
 
 	uint16_t* _threadIntervals;
 	uint8_t _totalThreadIntervals;
+
+	HardwareSerial* _serial;
 
 	ArduinoStatus *receive(uint8_t const message[]);
 
@@ -38,6 +45,8 @@ public:
 	SisbarcClass();
 	virtual ~SisbarcClass();
 
+	void begin(HardwareSerial* const, unsigned long const baudRate = BAUD_RATE);
+
 	void send(ArduinoStatus* const);
 
 	void sendPinDigital(status const, uint8_t const, bool const);
@@ -54,7 +63,7 @@ public:
 
 };
 
-//extern SisbarcClass Sisbarc;
+extern SisbarcClass Sisbarc;
 
 } /* namespace SISBARC */
 

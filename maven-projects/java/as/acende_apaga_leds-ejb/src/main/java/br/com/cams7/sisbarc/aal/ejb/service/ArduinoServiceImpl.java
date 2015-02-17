@@ -140,12 +140,12 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, PinPK>
 			return null;
 
 		mbeanProxy.changeEventLED(led.getId(), led.getEvent(),
-				led.getEventTime());
+				led.getEventInterval());
 
 		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
 				+ led.getId().getPinType() + " " + led.getId().getPin()
 				+ "', event = '" + led.getEvent() + "', time = '"
-				+ led.getEventTime() + "') - Before sleep: "
+				+ led.getEventInterval() + "') - Before sleep: "
 				+ DF.format(new Date()));
 
 		serialThreadTime();
@@ -157,12 +157,12 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LedEntity, PinPK>
 		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
 				+ led.getId().getPinType() + " " + led.getId().getPin()
 				+ "', event = '" + led.getEvent() + "', time = '"
-				+ led.getEventTime() + "') - After sleep: "
+				+ led.getEventInterval() + "') - After sleep: "
 				+ DF.format(new Date()));
 
 		if (event != null) {
 			log.info("O evento do LED '" + led.getColor() + "' foi alterado '"
-					+ led.getEvent() + "' e o time e '" + led.getEventTime()
+					+ led.getEvent() + "' e o time e '" + led.getEventInterval()
 					+ "'");
 		} else
 			log.log(Level.WARNING,

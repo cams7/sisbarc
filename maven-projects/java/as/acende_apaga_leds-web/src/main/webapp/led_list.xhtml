@@ -47,11 +47,11 @@
 					<h:outputText value="#{led.event}" />
 				</p:column>
 
-				<p:column sortBy="#{led.eventTime}">
+				<p:column sortBy="#{led.eventInterval}">
 					<f:facet name="header">
-						<h:outputText value="#{msg['label.led.eventTime']}" />
+						<h:outputText value="#{msg['label.led.eventInterval']}" />
 					</f:facet>
-					<h:outputText value="#{led.eventTime}" />
+					<h:outputText value="#{led.eventInterval}" />
 				</p:column>
 
 				<p:column sortBy="#{led.activeByButton}">

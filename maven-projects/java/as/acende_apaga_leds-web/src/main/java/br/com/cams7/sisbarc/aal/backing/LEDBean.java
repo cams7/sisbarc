@@ -144,7 +144,7 @@ public class LEDBean implements Serializable {
 		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
 				+ led.getId().getPinType() + " " + led.getId().getPin()
 				+ "', event = '" + led.getEvent() + "', time = '"
-				+ led.getEventTime() + "') - Before sleep: "
+				+ led.getEventInterval() + "') - Before sleep: "
 				+ ArduinoService.DF.format(new Date()));
 
 		Future<LedEntity> call = service.changeEventLED(led);
@@ -155,7 +155,7 @@ public class LEDBean implements Serializable {
 
 				log.info("O evento do LED '" + led.getColor()
 						+ "' foi alterado '" + led.getEvent()
-						+ "' e o time e '" + led.getEventTime() + "'");
+						+ "' e o time e '" + led.getEventInterval() + "'");
 			} catch (InterruptedException | ExecutionException e) {
 				log.log(Level.WARNING, e.getMessage());
 			}
@@ -163,7 +163,7 @@ public class LEDBean implements Serializable {
 		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
 				+ led.getId().getPinType() + " " + led.getId().getPin()
 				+ "', event = '" + led.getEvent() + "', time = '"
-				+ led.getEventTime() + "') - After sleep: "
+				+ led.getEventInterval() + "') - After sleep: "
 				+ ArduinoService.DF.format(new Date()));
 
 		return saveEntity();

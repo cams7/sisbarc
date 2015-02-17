@@ -33,14 +33,21 @@ public class LedEntity extends Pin {
 	@Column(name = "cor_led")
 	private LedColor color;
 
-	// @NotNull
+	@NotNull
 	@Enumerated(EnumType.ORDINAL)
 	@Column(name = "evento_led")
 	private LedEvent event;
 
+	@Column(name = "altera_evento", nullable = false)
+	private boolean changeEvent;
+
+	@NotNull
 	@Enumerated(EnumType.ORDINAL)
-	@Column(name = "duracao_evento")
-	private LedEventTime eventTime;
+	@Column(name = "evento_intervalo")
+	private LedEventTime eventInterval;
+
+	@Column(name = "altera_intervalo", nullable = false)
+	private boolean changeEventInterval;
 
 	@Column(name = "led_ativa", nullable = false)
 	private boolean active;
@@ -75,12 +82,42 @@ public class LedEntity extends Pin {
 		this.event = event;
 	}
 
-	public LedEventTime getEventTime() {
-		return eventTime;
+	/**
+	 * @return the changeEvent
+	 */
+	public boolean isChangeEvent() {
+		return changeEvent;
 	}
 
-	public void setEventTime(LedEventTime eventTime) {
-		this.eventTime = eventTime;
+	/**
+	 * @param changeEvent
+	 *            the changeEvent to set
+	 */
+	public void setChangeEvent(boolean changeEvent) {
+		this.changeEvent = changeEvent;
+	}
+
+	public LedEventTime getEventInterval() {
+		return eventInterval;
+	}
+
+	public void setEventInterval(LedEventTime eventInterval) {
+		this.eventInterval = eventInterval;
+	}
+
+	/**
+	 * @return the changeEventInterval
+	 */
+	public boolean isChangeEventInterval() {
+		return changeEventInterval;
+	}
+
+	/**
+	 * @param changeEventInterval
+	 *            the changeEventInterval to set
+	 */
+	public void setChangeEventInterval(boolean changeEventInterval) {
+		this.changeEventInterval = changeEventInterval;
 	}
 
 	public boolean isActive() {
@@ -135,13 +172,13 @@ public class LedEntity extends Pin {
 	}
 
 	public enum LedEventTime {
-		TIME_100MILLIS, // 1/10 de segundo
-		TIME_250MILLIS, // 1/4 de segundo
-		TIME_500MILLIS, // 1/2 de segundo
-		TIME_1SECOUND, // 1 segundo
-		TIME_2SECOUNDS, // 2 segundos
-		TIME_3SECOUNDS, // 3 segundos
-		TIME_5SECOUNDS, // 5 segundos
-		NO_TIME; // Evento não definido
+		THREAD_INTERVAL_100MILLIS, // 1/10 de segundo
+		THREAD_INTERVAL_250MILLIS, // 1/4 de segundo
+		THREAD_INTERVAL_500MILLIS, // 1/2 de segundo
+		THREAD_INTERVAL_1SECOUND, // 1 segundo
+		THREAD_INTERVAL_2SECOUNDS, // 2 segundos
+		THREAD_INTERVAL_3SECOUNDS, // 3 segundos
+		THREAD_INTERVAL_5SECOUNDS, // 5 segundos
+		NO_THREAD_INTERVAL; // Evento não definido
 	}
 }
