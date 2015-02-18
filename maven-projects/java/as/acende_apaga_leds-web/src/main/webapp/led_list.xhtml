@@ -33,39 +33,39 @@
 
 				</p:column>
 
-				<p:column sortBy="#{led.color}">
+				<p:column sortBy="#{led.cor}">
 					<f:facet name="header">
-						<h:outputText value="#{msg['label.led.color']}" />
+						<h:outputText value="#{msg['label.led.cor']}" />
 					</f:facet>
-					<h:outputText value="#{led.color}" />
+					<h:outputText value="#{led.cor}" />
 				</p:column>
 
-				<p:column sortBy="#{led.event}">
+				<p:column sortBy="#{led.evento}">
 					<f:facet name="header">
-						<h:outputText value="#{msg['label.led.event']}" />
+						<h:outputText value="#{msg['label.led.evento']}" />
 					</f:facet>
-					<h:outputText value="#{led.event}" />
+					<h:outputText value="#{led.evento}" />
 				</p:column>
 
-				<p:column sortBy="#{led.eventInterval}">
+				<p:column sortBy="#{led.intervalo}">
 					<f:facet name="header">
-						<h:outputText value="#{msg['label.led.eventInterval']}" />
+						<h:outputText value="#{msg['label.led.intervalo']}" />
 					</f:facet>
-					<h:outputText value="#{led.eventInterval}" />
+					<h:outputText value="#{led.intervalo}" />
 				</p:column>
 
-				<p:column sortBy="#{led.activeByButton}">
+				<p:column sortBy="#{led.ativadoPorBotao}">
 					<f:facet name="header">
-						<h:outputText value="#{msg['label.led.activeByButton']}" />
+						<h:outputText value="#{msg['label.led.ativadoPorBotao']}" />
 					</f:facet>
-					<h:outputText value="#{led.activeByButton}" />
+					<h:outputText value="#{led.ativadoPorBotao}" />
 				</p:column>
 
-				<p:column sortBy="#{led.active}">
+				<p:column sortBy="#{led.ativo}">
 					<f:facet name="header">
-						<h:outputText value="#{msg['label.led.active']}" />
+						<h:outputText value="#{msg['label.led.ativo']}" />
 					</f:facet>
-					<h:outputText value="#{led.active}" />
+					<h:outputText value="#{led.ativo}" />
 				</p:column>
 			</p:dataTable>
 		</h:form>

@@ -1,20 +1,15 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.arduino.status;
+package br.com.cams7.sisbarc.arduino.vo;
 
 /**
  * @author cams7
  *
  */
-public abstract class ArduinoEEPROM extends Arduino {
+public abstract class ArduinoEEPROM extends Arduino implements EEPROMData {
 
-	public static final byte THREAD_TIME_MAX = 0x07; // 7
-
-	public static final byte DIGITAL_ACTION_EVENT_MAX = 0x1F; // 31
-	public static final byte ANALOG_ACTION_EVENT_MAX = 0x7F; // 127
-
-	private byte threadTime;
+	private byte threadInterval;
 	private byte actionEvent;
 
 	/**
@@ -23,7 +18,7 @@ public abstract class ArduinoEEPROM extends Arduino {
 	public ArduinoEEPROM() {
 		super();
 
-		setThreadTime((byte) 0x00);
+		setThreadInterval((byte) 0x00);
 		setActionEvent((byte) 0x00);
 	}
 
@@ -37,14 +32,14 @@ public abstract class ArduinoEEPROM extends Arduino {
 			ArduinoPinType pinType, byte pin, byte threadTime, byte actionEvent) {
 		super(status, event, pinType, pin);
 
-		setThreadTime(threadTime);
+		setThreadInterval(threadTime);
 		setActionEvent(actionEvent);
 	}
 
 	public void changeCurrentValues(ArduinoEEPROM arduino) {
 		super.changeCurrentValues(arduino);
 
-		setThreadTime(arduino.getThreadTime());
+		setThreadInterval(arduino.getThreadInterval());
 		setActionEvent(arduino.getActionEvent());
 	}
 
@@ -53,16 +48,16 @@ public abstract class ArduinoEEPROM extends Arduino {
 		return this.getClass().getSimpleName() + "[transmitter = "
 				+ getTransmitter() + ", status = " + getStatus() + ", event = "
 				+ getEvent() + ", pinType = " + getPinType() + ", pin = "
-				+ getPin() + ", threadTime = " + getThreadTime()
+				+ getPin() + ", threadInterval = " + getThreadInterval()
 				+ ", actionEvent = " + getActionEvent() + "]";
 	}
 
-	public byte getThreadTime() {
-		return threadTime;
+	public byte getThreadInterval() {
+		return threadInterval;
 	}
 
-	public void setThreadTime(byte threadTime) {
-		this.threadTime = threadTime;
+	public void setThreadInterval(byte threadInterval) {
+		this.threadInterval = threadInterval;
 	}
 
 	public byte getActionEvent() {

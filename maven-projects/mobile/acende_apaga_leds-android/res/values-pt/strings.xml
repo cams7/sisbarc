@@ -12,7 +12,7 @@
     <string name="msg_error_arduino">Arduino não está conectado</string>
     <string name="msg_received">Recebido!</string>
     <string name="msg_is_connected">está conectado?</string>
-    <string name="msg_led_on">LED %1$s acesa</string>
-    <string name="msg_led_off">LED %1$s apagada</string>
+    <string name="msg_led_on">%1$s acesa</string>
+    <string name="msg_led_off">%1$s apagada</string>
 
 </resources>

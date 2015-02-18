@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.arduino.status;
+package br.com.cams7.sisbarc.arduino.vo;
 
 /**
  * @author cams7

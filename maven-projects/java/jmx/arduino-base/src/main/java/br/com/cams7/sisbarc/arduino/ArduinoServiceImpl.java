@@ -11,25 +11,23 @@ import gnu.io.UnsupportedCommOperationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import br.com.cams7.sisbarc.arduino.status.ArduinoEEPROM;
-import br.com.cams7.sisbarc.arduino.status.ArduinoEEPROMRead;
-import br.com.cams7.sisbarc.arduino.status.ArduinoEEPROMWrite;
-import br.com.cams7.sisbarc.arduino.status.Arduino;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoEvent;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoStatus;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoTransmitter;
-import br.com.cams7.sisbarc.arduino.status.ArduinoUSART;
 import br.com.cams7.sisbarc.arduino.util.Binary;
 import br.com.cams7.sisbarc.arduino.util.Bytes;
+import br.com.cams7.sisbarc.arduino.vo.Arduino;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoEvent;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoStatus;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoTransmitter;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROM;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROMRead;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROMWrite;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoUSART;
 
 public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		SerialPortEventListener {
@@ -44,7 +42,8 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 	private int serialBaudRate;
 	private long serialThreadTime;
 
-	private List<Byte> serialData;
+	private Byte[] serialData;
+	private byte serialDataIndex;
 
 	private Map<String, Arduino> currentStatus;
 
@@ -64,6 +63,9 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		this.serialPort = serialPort;
 		this.serialBaudRate = serialBaudRate;
 		this.serialThreadTime = serialThreadTime;
+
+		serialData = new Byte[SisbarcProtocol.TOTAL_BYTES_PROTOCOL];
+		serialDataIndex = 0x00;
 
 		currentStatus = new HashMap<String, Arduino>();
 
@@ -205,20 +207,22 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		byte lastBit = Binary.getLastBitByte(data);
 
 		if (0x01 == lastBit) {
-			serialData = new ArrayList<Byte>();
-			serialData.add(data);
-		} else if (0x00 == lastBit && serialData != null) {
-			serialData.add(data);
-			if (serialData.size() == SisbarcProtocol.TOTAL_BYTES_PROTOCOL) {
-				byte[] values = Bytes.toArray(serialData);
+			serialData[0] = data;
+			serialDataIndex = 0x01;
+		} else if (serialDataIndex > 0x00) {
+			serialData[serialDataIndex] = data;
+			serialDataIndex++;
+
+			if (serialDataIndex == SisbarcProtocol.TOTAL_BYTES_PROTOCOL) {
+				byte[] datas = Bytes.toPrimitiveArray(serialData);
 				try {
-					Arduino arduino = receive(values);
+					Arduino arduino = receive(datas);
 					addCurrentStatus(arduino);
 					receiveDataBySerial(arduino);
 				} catch (ArduinoException e) {
-					e.printStackTrace();
+					LOG.log(Level.SEVERE, e.getMessage());
 				}
-				serialData = null;
+				serialDataIndex = 0x00;
 			}
 
 		} else {
@@ -234,13 +238,21 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 
 		if (currentStatus.isEmpty() || !currentStatus.containsKey(key))
 			currentStatus.put(key, arduino);
-		else
-			currentStatus.get(key).changeCurrentValues(arduino);
+		else {
+			if (arduino instanceof ArduinoUSART)
+				((ArduinoUSART) currentStatus.get(key))
+						.changeCurrentValues((ArduinoUSART) arduino);
+			else if (arduino instanceof ArduinoEEPROM)
+				((ArduinoEEPROM) currentStatus.get(key))
+						.changeCurrentValues((ArduinoEEPROM) arduino);
+		}
 	}
 
 	protected String getKeyCurrentStatus(ArduinoEvent event,
 			ArduinoPinType pinType, byte pin) {
-		String key = event.getType() + pinType.getType() + "_" + pin;
+		String key = event.getAbbreviation() + "_" + pinType.getAbbreviation()
+				+ pin;
+
 		return key;
 	}
 
@@ -264,12 +276,12 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 				break;
 			case WRITE:
 				receiveWrite(arduino.getPinType(), arduino.getPin(),
-						((ArduinoEEPROM) arduino).getThreadTime(),
+						((ArduinoEEPROM) arduino).getThreadInterval(),
 						((ArduinoEEPROM) arduino).getActionEvent());
 				break;
 			case READ:
 				receiveRead(arduino.getPinType(), arduino.getPin(),
-						((ArduinoEEPROM) arduino).getThreadTime(),
+						((ArduinoEEPROM) arduino).getThreadInterval(),
 						((ArduinoEEPROM) arduino).getActionEvent());
 				break;
 			default:

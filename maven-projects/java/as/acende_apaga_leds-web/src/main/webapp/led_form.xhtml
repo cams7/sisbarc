@@ -18,16 +18,16 @@
 				<div class="controls">
 					<h:outputText id="pin"
 						value="#{ledBean.led.id.pinType} #{ledBean.led.id.pin}"
-						label="#{msg['label.led.active']}" styleClass="input-small" />
+						label="#{msg['label.led.pin']}" styleClass="input-small" />
 				</div>
 			</div>
 
 			<div class="control-group">
 				<label class="control-label"><h:outputText
-						value="#{msg['label.led.color']}" /></label>
+						value="#{msg['label.led.cor']}" /></label>
 				<div class="controls">
-					<h:selectOneMenu id="color" value="#{ledBean.led.color}"
-						label="#{msg['label.led.color']}" styleClass="input-large"
+					<h:selectOneMenu id="color" value="#{ledBean.led.cor}"
+						label="#{msg['label.led.cor']}" styleClass="input-large"
 						disabled="true">
 						<f:selectItems value="#{ledBean.colors}" />
 					</h:selectOneMenu>
@@ -36,11 +36,11 @@
 
 			<div class="control-group">
 				<label class="control-label"><h:outputText
-						value="#{msg['label.led.activeByButton']}" /></label>
+						value="#{msg['label.led.ativadoPorBotao']}" /></label>
 				<div class="controls">
 					<h:selectOneRadio id="activeByButton"
-						value="#{ledBean.led.activeByButton}"
-						label="#{msg['label.led.activeByButton']}"
+						value="#{ledBean.led.ativadoPorBotao}"
+						label="#{msg['label.led.ativadoPorBotao']}"
 						styleClass="input-small" disabled="true">
 						<f:selectItem itemValue="#{true}" itemLabel="Yes" />
 						<f:selectItem itemValue="#{false}" itemLabel="No" />
@@ -50,11 +50,11 @@
 
 			<div class="control-group">
 				<label class="control-label"><h:outputText
-						value="#{msg['label.led.event']}" /></label>
+						value="#{msg['label.led.evento']}" /></label>
 				<div class="controls">
-					<h:selectOneMenu id="event" value="#{ledBean.led.event}"
-						label="#{msg['label.led.event']}" styleClass="input-large"
-						disabled="#{not ledBean.led.changeEvent}">
+					<h:selectOneMenu id="event" value="#{ledBean.led.evento}"
+						label="#{msg['label.led.evento']}" styleClass="input-large"
+						disabled="#{not ledBean.led.alteraEvento}">
 						<f:selectItems value="#{ledBean.events}" />
 					</h:selectOneMenu>
 				</div>
@@ -62,12 +62,12 @@
 
 			<div class="control-group">
 				<label class="control-label"><h:outputText
-						value="#{msg['label.led.eventInterval']}" /></label>
+						value="#{msg['label.led.intervalo']}" /></label>
 				<div class="controls">
 					<h:selectOneMenu id="eventInterval"
-						value="#{ledBean.led.eventInterval}"
-						label="#{msg['label.led.event']}" styleClass="input-large"
-						disabled="#{not ledBean.led.changeEventInterval}">
+						value="#{ledBean.led.intervalo}"
+						label="#{msg['label.led.intervalo']}" styleClass="input-large"
+						disabled="#{not ledBean.led.alteraIntervalo}">
 						<f:selectItems value="#{ledBean.times}" />
 					</h:selectOneMenu>
 				</div>
@@ -75,10 +75,10 @@
 
 			<div class="control-group">
 				<label class="control-label"><h:outputText
-						value="#{msg['label.led.active']}" /></label>
+						value="#{msg['label.led.ativo']}" /></label>
 				<div class="controls">
-					<h:selectOneRadio id="active" value="#{ledBean.led.active}"
-						label="#{msg['label.led.active']}" styleClass="input-small">
+					<h:selectOneRadio id="active" value="#{ledBean.led.ativo}"
+						label="#{msg['label.led.ativo']}" styleClass="input-small">
 						<f:selectItem itemValue="#{true}" itemLabel="Yes" />
 						<f:selectItem itemValue="#{false}" itemLabel="No" />
 					</h:selectOneRadio>

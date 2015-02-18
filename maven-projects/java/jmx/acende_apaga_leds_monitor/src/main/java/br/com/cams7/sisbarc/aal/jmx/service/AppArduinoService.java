@@ -12,17 +12,19 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import br.com.cams7.sisbarc.aal.ejb.service.AppWildflyService;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEvent;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEventTime;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedStatus;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.CorLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.ArduinoException;
 import br.com.cams7.sisbarc.arduino.ArduinoServiceImpl;
-import br.com.cams7.sisbarc.arduino.status.Arduino;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoStatus;
-import br.com.cams7.sisbarc.arduino.status.ArduinoUSART;
+import br.com.cams7.sisbarc.arduino.vo.Arduino;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoEvent;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoStatus;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROM;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoUSART;
 
 /**
  * @author cesar
@@ -34,17 +36,17 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	private static final Logger LOG = Logger.getLogger(AppArduinoService.class
 			.getName());
 
-	private final byte PIN_LED_BLINK = 13; // Pino 13 Digital
+	private final byte PIN_LED_PISCA = 13; // Pino 13 Digital
 
-	private final byte PIN_LED_YELLOW = 11; // Pino 11 PWM
-	private final byte PIN_LED_GREEN = 10; // Pino 10 PWM
-	private final byte PIN_LED_RED = 9; // Pino 09 PWM
+	private final byte PIN_LED_AMARELO = 11; // Pino 11 PWM
+	private final byte PIN_LED_VERDE = 10; // Pino 10 PWM
+	private final byte PIN_LED_VERMELHO = 9; // Pino 09 PWM
 
-	// private final byte PIN_BOTAO_LED_AMARELA = 12; // Pino 12 Digital
+	// private final byte PIN_BOTAO_LED_AMARELO = 12; // Pino 12 Digital
 	// private final byte PIN_BOTAO_LED_VERDE = 8; // Pino 8 Digital
-	// private final byte PIN_BOTAO_LED_VERMELHA = 7; // Pino 7 Digital
+	// private final byte PIN_BOTAO_LED_VERMELHO = 7; // Pino 7 Digital
 
-	private final byte PIN_POTENTIOMETER = 0; // Pino 0 Analogico
+	private final byte PIN_POTENCIOMETRO = 0; // Pino 0 Analogico
 
 	public AppArduinoService(String serialPort, int baudRate, long threadTime)
 			throws ArduinoException {
@@ -58,15 +60,19 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		switch (pinType) {
 		case DIGITAL: {
 			switch (pin) {
-			case PIN_LED_YELLOW:
-			case PIN_LED_GREEN:
-			case PIN_LED_RED: {
-				LOG.info("EXECUTE -> LED (" + pin + "): "
-						+ (pinValue == 0x0001 ? LedStatus.ON : LedStatus.OFF));
+			case PIN_LED_AMARELO:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHO: {
+				LOG.info("EXECUTE -> LED ("
+						+ pin
+						+ "): "
+						+ (pinValue == 0x0001 ? EstadoLED.ACESO
+								: EstadoLED.APAGADO));
 				break;
 			}
-			case PIN_LED_BLINK: {
-				//LOG.info("USART -> LED Pisca (" + pin + "): " + (pinValue == 0x0001 ? LedStatus.ON : LedStatus.OFF));
+			case PIN_LED_PISCA: {
+				// LOG.info("USART -> LED Pisca (" + pin + "): " + (pinValue ==
+				// 0x0001 ? LedStatus.ON : LedStatus.OFF));
 				break;
 			}
 			default:
@@ -76,7 +82,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		}
 		case ANALOG: {
 			switch (pin) {
-			case PIN_POTENTIOMETER: {
+			case PIN_POTENCIOMETRO: {
 				LOG.info("EXECUTE -> Potenciometro (" + pin + "): " + pinValue);
 				break;
 			}
@@ -97,10 +103,10 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		switch (pinType) {
 		case DIGITAL: {
 			switch (pin) {
-			case PIN_LED_YELLOW:
-			case PIN_LED_GREEN:
-			case PIN_LED_RED:
-			case PIN_LED_BLINK: {
+			case PIN_LED_AMARELO:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHO:
+			case PIN_LED_PISCA: {
 				LOG.info("MESSAGE -> LED (" + pin + "): " + pinValue);
 				break;
 			}
@@ -111,7 +117,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		}
 		case ANALOG: {
 			switch (pin) {
-			case PIN_POTENTIOMETER: {
+			case PIN_POTENCIOMETRO: {
 				LOG.info("MESSAGE -> Potenciometro (" + pin + "): " + pinValue);
 				break;
 			}
@@ -128,16 +134,16 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 	@Override
 	protected void receiveWrite(ArduinoPinType pinType, byte pin,
-			byte threadTime, byte actionEvent) {
+			byte threadInterval, byte actionEvent) {
 		switch (pinType) {
 		case DIGITAL: {
 			switch (pin) {
-			case PIN_LED_YELLOW:
-			case PIN_LED_GREEN:
-			case PIN_LED_RED:
-			case PIN_LED_BLINK: {
-				LOG.info("WRITE -> LED (" + pin + "): threadTime = "
-						+ threadTime + ", actionEvent = " + actionEvent);
+			case PIN_LED_AMARELO:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHO:
+			case PIN_LED_PISCA: {
+				LOG.info("WRITE -> LED (" + pin + "): threadInterval = "
+						+ threadInterval + ", actionEvent = " + actionEvent);
 				break;
 			}
 			default:
@@ -147,9 +153,10 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		}
 		case ANALOG: {
 			switch (pin) {
-			case PIN_POTENTIOMETER: {
-				LOG.info("WRITE -> Potenciometro (" + pin + "): threadTime = "
-						+ threadTime + ", actionEvent = " + actionEvent);
+			case PIN_POTENCIOMETRO: {
+				LOG.info("WRITE -> Potenciometro (" + pin
+						+ "): threadInterval = " + threadInterval
+						+ ", actionEvent = " + actionEvent);
 				break;
 			}
 			default:
@@ -165,16 +172,16 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 	@Override
 	protected void receiveRead(ArduinoPinType pinType, byte pin,
-			byte threadTime, byte actionEvent) {
+			byte threadInterval, byte actionEvent) {
 		switch (pinType) {
 		case DIGITAL: {
 			switch (pin) {
-			case PIN_LED_YELLOW:
-			case PIN_LED_GREEN:
-			case PIN_LED_RED:
-			case PIN_LED_BLINK: {
-				LOG.info("READ -> LED (" + pin + "): threadTime = "
-						+ threadTime + ", actionEvent = " + actionEvent);
+			case PIN_LED_AMARELO:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHO:
+			case PIN_LED_PISCA: {
+				LOG.info("READ -> LED (" + pin + "): threadInterval = "
+						+ threadInterval + ", actionEvent = " + actionEvent);
 				break;
 			}
 			default:
@@ -184,9 +191,10 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		}
 		case ANALOG: {
 			switch (pin) {
-			case PIN_POTENTIOMETER: {
-				LOG.info("READ -> Potenciometro (" + pin + "): threadTime = "
-						+ threadTime + ", actionEvent = " + actionEvent);
+			case PIN_POTENCIOMETRO: {
+				LOG.info("READ -> Potenciometro (" + pin
+						+ "): threadInterval = " + threadInterval
+						+ ", actionEvent = " + actionEvent);
 				break;
 			}
 			default:
@@ -206,10 +214,10 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		switch (pinType) {
 		case DIGITAL: {
 			switch (pin) {
-			case PIN_LED_YELLOW:
-			case PIN_LED_GREEN:
-			case PIN_LED_RED: {
-				pinValue = turnsOnOffLEDByButton(pin, pinValue);
+			case PIN_LED_AMARELO:
+			case PIN_LED_VERDE:
+			case PIN_LED_VERMELHO: {
+				pinValue = acendeOuApagaLEDPorBotao(pin, pinValue);
 				break;
 			}
 			default:
@@ -227,29 +235,26 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public void changeStatusLED(PinPK pin, LedStatus status) {
+	public void alteraEstadoLED(PinPK pino, EstadoLED estado) {
+		ArduinoPinType tipoPino = pino.getPinType();
+		byte pinoLED = pino.getPin().byteValue();
 
-		ArduinoPinType ledPinType = pin.getPinType();
-		byte ledPin = pin.getPin().byteValue();
-
-		boolean ledPinValue = (status == LedStatus.ON);
+		boolean estadoLED = (estado == EstadoLED.ACESO);
 
 		try {
-			if (ledPinType == ArduinoPinType.DIGITAL)
-				sendPinDigital(ArduinoStatus.SEND_RESPONSE, ledPin, ledPinValue);
+			if (tipoPino == ArduinoPinType.DIGITAL)
+				sendPinDigital(ArduinoStatus.SEND_RESPONSE, pinoLED, estadoLED);
 		} catch (ArduinoException e) {
 			LOG.log(Level.SEVERE, e.getMessage());
 		}
 
 	}
 
-	@Override
-	public LedStatus getStatusLED(PinPK pin) {
-		ArduinoPinType ledPinType = pin.getPinType();
-		byte ledPin = pin.getPin().byteValue();
+	private Arduino getArduinoResponse(ArduinoEvent event, PinPK pinPK) {
+		ArduinoPinType pinType = pinPK.getPinType();
+		byte pin = pinPK.getPin().byteValue();
 
-		String key = getKeyCurrentStatus(Arduino.ArduinoEvent.EXECUTE,
-				ledPinType, ledPin);
+		String key = getKeyCurrentStatus(event, pinType, pin);
 
 		if (getCurrentStatus().isEmpty()
 				|| !getCurrentStatus().containsKey(key))
@@ -263,35 +268,53 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		if (arduino.getStatus() != ArduinoStatus.RESPONSE)
 			return null;
 
-		short pinValue = ((ArduinoUSART) arduino).getPinValue();
-		LedStatus ledStatus = null;
+		return arduino;
+	}
 
-		switch (pinValue) {
+	@Override
+	public EstadoLED getEstadoLED(PinPK pino) {
+		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.EXECUTE, pino);
+		if (arduino == null)
+			return null;
+
+		// LOG.info("getSituacaoLED ('" + pinPK.getPinType() + "',"
+		// + pinPK.getPin() + ") = [transmitter = "
+		// + arduino.getTransmitter() + ", status = "
+		// + arduino.getStatus() + ", event = " + arduino.getEvent()
+		// + ", pinType = " + arduino.getPinType() + ", pin = "
+		// + arduino.getPin() + ", pinValue = "
+		// + ((ArduinoUSART) arduino).getPinValue() + "]");
+
+		short estadoLED = ((ArduinoUSART) arduino).getPinValue();
+		EstadoLED estado = null;
+
+		switch (estadoLED) {
 		case 0x0000:
-			ledStatus = LedStatus.OFF;
+			estado = EstadoLED.APAGADO;
 			break;
 		case 0x0001:
-			ledStatus = LedStatus.ON;
+			estado = EstadoLED.ACESO;
 			break;
 		default:
 			break;
 		}
 
-		return ledStatus;
+		return estado;
 	}
 
 	@Override
-	public void changeEventLED(PinPK pin, LedEvent event, LedEventTime eventTime) {
-		ArduinoPinType ledPinType = pin.getPinType();
-		byte ledPin = pin.getPin().byteValue();
+	public void alteraEventoLED(PinPK pino, EventoLED evento,
+			IntervaloLED intervalo) {
+		ArduinoPinType tipoPino = pino.getPinType();
+		byte pinoLED = pino.getPin().byteValue();
 
-		byte actionEvent = (byte) event.ordinal();
-		byte threadTime = (byte) eventTime.ordinal();
+		byte indiceEvento = (byte) evento.ordinal();
+		byte indiceIntervalo = (byte) intervalo.ordinal();
 
 		try {
-			if (ledPinType == ArduinoPinType.DIGITAL)
-				sendDigitalEEPROMWrite(ArduinoStatus.SEND_RESPONSE, ledPin,
-						threadTime, actionEvent);
+			if (tipoPino == ArduinoPinType.DIGITAL)
+				sendDigitalEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pinoLED,
+						indiceIntervalo, indiceEvento);
 		} catch (ArduinoException e) {
 			LOG.log(Level.SEVERE, e.getMessage());
 		}
@@ -299,29 +322,59 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public LedEvent getEventLED(PinPK pin) {
-		// TODO Auto-generated method stub
-		return null;
+	public EventoLED getEventoLED(PinPK pino) {
+		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.WRITE, pino);
+		if (arduino == null)
+			return null;
+
+		// LOG.info("getEventoLED ('" + pinPK.getPinType() + "'," +
+		// pinPK.getPin()
+		// + ") = [transmitter = " + arduino.getTransmitter()
+		// + ", status = " + arduino.getStatus() + ", event = "
+		// + arduino.getEvent() + ", pinType = " + arduino.getPinType()
+		// + ", pin = " + arduino.getPin() + ", threadInterval = "
+		// + ((ArduinoEEPROM) arduino).getThreadInterval()
+		// + ", actionEvent = "
+		// + ((ArduinoEEPROM) arduino).getActionEvent() + "]");
+
+		byte eventoLED = ((ArduinoEEPROM) arduino).getActionEvent();
+		EventoLED evento = null;
+
+		switch (eventoLED) {
+		case 0x00:
+			evento = EventoLED.ACENDE_APAGA;
+			break;
+		case 0x01:
+			evento = EventoLED.PISCA_PISCA;
+			break;
+		case 0x02:
+			evento = EventoLED.FADE;
+			break;
+		default:
+			break;
+		}
+
+		return evento;
 	}
 
-	private short turnsOnOffLEDByButton(byte pin, short pinValue) {
+	private short acendeOuApagaLEDPorBotao(byte pinoLED, short estadoPino) {
 
-		if (pinValue == 0x0000)
-			return pinValue;
+		if (estadoPino == 0x0000)
+			return estadoPino;
 
-		pinValue = 0x0000;
+		estadoPino = 0x0000;
 
 		try {
 			AppWildflyService service = lookupAppWildflyService();
 
-			for (LedEntity.LedColor color : LedEntity.LedColor.values()) {
-				if (color.getPin() == pin) {
+			for (CorLED cor : CorLED.values()) {
+				if (cor.getPin() == pinoLED) {
 					// Verifica permissão para ACENDE o LED
-					LedStatus status = service.getStatusActiveLED(color);
-					LOG.info("Status: " + status);
+					EstadoLED estado = service.getEstadoLEDAtivadoPorBotao(cor);
+					LOG.info("Status: " + estado);
 
-					if (status != null && status == LedStatus.ON)
-						pinValue = (short) 0x0001;
+					if (estado != null && estado == EstadoLED.ACESO)
+						estadoPino = (short) 0x0001;
 					break;
 				}
 			}
@@ -330,7 +383,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 			LOG.log(Level.SEVERE, e.getMessage());
 		}
 
-		return pinValue;
+		return estadoPino;
 	}
 
 	private AppWildflyService lookupAppWildflyService() throws NamingException {

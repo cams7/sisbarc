@@ -4,7 +4,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.MappedSuperclass;
 
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
 import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
 
 @MappedSuperclass

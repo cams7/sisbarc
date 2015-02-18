@@ -1,17 +1,17 @@
 package br.com.cams7.sisbarc.arduino;
 
-import br.com.cams7.sisbarc.arduino.status.Arduino;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoEvent;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoStatus;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoTransmitter;
-import br.com.cams7.sisbarc.arduino.status.ArduinoEEPROM;
-import br.com.cams7.sisbarc.arduino.status.ArduinoEEPROMRead;
-import br.com.cams7.sisbarc.arduino.status.ArduinoEEPROMWrite;
-import br.com.cams7.sisbarc.arduino.status.ArduinoUSART;
-import br.com.cams7.sisbarc.arduino.status.ArduinoUSARTMessage;
 import br.com.cams7.sisbarc.arduino.util.Binary;
 import br.com.cams7.sisbarc.arduino.util.Checksum;
+import br.com.cams7.sisbarc.arduino.vo.Arduino;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoEvent;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoStatus;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoTransmitter;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROM;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROMRead;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROMWrite;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoUSART;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoUSARTMessage;
 
 public final class SisbarcProtocol {
 
@@ -138,7 +138,7 @@ public final class SisbarcProtocol {
 				|| arduino.getEvent() == ArduinoEvent.READ) {
 
 			// Os valores da 'thread time' estao entre 0-7
-			if (((ArduinoEEPROM) arduino).getThreadTime() > ArduinoEEPROM.THREAD_TIME_MAX)
+			if (((ArduinoEEPROM) arduino).getThreadInterval() > ArduinoEEPROM.THREAD_INTERVAL_MAX)
 				return EMPTY_BITS;
 
 			// Os valores do 'action event' estao entre 0-31
@@ -155,7 +155,7 @@ public final class SisbarcProtocol {
 
 		// 00000000 00001000 00000000 00000000
 		int mask = 0x00080000;
-		int transmitterValue = ArduinoTransmitter.OTHER_DEVICE.ordinal();
+		int transmitterValue = arduino.getTransmitter().ordinal();
 		transmitterValue <<= (TOTAL_BITS_DATA - 1);
 		protocol |= (transmitterValue & mask);
 
@@ -194,7 +194,7 @@ public final class SisbarcProtocol {
 					|| arduino.getEvent() == ArduinoEvent.READ) {
 				// 00000000 00000000 00000000 11100000
 				mask = 0x000000E0;
-				int threadTime = ((ArduinoEEPROM) arduino).getThreadTime();
+				int threadTime = ((ArduinoEEPROM) arduino).getThreadInterval();
 				threadTime <<= TOTAL_BITS_DIGITAL_ACTION_EVENT;
 				protocol |= (threadTime & mask);
 
@@ -220,7 +220,7 @@ public final class SisbarcProtocol {
 					|| arduino.getEvent() == ArduinoEvent.READ) {
 				// 00000000 00000000 00000011 10000000
 				mask = 0x00000380;
-				int threadTime = ((ArduinoEEPROM) arduino).getThreadTime();
+				int threadTime = ((ArduinoEEPROM) arduino).getThreadInterval();
 				threadTime <<= TOTAL_BITS_ANALOG_ACTION_EVENT;
 				protocol |= (threadTime & mask);
 
@@ -378,7 +378,7 @@ public final class SisbarcProtocol {
 				mask = 0x0000E000;
 				int threadTime = protocol & mask;
 				threadTime >>= (TOTAL_BITS_CHECKSUM + TOTAL_BITS_DIGITAL_ACTION_EVENT);
-				((ArduinoEEPROM) arduino).setThreadTime((byte) threadTime);
+				((ArduinoEEPROM) arduino).setThreadInterval((byte) threadTime);
 
 				// 0-31 _ VALOR PIN 5bits
 				// 00000000 00000000 00011111 00000000
@@ -410,7 +410,7 @@ public final class SisbarcProtocol {
 				mask = 0x00038000;
 				int threadTime = protocol & mask;
 				threadTime >>= (TOTAL_BITS_CHECKSUM + TOTAL_BITS_ANALOG_ACTION_EVENT);
-				((ArduinoEEPROM) arduino).setThreadTime((byte) threadTime);
+				((ArduinoEEPROM) arduino).setThreadInterval((byte) threadTime);
 
 				// 0-31 _ VALOR PIN 5bits
 				// 00000000 00000000 01111111 00000000

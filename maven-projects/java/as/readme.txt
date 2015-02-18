@@ -13,7 +13,7 @@ For Windows VAIO:
 	TaskKill /F /PID pid
 	
 	WildFly
-	cd C:\Users\cams7\Desenv\java\jboss\wildfly-8.2.0.Final\bin
+	cd C:\Users\cams7\Desenv\java\jboss\wildfly-8.2.0.Final_maven\bin
 	standalone.bat -b 192.168.1.7 -bmanagement 192.168.1.7
 	standalone.bat -b 0.0.0.0 -bmanagement 0.0.0.0
 	

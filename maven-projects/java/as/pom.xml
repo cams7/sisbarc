@@ -165,6 +165,18 @@
 						<configuration>
 							<skip>true</skip>
 						</configuration>
+						<!--configuration>
+							<jboss-home>C:\Users\cams7\Desenv\java\jboss\wildfly-8.2.0.Final_maven</jboss-home>
+						</configuration>
+						<executions>
+							<execution>
+								<phase>install</phase>
+								<goals>
+									<goal>run</goal>
+									<goal>deploy</goal>
+								</goals>
+							</execution>
+						</executions-->
 					</plugin>
 				</plugins>
 			</build>

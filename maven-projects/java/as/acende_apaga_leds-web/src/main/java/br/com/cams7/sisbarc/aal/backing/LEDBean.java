@@ -17,12 +17,12 @@ import javax.faces.bean.ViewScoped;
 import javax.inject.Inject;
 
 import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedColor;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEvent;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LedEntity.LedEventTime;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.CorLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
-import br.com.cams7.sisbarc.arduino.status.Arduino.ArduinoPinType;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
 
 /**
  * Componente responsável por integrar o front-end (páginas JSF) c/ camada de
@@ -64,12 +64,12 @@ public class LEDBean implements Serializable {
 	 * Lista com a(s) <code>Mercadoria</code>(s) apresentandas no
 	 * <code>Datatable</code>.
 	 */
-	private Iterable<LedEntity> leds;
+	private Iterable<LEDEntity> leds;
 
 	/**
 	 * Referência para a mercadoria utiliza na inclusão (nova) ou edição.
 	 */
-	private LedEntity led;
+	private LEDEntity led;
 
 	public LEDBean() {
 		super();
@@ -101,12 +101,12 @@ public class LEDBean implements Serializable {
 		this.selectedPin = selectedPin;
 	}
 
-	public LedEntity getLed() {
+	public LEDEntity getLed() {
 		return led;
 	}
 
 	public void newEntity() {
-		led = new LedEntity();
+		led = new LEDEntity();
 		// log.debug("Pronto pra incluir");
 	}
 
@@ -119,7 +119,7 @@ public class LEDBean implements Serializable {
 		// log.debug("Pronto pra editar");
 	}
 
-	public Iterable<LedEntity> getLeds() {
+	public Iterable<LEDEntity> getLeds() {
 		if (leds == null) {
 			leds = service.findAll();
 		}
@@ -141,29 +141,29 @@ public class LEDBean implements Serializable {
 
 	public String updateArduino() {
 
-		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
+		log.info("LED " + led.getCor() + " -> changeEventLED(pin = '"
 				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', event = '" + led.getEvent() + "', time = '"
-				+ led.getEventInterval() + "') - Before sleep: "
+				+ "', event = '" + led.getEvento() + "', time = '"
+				+ led.getIntervalo() + "') - Before sleep: "
 				+ ArduinoService.DF.format(new Date()));
 
-		Future<LedEntity> call = service.changeEventLED(led);
+		Future<LEDEntity> call = service.alteraEventoLED(led);
 
 		if (call != null)
 			try {
 				led = call.get();
 
-				log.info("O evento do LED '" + led.getColor()
-						+ "' foi alterado '" + led.getEvent()
-						+ "' e o time e '" + led.getEventInterval() + "'");
+				log.info("O evento do LED '" + led.getCor()
+						+ "' foi alterado '" + led.getEvento()
+						+ "' e o time e '" + led.getIntervalo() + "'");
 			} catch (InterruptedException | ExecutionException e) {
 				log.log(Level.WARNING, e.getMessage());
 			}
 
-		log.info("LED " + led.getColor() + " -> changeEventLED(pin = '"
+		log.info("LED " + led.getCor() + " -> changeEventLED(pin = '"
 				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', event = '" + led.getEvent() + "', time = '"
-				+ led.getEventInterval() + "') - After sleep: "
+				+ "', event = '" + led.getEvento() + "', time = '"
+				+ led.getIntervalo() + "') - After sleep: "
 				+ ArduinoService.DF.format(new Date()));
 
 		return saveEntity();
@@ -206,16 +206,16 @@ public class LEDBean implements Serializable {
 						.concat(detail)));
 	}
 
-	public LedColor[] getColors() {
-		return LedColor.values();
+	public CorLED[] getColors() {
+		return CorLED.values();
 	}
 
-	public LedEvent[] getEvents() {
-		return LedEvent.values();
+	public EventoLED[] getEvents() {
+		return EventoLED.values();
 	}
 
-	public LedEventTime[] getTimes() {
-		return LedEventTime.values();
+	public IntervaloLED[] getTimes() {
+		return IntervaloLED.values();
 	}
 
 }
