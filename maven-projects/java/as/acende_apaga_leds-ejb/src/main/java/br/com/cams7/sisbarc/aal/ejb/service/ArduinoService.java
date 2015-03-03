@@ -6,9 +6,9 @@ package br.com.cams7.sisbarc.aal.ejb.service;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.Future;
 
+import br.com.cams7.as.service.BaseService;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
-import br.com.cams7.sisbarc.as.service.BaseService;
 
 /**
  * @author cams7

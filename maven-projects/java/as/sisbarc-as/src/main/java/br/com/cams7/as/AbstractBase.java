@@ -1,11 +1,11 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.as;
+package br.com.cams7.as;
 
 import java.util.logging.Logger;
 
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.BaseEntity;
 
 /**
  * @author cesar

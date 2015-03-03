@@ -1,29 +1,24 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.util;
+package br.com.cams7.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.BaseEntity;
 
 /**
  * @author cams7
@@ -151,51 +146,6 @@ public final class AppUtil {
 			return null;
 
 		return value.trim();
-	}
-
-	public static Number getNumber(Class<?> numberType, String value)
-			throws AppException {
-		if (!isNumber(numberType))
-			return null;
-
-		value = getCorrectValue(value);
-
-		if (value == null)
-			return null;
-
-		if (isInteger(numberType)) {
-			final String REGEX_INT = "[0-9]+";
-			if (!value.matches(REGEX_INT))
-				return null;
-		} else {
-			final String REGEX_FLOAT = "(([1-9][0-9]*\\.?[0-9]*)|(\\.[0-9]+))([Ee][+-]?[0-9]+)?";
-			if (!value.matches(REGEX_FLOAT))
-				return null;
-		}
-
-		try {
-			Constructor<?> c = numberType
-					.getConstructor(new Class[] { String.class });
-			Number numberValue = (Number) c.newInstance(value);
-
-			return numberValue;
-		} catch (InstantiationException | IllegalAccessException
-				| NoSuchMethodException | SecurityException
-				| IllegalArgumentException | InvocationTargetException e) {
-			throw new AppException(e.getMessage(), e.getCause());
-		}
-	}
-
-	public static Boolean getBoolean(String value) {
-		value = getCorrectValue(value);
-
-		if (value == null)
-			return null;
-
-		if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))
-			return null;
-
-		return Boolean.valueOf(value);
 	}
 
 	public static Map<Integer, Short>[] getDate(String value) {
@@ -337,27 +287,6 @@ public final class AppUtil {
 		}
 
 		return dates;
-	}
-
-	public static List<String> getStringEnums(Class<?> enumType, String value) {
-		if (!isEnum(enumType))
-			return null;
-
-		value = getCorrectValue(value);
-
-		if (value == null)
-			return null;
-
-		value = value.toLowerCase();
-
-		List<String> stringEnums = new ArrayList<String>();
-		for (Object object : enumType.getEnumConstants()) {
-			String stringEnum = String.valueOf(object);
-			if (stringEnum.toLowerCase().startsWith(value))
-				stringEnums.add(stringEnum);
-		}
-
-		return stringEnums;
 	}
 
 	public static <K, V> boolean equalMaps(Map<K, V> map1, Map<K, V> map2) {

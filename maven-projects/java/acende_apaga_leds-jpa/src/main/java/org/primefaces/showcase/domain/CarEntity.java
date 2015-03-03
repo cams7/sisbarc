@@ -24,7 +24,7 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.BaseEntity;
 
 /**
  * @author cams7
@@ -61,7 +61,7 @@ public class CarEntity extends BaseEntity<Integer> implements Serializable {
 	private Float price;// Preço
 
 	@Column(name = "vendido", nullable = false)
-	private boolean soldState;// Vendido
+	private boolean sold;// Vendido
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "data_venda", nullable = true)
@@ -82,8 +82,8 @@ public class CarEntity extends BaseEntity<Integer> implements Serializable {
 		return this.getClass().getSimpleName() + "[id = " + getId()
 				+ ", year = " + getYear() + ", color = " + getColor()
 				+ ", brand = " + getBrand() + ", price = " + getPrice()
-				+ ", soldState = " + isSoldState() + ", saleDate = "
-				+ getSaleDate() + "]";
+				+ ", sold = " + isSold() + ", saleDate = " + getSaleDate()
+				+ "]";
 	}
 
 	/**
@@ -162,18 +162,18 @@ public class CarEntity extends BaseEntity<Integer> implements Serializable {
 	}
 
 	/**
-	 * @return the soldState
+	 * @return the sold
 	 */
-	public boolean isSoldState() {
-		return soldState;
+	public boolean isSold() {
+		return sold;
 	}
 
 	/**
-	 * @param soldState
-	 *            the soldState to set
+	 * @param sold
+	 *            the sold to set
 	 */
-	public void setSoldState(boolean soldState) {
-		this.soldState = soldState;
+	public void setSold(boolean sold) {
+		this.sold = sold;
 	}
 
 	/**

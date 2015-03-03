@@ -3,9 +3,9 @@ package br.com.cams7.sisbarc.aal.jpa.domain;
 import javax.persistence.EmbeddedId;
 import javax.persistence.MappedSuperclass;
 
+import br.com.cams7.jpa.domain.BaseEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
 
 @MappedSuperclass
 public abstract class Pin extends BaseEntity<PinPK> {

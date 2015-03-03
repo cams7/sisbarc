@@ -5,7 +5,7 @@ import javax.ejb.Stateless;
 
 import org.primefaces.showcase.domain.CarEntity;
 
-import br.com.cams7.sisbarc.as.service.BaseServiceImpl;
+import br.com.cams7.as.service.BaseServiceImpl;
 
 @Stateless
 @Local(CarService.class)

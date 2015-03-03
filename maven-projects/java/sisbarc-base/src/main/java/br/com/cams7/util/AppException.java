@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.util;
+package br.com.cams7.util;
 
 /**
  * @author cams7

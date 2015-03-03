@@ -5,8 +5,8 @@ package br.com.cams7.sisbarc.arduino.vo;
 
 import java.util.Properties;
 
-import br.com.cams7.sisbarc.util.AppException;
-import br.com.cams7.sisbarc.util.AppUtil;
+import br.com.cams7.util.AppException;
+import br.com.cams7.util.AppUtil;
 
 /**
  * @author cams7

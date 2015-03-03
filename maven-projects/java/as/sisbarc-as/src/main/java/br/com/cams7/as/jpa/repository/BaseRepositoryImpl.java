@@ -1,4 +1,4 @@
-package br.com.cams7.sisbarc.as.jpa.repository;
+package br.com.cams7.as.jpa.repository;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -24,10 +24,10 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
-import br.com.cams7.sisbarc.as.AbstractBase;
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
-import br.com.cams7.sisbarc.jpa.domain.SortOrderField;
-import br.com.cams7.sisbarc.util.AppUtil;
+import br.com.cams7.as.AbstractBase;
+import br.com.cams7.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.SortOrderField;
+import br.com.cams7.util.AppUtil;
 
 /**
  * Classe resolve os métodos básicos de cadastro (CRUD) com API da
@@ -159,17 +159,31 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 
 	@SuppressWarnings("unchecked")
 	private void addWhere(CriteriaBuilder cb, CriteriaQuery<?> cq,
-			Root<E> from, Map<String, String> filters,
+			Root<E> from, Map<String, Object> filters,
 			Map<String, From<?, ?>> joins) {
 		// Filtering
 		if (filters == null || filters.isEmpty())
 			return;
 
-		List<Predicate> criteria = new ArrayList<Predicate>();
-		for (Map.Entry<String, String> filter : filters.entrySet()) {
-			String value = filter.getValue();
-			if (value != null && !value.isEmpty()) {
+		List<Predicate> and = new ArrayList<Predicate>();
+		for (Map.Entry<String, Object> filter : filters.entrySet()) {
+			Object value = filter.getValue();
 
+			if (value == null)
+				continue;
+
+			Object[] values = null;
+
+			if (value instanceof Object[]) {
+				if (((Object[]) value).length > 0)
+					values = (Object[]) value;
+			} else if (!(value instanceof String)
+					|| !((String) value).isEmpty()) {
+				values = new Object[1];
+				values[0] = value;
+			}
+
+			if (values != null) {
 				Path<?> path = getPath(from, filter.getKey(), joins);
 
 				if (path != null) {
@@ -180,123 +194,145 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 					Predicate predicate = null;
 
 					if (AppUtil.isBoolean(type)) {
-						Boolean booleanValue = AppUtil.getBoolean(value);
-						if (booleanValue != null) {
+						List<Predicate> or = new ArrayList<Predicate>();
+						for (Object objectValue : values) {
+							Boolean booleanValue = (Boolean) objectValue;
+
 							Expression<Boolean> expression = (Expression<Boolean>) path;
-							predicate = (booleanValue == Boolean.TRUE) ? cb
+							or.add((booleanValue == Boolean.TRUE) ? cb
 									.isTrue(expression) : cb
-									.isFalse(expression);
-						} else
+									.isFalse(expression));
+
+						}
+						if (!or.isEmpty())
+							predicate = cb.or(or.toArray(new Predicate[0]));
+						else
 							predicate = cb.isNull(path);
 					} else if (AppUtil.isEnum(type)) {
-						List<String> stringEnums = AppUtil.getStringEnums(type,
-								value);
+						List<Predicate> or = new ArrayList<Predicate>();
+						for (Object objectValue : values)
+							or.add(cb.equal(path, objectValue));
 
-						if (stringEnums != null && !stringEnums.isEmpty()) {
-							int totalEnums = stringEnums.size();
-							Predicate[] or = new Predicate[totalEnums];
-							for (byte i = 0x00; i < totalEnums; i++) {
-								@SuppressWarnings({ "rawtypes" })
-								Class<Enum> typeEnum = (Class<Enum>) type;
-								Enum<?> enumValue = Enum.valueOf(typeEnum,
-										stringEnums.get(i));
-								or[i] = (cb.equal(path, enumValue));
-							}
-
-							predicate = cb.or(or);
-						} else
+						if (!or.isEmpty())
+							predicate = cb.or(or.toArray(new Predicate[0]));
+						else
 							predicate = cb.isNull(path);
-
 					} else if (AppUtil.isDate(type)) {
-						Map<Integer, Short>[] between = AppUtil.getDate(value);
-						if (between != null) {
-							Expression<Date> expression = (Expression<Date>) path;
+						List<Predicate> or = new ArrayList<Predicate>();
+						for (Object objectValue : values) {
+							String stringValue = (String) objectValue;
+							Map<Integer, Short>[] between = AppUtil
+									.getDate(stringValue);
+							if (between != null) {
+								Expression<Date> expression = (Expression<Date>) path;
 
-							if (between.length == 2) {
-								Calendar[] dates = AppUtil.getDate(between);
-								Date date1 = dates[0].getTime();
-								Date date2 = dates[1].getTime();
+								if (between.length == 2) {
+									Calendar[] dates = AppUtil.getDate(between);
+									Date date1 = dates[0].getTime();
+									Date date2 = dates[1].getTime();
 
-								predicate = cb
-										.between(expression, date1, date2);
+									or.add(cb.between(expression, date1, date2));
 
-								final DateFormat DF = new SimpleDateFormat(
-										"dd/MM/yyyy HH:mm:ss");
-								System.out.println("from: " + DF.format(date1)
-										+ ", to: " + DF.format(date2));
-							} else {
-								List<Predicate> and = new ArrayList<Predicate>();
+									final DateFormat DF = new SimpleDateFormat(
+											"dd/MM/yyyy HH:mm:ss");
+									System.out.println("from: "
+											+ DF.format(date1) + ", to: "
+											+ DF.format(date2));
+								} else {
+									List<Predicate> andDateValue = new ArrayList<Predicate>();
 
-								Predicate equal = getEqual(cb, expression,
-										"year", between[0].get(Calendar.YEAR));
+									Predicate equal = getEqual(cb, expression,
+											"year",
+											between[0].get(Calendar.YEAR));
 
-								if (equal != null)
-									and.add(equal);
+									if (equal != null)
+										andDateValue.add(equal);
 
-								equal = getEqual(cb, expression, "month",
-										between[0].get(Calendar.MONTH));
+									equal = getEqual(cb, expression, "month",
+											between[0].get(Calendar.MONTH));
 
-								if (equal != null)
-									and.add(equal);
+									if (equal != null)
+										andDateValue.add(equal);
 
-								equal = getEqual(cb, expression, "day",
-										between[0].get(Calendar.DAY_OF_MONTH));
+									equal = getEqual(cb, expression, "day",
+											between[0]
+													.get(Calendar.DAY_OF_MONTH));
 
-								if (equal != null)
-									and.add(equal);
+									if (equal != null)
+										andDateValue.add(equal);
 
-								equal = getEqual(cb, expression, "hour",
-										between[0].get(Calendar.HOUR_OF_DAY));
+									equal = getEqual(cb, expression, "hour",
+											between[0]
+													.get(Calendar.HOUR_OF_DAY));
 
-								if (equal != null)
-									and.add(equal);
+									if (equal != null)
+										andDateValue.add(equal);
 
-								equal = getEqual(cb, expression, "minute",
-										between[0].get(Calendar.MINUTE));
+									equal = getEqual(cb, expression, "minute",
+											between[0].get(Calendar.MINUTE));
 
-								if (equal != null)
-									and.add(equal);
+									if (equal != null)
+										andDateValue.add(equal);
 
-								equal = getEqual(cb, expression, "second",
-										between[0].get(Calendar.SECOND));
+									equal = getEqual(cb, expression, "second",
+											between[0].get(Calendar.SECOND));
 
-								if (equal != null)
-									and.add(equal);
+									if (equal != null)
+										andDateValue.add(equal);
 
-								predicate = cb.and(and
-										.toArray(new Predicate[0]));
+									or.add(cb.and(andDateValue
+											.toArray(new Predicate[0])));
+								}
 							}
-						} else
+						}
+						if (!or.isEmpty())
+							predicate = cb.or(or.toArray(new Predicate[0]));
+						else
 							predicate = cb.isNull(path);
 					} else {
-						value += WILD_CARD;
+						List<Predicate> or = new ArrayList<Predicate>();
+						for (Object objectValue : values) {
 
-						Expression<?> expression = (Expression<?>) path;
+							Expression<?> expression = (Expression<?>) path;
 
-						Expression<String> stringExpression;
+							Expression<String> stringExpression;
 
-						if (type.equals(String.class)) {
-							value = value.toLowerCase();
+							String stringValue;
+							if (type.equals(String.class)) {
+								stringValue = ((String) objectValue)
+										.toLowerCase() + WILD_CARD;
 
-							stringExpression = (Expression<String>) expression;
-							stringExpression = cb.lower(stringExpression);
-						} else {
-							expression = expression.as(String.class);
-							stringExpression = (Expression<String>) expression;
+								stringExpression = (Expression<String>) expression;
+
+								or.add(cb.like(cb.lower(stringExpression),
+										stringValue));
+							} else if (AppUtil.isNumber(type)) {
+								stringValue = ((Number) objectValue)
+										+ WILD_CARD;
+
+								stringExpression = (Expression<String>) expression
+										.as(String.class);
+
+								or.add(cb.like(stringExpression, stringValue));
+							}
+
 						}
+						if (!or.isEmpty())
+							predicate = cb.or(or.toArray(new Predicate[0]));
+						else
+							predicate = cb.isNull(path);
 
-						predicate = cb.like(stringExpression, value);
 					}
 
 					if (predicate != null)
-						criteria.add(predicate);
+						and.add(predicate);
 
 				}
 
 			}
 		}
 
-		cq.where(criteria.toArray(new Predicate[0]));
+		cq.where(and.toArray(new Predicate[0]));
 	}
 
 	private Map<String, From<?, ?>> addJoins(
@@ -398,7 +434,7 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 			byte pageSize,
 			String sortField,
 			SortOrderField sortOrder,
-			Map<String, String> filters,
+			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins) {
 
 		System.out.println("search(" + first + ", " + pageSize + ", "
@@ -429,7 +465,7 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 	}
 
 	public long count(
-			Map<String, String> filters,
+			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins) {
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<Long> cq = cb.createQuery(Long.class);

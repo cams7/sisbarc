@@ -23,7 +23,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.BaseEntity;
+
 
 /**
  * @author cams7

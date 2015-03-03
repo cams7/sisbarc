@@ -3,6 +3,8 @@
  */
 package org.primefaces.showcase.domain;
 
+import java.util.Date;
+
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
@@ -17,5 +19,6 @@ public class CarEntity_ {
 	public static volatile SingularAttribute<CarEntity, CarEntity.Color> color;
 	public static volatile SingularAttribute<CarEntity, CarBrandEntity> brand;
 	public static volatile SingularAttribute<CarEntity, Float> price;
-	public static volatile SingularAttribute<CarEntity, Boolean> soldState;
+	public static volatile SingularAttribute<CarEntity, Boolean> sold;
+	public static volatile SingularAttribute<CarEntity, Date> saleDate;
 }

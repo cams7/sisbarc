@@ -28,15 +28,15 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import br.com.cams7.as.service.BaseServiceImpl;
 import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity_;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
-import br.com.cams7.sisbarc.as.service.BaseServiceImpl;
-import br.com.cams7.sisbarc.util.AppException;
-import br.com.cams7.sisbarc.util.AppUtil;
+import br.com.cams7.util.AppException;
+import br.com.cams7.util.AppUtil;
 
 @Stateless
 @Local(ArduinoService.class)

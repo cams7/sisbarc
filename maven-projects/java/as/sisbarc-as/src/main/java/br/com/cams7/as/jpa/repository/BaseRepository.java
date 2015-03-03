@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.as.jpa.repository;
+package br.com.cams7.as.jpa.repository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -9,8 +9,8 @@ import java.util.Map;
 
 import javax.persistence.metamodel.SingularAttribute;
 
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
-import br.com.cams7.sisbarc.jpa.domain.SortOrderField;
+import br.com.cams7.jpa.domain.BaseEntity;
+import br.com.cams7.jpa.domain.SortOrderField;
 
 /**
  * @author cesar
@@ -28,7 +28,7 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins);
 
 	public long count(
-			Map<String, String> filters,
+			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins);
 
 	public void remove(E entity);
@@ -40,7 +40,7 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 			byte pageSize,
 			String sortField,
 			SortOrderField sortOrder,
-			Map<String, String> filters,
+			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins);
 
 	public Class<E> getEntityType();

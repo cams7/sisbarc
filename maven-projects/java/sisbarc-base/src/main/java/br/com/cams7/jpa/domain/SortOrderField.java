@@ -1,4 +1,4 @@
-package br.com.cams7.sisbarc.jpa.domain;
+package br.com.cams7.jpa.domain;
 
 public enum SortOrderField {
 	ASCENDING, DESCENDING, UNSORTED;

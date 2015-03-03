@@ -1,12 +1,12 @@
 /**
  * 
  */
-package br.com.cams7.sisbarc.as.service;
+package br.com.cams7.as.service;
 
 import java.io.Serializable;
 
-import br.com.cams7.sisbarc.as.jpa.repository.BaseRepository;
-import br.com.cams7.sisbarc.jpa.domain.BaseEntity;
+import br.com.cams7.as.jpa.repository.BaseRepository;
+import br.com.cams7.jpa.domain.BaseEntity;
 
 /**
  * @author cesar

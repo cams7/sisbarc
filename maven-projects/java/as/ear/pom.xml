@@ -75,6 +75,15 @@
 			<artifactId>acende_apaga_leds-web</artifactId>
 			<type>war</type>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.primefaces</groupId>
+			<artifactId>primefaces</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -9,6 +9,24 @@
 <h:head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>DataTable - Lazy</title>
+
+	<style type="text/css">
+.ui-datatable .ui-datatable-header {
+	text-align: right !important;
+}
+
+.year-spinner input {
+	width: 100px
+}
+
+.ui-button-text-only .ui-button-text {
+	padding: 0.3em 0.4em;
+}
+
+.ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-header .ui-chkbox {
+	display: none;
+}
+</style>
 </h:head>
 <h:body>
 	<f:view contentType="text/html">
@@ -16,60 +34,113 @@
 			<p:messages id="messages" showDetail="true" autoUpdate="true"
 				closable="true" />
 
-
 			<p:dataTable var="car" value="#{dtLazyView.lazyModel}"
 				paginator="true" rows="#{dtLazyView.rows}"
 				first="#{dtLazyView.first}"
 				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
 				rowsPerPageTemplate="5,10,15" selectionMode="single"
-				selection="#{dtLazyView.selectedCar}" id="carTable" lazy="true"
-				widgetVar="carsTable"
-				emptyMessage="No cars found with given criteria">
+				selection="#{dtLazyView.selectedEntity}" id="carTable" lazy="true"
+				emptyMessage="No cars found with given criteria"
+				widgetVar="carsTable">
+
+				<!-- f:facet name="header">
+					<p:outputPanel>
+						<h:outputText value="Search all fields:" />
+						<p:inputText id="globalFilter" onkeyup="PF('carsTable').filter()"
+							style="width:150px" placeholder="Enter keyword" />
+					</p:outputPanel>
+				</f:facet -->
 
 				<p:ajax event="rowSelect" listener="#{dtLazyView.onRowSelect}"
-					update=":form:carDetail" onstart="dlg.show();"
-					oncomplete="dlg.hide();" onsuccess="carDialog.show();" />
+					update=":form:carDetail" oncomplete="PF('carDialog').show()" />
 
-				<p:column headerText="Id" sortBy="#{car.id}" filterBy="#{car.id}">
+				<p:column headerText="Id" sortBy="#{car.id}" filterBy="#{car.id}"
+					footerText="contains" filterMatchMode="contains">
 					<h:outputText value="#{car.id}" />
 				</p:column>
 
-
 				<p:column headerText="Year" sortBy="#{car.year}"
-					filterBy="#{car.year}">
+					filterBy="#{car.year}" footerText="lte" filterMatchMode="lte">
+					<f:facet name="filter">
+						<p:spinner onchange="PF('carsTable').filter()"
+							styleClass="year-spinner">
+							<f:converter converterId="javax.faces.Short" />
+						</p:spinner>
+					</f:facet>
 					<h:outputText value="#{car.year}" />
 				</p:column>
 
 				<p:column headerText="Brand" sortBy="#{car.brand.name}"
-					filterBy="#{car.brand.name}">
+					filterBy="#{car.brand.name}" footerText="contains"
+					filterMatchMode="contains">
 					<h:outputText value="#{car.brand.name}" />
 				</p:column>
 
-
 				<p:column headerText="Color" sortBy="#{car.color}"
-					filterBy="#{car.color}">
+					filterBy="#{car.color}" footerText="in" filterMatchMode="in">
+					<f:facet name="filter">
+						<p:selectCheckboxMenu label="Colors"
+							onchange="PF('carsTable').filter()" panelStyle="width:125px"
+							scrollHeight="150" converter="carColorConverter">
+							<f:selectItems value="#{dtLazyView.colors}" />
+						</p:selectCheckboxMenu>
+					</f:facet>
 					<h:outputText value="#{car.color}" />
 				</p:column>
 
+				<p:column filterBy="#{car.sold}" headerText="Status"
+					footerText="equals" filterMatchMode="equals">
+					<f:facet name="filter">
+						<p:selectOneButton onchange="PF('carsTable').filter()">
+							<f:converter converterId="javax.faces.Boolean" />
+							<f:selectItem itemLabel="All" itemValue="" />
+							<f:selectItem itemLabel="Sold" itemValue="true" />
+							<f:selectItem itemLabel="Sale" itemValue="false" />
+						</p:selectOneButton>
+					</f:facet>
+					<h:outputText value="#{car.sold ? 'Sold': 'Sale'}" />
+				</p:column>
+
+				<p:column filterBy="#{car.price}" sortBy="#{car.price}"
+					headerText="Price" footerText="contains" filterMatchMode="contains">
+					<f:facet name="filter">
+						<p:inputText onchange="PF('carsTable').filter()"
+							style="width:125px">
+							<f:convertNumber currencySymbol="$" type="currency" />
+						</p:inputText>
+					</f:facet>
+
+					<h:outputText value="#{car.price}">
+						<f:convertNumber pattern="$#,###.00" />
+					</h:outputText>
+				</p:column>
+
 				<p:column headerText="City" sortBy="#{car.brand.city.name}"
-					filterBy="#{car.brand.city.name}">
+					filterBy="#{car.brand.city.name}" footerText="contains"
+					filterMatchMode="contains">
 					<h:outputText value="#{car.brand.city.name}" />
 				</p:column>
 
-				<p:column headerText="State" sortBy="#{car.brand.city.state.name}"
-					filterBy="#{car.brand.city.state.name}">
-					<h:outputText value="#{car.brand.city.state.name}" />
-				</p:column>
-
-				<p:column headerText="Country"
-					sortBy="#{car.brand.city.state.country.name}"
-					filterBy="#{car.brand.city.state.country.name}">
-					<h:outputText value="#{car.brand.city.state.country.name}" />
+				<p:column headerText="Continent"
+					sortBy="#{car.brand.city.state.country.continent}"
+					filterBy="#{car.brand.city.state.country.continent}"
+					footerText="exact" filterMatchMode="exact">
+					<f:facet name="filter">
+						<p:selectOneMenu onchange="PF('carsTable').filter()"
+							converter="continentConverter">
+							<f:selectItem itemLabel="Select One" itemValue="#{null}"
+								noSelectionOption="true" />
+							<f:selectItems value="#{dtLazyView.continents}" />
+						</p:selectOneMenu>
+					</f:facet>
+					<h:outputText value="#{car.brand.city.state.country.continent}" />
 				</p:column>
 
 				<p:column headerText="Sale date" sortBy="#{car.saleDate}"
-					filterBy="#{car.saleDate}">
+					filterBy="#{car.saleDate}" footerText="contains"
+					filterMatchMode="contains">
 					<h:outputText value="#{car.saleDate}">
+						<!-- f:convertDateTime locale="pt_BR" timeZone="America/Sao_Paulo"/-->
 						<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
 					</h:outputText>
 				</p:column>
@@ -84,26 +155,27 @@
 				showEffect="fade" hideEffect="fade" resizable="false">
 				<p:outputPanel id="carDetail" style="text-align:center;">
 					<p:panelGrid columns="2"
-						rendered="#{not empty dtLazyView.selectedCar}"
+						rendered="#{not empty dtLazyView.selectedEntity}"
 						columnClasses="label,value">
 						<f:facet name="header">
 							<p:graphicImage
-								name="demo/images/car/#{dtLazyView.selectedCar.brand.name}-big.gif" />
+								name="demo/images/car/#{dtLazyView.selectedEntity.brand.name}-big.gif" />
 						</f:facet>
 
 						<h:outputText value="Id:" />
-						<h:outputText value="#{dtLazyView.selectedCar.id}" />
+						<h:outputText value="#{dtLazyView.selectedEntity.id}" />
 
 						<h:outputText value="Year" />
-						<h:outputText value="#{dtLazyView.selectedCar.year}" />
+						<h:outputText value="#{dtLazyView.selectedEntity.year}" />
 
 						<h:outputText value="Color:" />
-						<h:outputText value="#{dtLazyView.selectedCar.color}"
-							style="color:#{dtLazyView.selectedCar.color}" />
+						<h:outputText value="#{dtLazyView.selectedEntity.color}"
+							style="color:#{dtLazyView.selectedEntity.color}" />
 
 						<h:outputText value="Price:" />
-						<h:outputText value="#{dtLazyView.selectedCar.price}">
-							<f:convertNumber type="currency" currencySymbol="$" />
+						<h:outputText value="#{dtLazyView.selectedEntity.price}">
+							<f:convertNumber currencySymbol="R$" type="currency"
+								maxFractionDigits="2" />
 						</h:outputText>
 					</p:panelGrid>
 				</p:outputPanel>
