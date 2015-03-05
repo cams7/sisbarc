@@ -235,9 +235,10 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 
 									final DateFormat DF = new SimpleDateFormat(
 											"dd/MM/yyyy HH:mm:ss");
-									System.out.println("from: "
-											+ DF.format(date1) + ", to: "
-											+ DF.format(date2));
+									getLog().info(
+											"from: " + DF.format(date1)
+													+ ", to: "
+													+ DF.format(date2));
 								} else {
 									List<Predicate> andDateValue = new ArrayList<Predicate>();
 
@@ -429,6 +430,7 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 		return addJoins(false, froms, list, "*");
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<E> search(
 			short first,
 			byte pageSize,
@@ -437,8 +439,9 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins) {
 
-		System.out.println("search(" + first + ", " + pageSize + ", "
-				+ sortField + ", " + sortOrder + ", " + filters + ")\n");
+		getLog().info(
+				"search(" + first + ", " + pageSize + ", " + sortField + ", "
+						+ sortOrder + ", " + filters + ")\n");
 
 		CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 		CriteriaQuery<E> cq = cb.createQuery(getEntityType());
@@ -464,6 +467,7 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 		return entities;
 	}
 
+	@SuppressWarnings("unchecked")
 	public long count(
 			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins) {
@@ -485,6 +489,7 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 		return count;
 	}
 
+	@SuppressWarnings("unchecked")
 	public long count(
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins) {
 		long count = count(null, joins);

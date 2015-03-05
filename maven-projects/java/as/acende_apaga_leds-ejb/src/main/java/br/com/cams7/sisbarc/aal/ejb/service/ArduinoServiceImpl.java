@@ -22,6 +22,8 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -47,11 +49,19 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LEDEntity, PinPK>
 	@Inject
 	private Logger log;
 
+	@PersistenceContext(unitName = "acendeApagaLEDsUnit")
+	private EntityManager entityManager;
+
 	private JMXConnector jmxConnector;
 	private AppArduinoServiceMBean mbeanProxy;
 
 	public ArduinoServiceImpl() {
 		super();
+	}
+
+	@Override
+	protected EntityManager getEntityManager() {
+		return entityManager;
 	}
 
 	@PostConstruct

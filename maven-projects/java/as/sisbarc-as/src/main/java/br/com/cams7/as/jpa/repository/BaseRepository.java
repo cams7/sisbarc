@@ -24,9 +24,11 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 
 	public List<E> findAll();
 
+	@SuppressWarnings("unchecked")
 	public long count(
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins);
 
+	@SuppressWarnings("unchecked")
 	public long count(
 			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins);
@@ -35,6 +37,7 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 
 	public void remove(ID id);
 
+	@SuppressWarnings("unchecked")
 	public List<E> search(
 			short first,
 			byte pageSize,

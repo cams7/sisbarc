@@ -4,14 +4,19 @@
 package br.com.cams7.as.view;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
+import javax.faces.application.FacesMessage.Severity;
 import javax.faces.context.FacesContext;
 import javax.persistence.metamodel.SingularAttribute;
 
+import org.primefaces.event.CloseEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
@@ -30,6 +35,7 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 		extends AbstractBase<E> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	private final String RESOURCE_BUNDLE = "messages";
 
 	private final byte ENTITY_ARGUMENT_NUMBER = 1;
 
@@ -39,6 +45,8 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 
 	private final short PAGE_FIRST = 0;
 	private final byte PAGE_SIZE = 10;
+
+	private int totalRows;
 
 	private short lastPageFirst;
 	private byte lastPageSize;
@@ -126,7 +134,8 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 			}
 		};
 
-		lazyModel.setRowCount((int) getService().count(joins));
+		totalRows = (int) getService().count(joins);
+		lazyModel.setRowCount(totalRows);
 
 		init();
 	}
@@ -138,10 +147,43 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 		E selectedEntity = (E) event.getObject();
 		setSelectedEntity(selectedEntity);
 
-		getLog().info("selectedEntity: " + selectedEntity);
-		FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO,
-				"Entity Selected", String.valueOf(selectedEntity.getId()));
+		getLog().info("entity selected: " + getSelectedEntity());
+	}
+
+	public void handleClose(CloseEvent event) {
+		setSelectedEntity(null);
+	}
+
+	/**
+	 * Adiciona um mensagem no contexto do Faces (<code>FacesContext</code>).
+	 * 
+	 * @param summary
+	 * @param detail
+	 */
+	protected void addMessage(Severity severity, String summary, String detail) {
+		FacesMessage msg = new FacesMessage(severity, summary, detail);
 		FacesContext.getCurrentInstance().addMessage(null, msg);
+	}
+
+	/**
+	 * @param key
+	 * @return Recupera a mensagem do arquivo properties
+	 *         <code>ResourceBundle</code>.
+	 */
+	protected String getMessageFromI18N(String key, Object... params) {
+		Locale locale = FacesContext.getCurrentInstance().getViewRoot()
+				.getLocale();
+
+		ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BUNDLE,
+				locale, this.getClass().getClassLoader());
+
+		String message;
+		if (params.length > 0)
+			message = MessageFormat.format(bundle.getString(key), params);
+		else
+			message = bundle.getString(key);
+
+		return message;
 	}
 
 	/*
@@ -180,6 +222,13 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 	 */
 	public byte getRows() {
 		return lastPageSize;
+	}
+
+	/**
+	 * @return the rowCount
+	 */
+	public int getTotalRows() {
+		return totalRows;
 	}
 
 }

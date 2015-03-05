@@ -52,7 +52,7 @@
 				</f:facet -->
 
 				<p:ajax event="rowSelect" listener="#{dtLazyView.onRowSelect}"
-					update=":form:carDetail" oncomplete="PF('carDialog').show()" />
+					update=":form:carDetail" onstart="PF('dlg').show();" oncomplete="PF('dlg').hide();" onsuccess="PF('carDialog').show()" />
 
 				<p:column headerText="Id" sortBy="#{car.id}" filterBy="#{car.id}"
 					footerText="contains" filterMatchMode="contains">
