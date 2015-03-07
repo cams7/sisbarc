@@ -4,7 +4,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core">
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
 
 <h:head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -28,15 +29,16 @@
 			</div>
 		</div>
 
+
 		<div class="container">
 			<div class="row-fluid show-grid">
-				<div class="well span2">
+				<div class="well span3">
 					<ui:insert name="sidebar">
 						<ui:include src="../menu.xhtml" />
 					</ui:insert>
 				</div>
-				<div class="span10">
-					<ui:insert name="content"></ui:insert>
+				<div class="span9">
+					<ui:insert name="content" />
 
 					<ui:insert name="footer">
 						<ui:include src="footer.xhtml" />
@@ -45,6 +47,14 @@
 			</div>
 		</div>
 
+		<p:ajaxStatus onstart="PF('statusDialog').show()"
+			onsuccess="PF('statusDialog').hide()" />
+
+		<p:dialog widgetVar="statusDialog" modal="true" visible="false"
+			draggable="false" closable="false" resizable="false"
+			showHeader="false">
+			<p:graphicImage name="/demo/images/ajaxloadingbar.gif" />
+		</p:dialog>
 	</f:view>
 </h:body>
 </html>

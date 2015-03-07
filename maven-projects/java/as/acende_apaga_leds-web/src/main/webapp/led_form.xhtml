@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<ui:fragment xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+	<p:outputPanel id="ledDetail" style="text-align:center;">
+		<p:panelGrid columns="2" rendered="#{not empty led}"
+			columnClasses="value" style="width:100%">
+			<f:facet name="header">
+			</f:facet>
+
+			<h:outputText value="#{msg['label.led.pin']}:" />
+			<h:outputText id="pin" value="#{led.id.pinType} #{led.id.pin}"
+				label="#{msg['label.led.pin']}" />
+
+
+			<h:outputText value="#{msg['label.led.cor']}:" />
+			<h:selectOneMenu id="color" value="#{led.cor}"
+				label="#{msg['label.led.cor']}" styleClass="input-large"
+				disabled="true">
+				<f:selectItems value="#{ledView.cores}" />
+			</h:selectOneMenu>
+
+			<h:outputText value="#{msg['label.led.evento']}:" />
+			<h:selectOneMenu id="event" value="#{led.evento}"
+				label="#{msg['label.led.evento']}" styleClass="input-large"
+				disabled="#{not led.alteraEvento}">
+				<f:selectItems value="#{ledView.eventos}" />
+			</h:selectOneMenu>
+
+			<h:outputText value="#{msg['label.led.intervalo']}:" />
+			<h:selectOneMenu id="eventInterval" value="#{led.intervalo}"
+				label="#{msg['label.led.intervalo']}" styleClass="input-large"
+				disabled="#{not led.alteraIntervalo}">
+				<f:selectItems value="#{ledView.intervalos}" />
+			</h:selectOneMenu>
+
+			<h:outputText value="#{msg['label.led.ativadoPorBotao']}:" />
+			<h:selectOneRadio id="activeByButton" value="#{led.ativadoPorBotao}"
+				label="#{msg['label.led.ativadoPorBotao']}" styleClass="input-small"
+				disabled="true">
+				<f:selectItem itemValue="#{true}" itemLabel="#{msg['active.true']}" />
+				<f:selectItem itemValue="#{false}"
+					itemLabel="#{msg['active.false']}" />
+			</h:selectOneRadio>
+
+			<h:outputText value="#{msg['label.led.ativo']}:" />
+			<h:selectOneRadio id="active" value="#{led.ativo}"
+				label="#{msg['label.led.ativo']}" styleClass="input-small">
+				<f:selectItem itemValue="#{true}" itemLabel="#{msg['active.true']}" />
+				<f:selectItem itemValue="#{false}"
+					itemLabel="#{msg['active.false']}" />
+			</h:selectOneRadio>
+
+			<f:facet name="footer">
+				<p:commandButton value="#{msg['button.update']}"
+					actionListener="#{ledView.atualizaLED}"
+					styleClass="btn btn-success"
+					oncomplete="handleUpdateRequest(xhr, status, args)"
+					update="all_messages" />
+				<p:commandButton type="button" value="#{msg['button.cancel']}"
+					onclick="PF('ledDialog').hide();" styleClass="btn" />
+			</f:facet>
+		</p:panelGrid>
+	</p:outputPanel>
+
+	<script type="text/javascript">
+		function handleUpdateRequest(xhr, status, args) {
+			if (args.validationFailed || !args.arduinoAtualizado)
+				return;
+
+			PF('ledDialog').hide();
+			PF('ledsTable').filter();
+		}
+	</script>
+</ui:fragment>

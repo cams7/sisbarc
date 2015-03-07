@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
@@ -97,6 +98,7 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 			public List<E> load(int first, int pageSize, String sortField,
 					SortOrder sortOrder, Map<String, Object> filters) {
 
+				filters = AppUtil.removeEmptyArray(filters);
 				boolean rowCountChanged = false;
 
 				if (pageSize != lastPageSize) {
@@ -154,15 +156,34 @@ public abstract class BaseView<S extends BaseService<E, ?>, E extends BaseEntity
 		setSelectedEntity(null);
 	}
 
-	/**
-	 * Adiciona um mensagem no contexto do Faces (<code>FacesContext</code>).
-	 * 
-	 * @param summary
-	 * @param detail
-	 */
-	protected void addMessage(Severity severity, String summary, String detail) {
-		FacesMessage msg = new FacesMessage(severity, summary, detail);
-		FacesContext.getCurrentInstance().addMessage(null, msg);
+	private void addMessage(Severity severity, String summary, String detail) {
+		FacesMessage message = new FacesMessage(severity, summary, detail);
+		FacesContext.getCurrentInstance().addMessage(null, message);
+	}
+
+	protected void addINFOMessage(String summary, String detail) {
+		addMessage(FacesMessage.SEVERITY_INFO, summary, detail);
+		getLog().info(detail);
+	}
+
+	protected void addWARNMessage(String summary, String detail) {
+		addMessage(FacesMessage.SEVERITY_WARN, summary, detail);
+		getLog().log(Level.WARNING, detail);
+	}
+
+	protected void addERRORMessage(String summary, String detail) {
+		addMessage(FacesMessage.SEVERITY_ERROR, summary, detail);
+		getLog().log(Level.SEVERE, detail);
+	}
+
+	protected void addMessageMonitorNotRun(String detail) {
+		String summary = getMessageFromI18N("error.msg.monitor.not.run");// Resumo
+		addWARNMessage(summary, detail);
+	}
+
+	protected void addMessageArduinoNotRun(String detail) {
+		String summary = getMessageFromI18N("error.msg.arduino.not.run");// Resumo
+		addWARNMessage(summary, detail);
 	}
 
 	/**

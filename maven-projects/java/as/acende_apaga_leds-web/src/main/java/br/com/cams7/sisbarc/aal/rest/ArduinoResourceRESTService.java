@@ -3,7 +3,6 @@
  */
 package br.com.cams7.sisbarc.aal.rest;
 
-import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -51,36 +50,20 @@ public class ArduinoResourceRESTService {
 
 		ArduinoPinType tipoPino = ArduinoPinType.valueOf(stringTipoPino);
 		Short pino = Short.valueOf(stringPino);
-		EstadoLED estado = EstadoLED.valueOf(stringEstado);
 
-		LEDEntity led = new LEDEntity();
-		led.setId(new PinPK(tipoPino, pino));
-		led.setEstado(estado);
+		LEDEntity led = service.findOne(new PinPK(tipoPino, pino));
+		led.setEstado(EstadoLED.valueOf(stringEstado));
 
-		log.info("LED " + led.getCor() + " -> mudaStatusLED('"
-				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', '" + led.getEstado() + "') - Before sleep: "
-				+ ArduinoService.DF.format(new Date()));
+		try {
+			Future<LEDEntity> call = service.alteraLEDEstado(led);
+			return call.get();
+		} catch (InterruptedException | ExecutionException e) {
+			log.log(Level.SEVERE, e.getMessage());
+		} catch (NullPointerException e) {
+			log.log(Level.WARNING, e.getMessage());
+		}
 
-		Future<LEDEntity> call = service.alteraEstadoLED(led);
-
-		if (call != null)
-			try {
-				led = call.get();
-
-				log.info("LED " + led.getCor() + " -> '"
-						+ led.getId().getPinType() + " " + led.getId().getPin()
-						+ "' esta '" + led.getEstado() + "'");
-			} catch (InterruptedException | ExecutionException e) {
-				log.log(Level.WARNING, e.getMessage());
-			}
-
-		log.info("LED " + led.getCor() + " -> mudaStatusLED('"
-				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', '" + led.getEstado() + "') - After sleep: "
-				+ ArduinoService.DF.format(new Date()));
-
-		return led;
+		return null;
 	}
 
 }

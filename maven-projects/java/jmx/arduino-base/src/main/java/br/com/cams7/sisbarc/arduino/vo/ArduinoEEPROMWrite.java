@@ -9,6 +9,8 @@ package br.com.cams7.sisbarc.arduino.vo;
  */
 public class ArduinoEEPROMWrite extends ArduinoEEPROM {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * 
 	 */
@@ -25,8 +27,8 @@ public class ArduinoEEPROMWrite extends ArduinoEEPROM {
 	 * @param threadTime
 	 * @param actionEvent
 	 */
-	public ArduinoEEPROMWrite(ArduinoStatus status, ArduinoPinType pinType, byte pin,
-			byte threadTime, byte actionEvent) {
+	public ArduinoEEPROMWrite(ArduinoStatus status, ArduinoPinType pinType,
+			byte pin, byte threadTime, byte actionEvent) {
 		super(status, ArduinoEvent.WRITE, pinType, pin, threadTime, actionEvent);
 	}
 

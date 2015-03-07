@@ -4,6 +4,7 @@
 package br.com.cams7.sisbarc.aal.ejb.service;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import br.com.cams7.as.service.BaseService;
@@ -19,8 +20,12 @@ public interface ArduinoService extends BaseService<LEDEntity, PinPK> {
 	public static final SimpleDateFormat DF = new SimpleDateFormat(
 			YEARS_TO_MILLIS);
 
-	public Future<LEDEntity> alteraEstadoLED(LEDEntity led);
+	public Future<LEDEntity> alteraLEDEstado(LEDEntity led);
 
-	public Future<LEDEntity> alteraEventoLED(LEDEntity led);
+	public Future<Boolean> atualizaLED(LEDEntity led);
+
+	public Future<Boolean> sincronizaLEDEventos(List<LEDEntity> leds);
+
+	public Future<Boolean> alteraLEDEventos(List<LEDEntity> leds);
 
 }

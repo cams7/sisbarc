@@ -25,17 +25,20 @@
 #include <vo/ArduinoUSART.h>
 #include <vo/ArduinoEEPROM.h>
 
-#define PINO_LED_PISCA    13   //Pino 13 Digital
+#define D13_LED_PISCA    13   //Pino 13 Digital
 
-#define PINO_LED_AMARELO  11   //Pino 11 PWM
-#define PINO_LED_VERDE    10   //Pino 10 PWM
-#define PINO_LED_VERMELHO 9    //Pino 09 PWM
+#define D11_LED_AMARELO  11   //Pino 11 PWM
+#define D10_LED_VERDE    10   //Pino 10 PWM
+#define D09_LED_VERMELHO 9    //Pino 09 PWM
+#define D06_LED_AMARELO  6    //Pino 06 PWM
+#define D05_LED_VERDE    5    //Pino 05 PWM
+#define D04_LED_VERMELHO 4    //Pino 04 Digital
 
-#define PINO_BOTAO_LED_AMARELO  12 //Pino 12 Digital
-#define PINO_BOTAO_LED_VERDE    8  //Pino 8 Digital
-#define PINO_BOTAO_LED_VERMELHO 7  //Pino 7 Digital
+#define D12_BOTAO_LED_AMARELO  12 //Pino 12 Digital
+#define D08_BOTAO_LED_VERDE    8  //Pino 08 Digital
+#define D07_BOTAO_LED_VERMELHO 7  //Pino 07 Digital
 
-#define PINO_POTENCIOMETRO      0  //Pino 0 Analogico
+#define A0_POTENCIOMETRO      0  //Pino 0 Analogico
 
 #define INTERVALO_LED_PISCA    1000 // 1 segundo
 #define INTERVALO_BOTAO        500  // 1/2 segundo
@@ -69,28 +72,33 @@ using namespace SISBARC;
 
 void alteraValorLEDPorIndice(uint8_t const);
 
-bool callLEDPisca(ArduinoStatus* const);
+bool callD13LEDPisca(ArduinoStatus* const);
 
-bool callLEDAmarelo(ArduinoStatus* const);
-bool callLEDVerde(ArduinoStatus* const);
-bool callLEDVermelho(ArduinoStatus* const);
+bool callD11LEDAmarelo(ArduinoStatus* const);
+bool callD10LEDVerde(ArduinoStatus* const);
+bool callD09LEDVermelho(ArduinoStatus* const);
+bool callD06LEDAmarelo(ArduinoStatus* const);
+bool callD05LEDVerde(ArduinoStatus* const);
+bool callD04LEDVermelho(ArduinoStatus* const);
 
 bool callLEDBotao(ArduinoStatus* const);
 
-bool callPotenciometro(ArduinoStatus* const);
+bool callA0Potenciometro(ArduinoStatus* const);
 
-const uint8_t TOTAL_LEDS = 0x03;
+const uint8_t TOTAL_LEDS = 0x06;
+const uint8_t TOTAL_BOTOES = 0x03;
 
-const uint8_t PINOS_LEDS[] = { PINO_LED_AMARELO, PINO_LED_VERDE,
-PINO_LED_VERMELHO };
-const uint8_t PINOS_BOTOES[] = { PINO_BOTAO_LED_AMARELO, PINO_BOTAO_LED_VERDE,
-PINO_BOTAO_LED_VERMELHO };
+const uint8_t PINOS_LEDS[] = { D11_LED_AMARELO, D10_LED_VERDE, D09_LED_VERMELHO,
+D06_LED_AMARELO, D05_LED_VERDE, D04_LED_VERMELHO };
+const uint8_t PINOS_BOTOES[] = { D12_BOTAO_LED_AMARELO, D08_BOTAO_LED_VERDE,
+D07_BOTAO_LED_VERMELHO };
 
-uint8_t eventosLEDs[] = { ACENDE_APAGA, ACENDE_APAGA, ACENDE_APAGA };
-uint8_t ultimosValoresLEDs[] = { 0x00, 0x00, 0x00 };
+uint8_t eventosLEDs[] = { ACENDE_APAGA, ACENDE_APAGA, ACENDE_APAGA,
+ACENDE_APAGA, ACENDE_APAGA, PISCA_PISCA };
+uint8_t ultimosValoresLEDs[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-int8_t fadeAmountsLEDs[] = { 0x05, 0x05, 0x05 };
-bool ledsAtivas[] = { false, false, false };
+int8_t fadeAmountsLEDs[] = { 0x05, 0x05, 0x05, 0x05, 0x05, 0x05 };
+bool ledsAtivas[] = { false, false, false, false, false, false };
 
 uint16_t ultimoValorPotenciometro = 0x0000;    //Ultimo valor do Potenciometro
 uint8_t ultimoValorLEDPisca = (int8_t) HIGH;    //Utimo valor do LED do pino 13
@@ -113,16 +121,21 @@ int main(void) {
 }
 
 void setup(void) {
-	for (int i = 0; i < TOTAL_LEDS; i++) {
-		pinMode(PINOS_LEDS[i], OUTPUT);
-		pinMode(PINOS_BOTOES[i], INPUT);
+	pinMode(D13_LED_PISCA, OUTPUT);
 
+	for (uint8_t i = 0x00; i < TOTAL_LEDS; i++)
+		pinMode(PINOS_LEDS[i], OUTPUT);
+
+	for (uint8_t i = 0x00; i < TOTAL_BOTOES; i++) {
+		pinMode(PINOS_BOTOES[i], INPUT);
 		digitalWrite(PINOS_BOTOES[i], HIGH);
 	}
 
-	pinMode(PINO_LED_PISCA, OUTPUT);
+	//----------------------------------------------------------
 
 	Sisbarc.begin(&Serial/*, BAUD_RATE*/);
+
+	//----------------------------------------------------------
 
 	Sisbarc.addThreadInterval(0x00, INTERVALO_100MILISEGUNDOS);
 	Sisbarc.addThreadInterval(0x01, INTERVALO_250MILISEGUNDOS);
@@ -133,45 +146,74 @@ void setup(void) {
 	Sisbarc.addThreadInterval(0x06, INTERVALO_5SEGUNDOS);
 	Sisbarc.addThreadInterval(0x07, SEM_INTERVALO);
 
-	int16_t evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_LED_PISCA,
-			callLEDPisca,
+	//----------------------------------------------------------
+
+	int16_t evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D13_LED_PISCA,
+			callD13LEDPisca,
 			INTERVALO_LED_PISCA);
 
-	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_LED_AMARELO,
-			callLEDAmarelo);
+	//----------------------------------------------------------
+
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D11_LED_AMARELO,
+			callD11LEDAmarelo);
 	if (evento != -1) {
 		eventosLEDs[0] = evento;
 		alteraValorLEDPorIndice(0);
 	}
 
-	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_LED_VERDE,
-			callLEDVerde);
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D10_LED_VERDE,
+			callD10LEDVerde);
 	if (evento != -1) {
 		eventosLEDs[1] = evento;
 		alteraValorLEDPorIndice(1);
 	}
 
-	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_LED_VERMELHO,
-			callLEDVermelho);
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D09_LED_VERMELHO,
+			callD09LEDVermelho);
 	if (evento != -1) {
 		eventosLEDs[2] = evento;
 		alteraValorLEDPorIndice(2);
 	}
 
-	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_BOTAO_LED_AMARELO,
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D06_LED_AMARELO,
+			callD06LEDAmarelo);
+	if (evento != -1) {
+		eventosLEDs[3] = evento;
+		alteraValorLEDPorIndice(3);
+	}
+
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D05_LED_VERDE,
+			callD05LEDVerde);
+	if (evento != -1) {
+		eventosLEDs[4] = evento;
+		alteraValorLEDPorIndice(4);
+	}
+
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D04_LED_VERMELHO,
+			callD04LEDVermelho);
+	if (evento != -1) {
+		eventosLEDs[5] = evento;
+		alteraValorLEDPorIndice(5);
+	}
+
+	//----------------------------------------------------------
+
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D12_BOTAO_LED_AMARELO,
 			callLEDBotao,
 			INTERVALO_BOTAO);
 
-	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_BOTAO_LED_VERDE,
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D08_BOTAO_LED_VERDE,
 			callLEDBotao,
 			INTERVALO_BOTAO);
 
-	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, PINO_BOTAO_LED_VERMELHO,
+	evento = Sisbarc.onRun(ArduinoStatus::DIGITAL, D07_BOTAO_LED_VERMELHO,
 			callLEDBotao,
 			INTERVALO_BOTAO);
 
-	evento = Sisbarc.onRun(ArduinoStatus::ANALOG, PINO_POTENCIOMETRO,
-			callPotenciometro,
+	//----------------------------------------------------------
+
+	evento = Sisbarc.onRun(ArduinoStatus::ANALOG, A0_POTENCIOMETRO,
+			callA0Potenciometro,
 			INTERVALO_POENCIOMETRO);
 }
 
@@ -210,20 +252,20 @@ bool isCallBySerialToPinAnalog(ArduinoStatus* const arduino) {
 	return true;
 }
 
-uint8_t getIndicePino(uint8_t const pin) {
-	uint8_t indicePino = 0x00;
-	for (; indicePino < TOTAL_LEDS; indicePino++)
-		if (PINOS_LEDS[indicePino] == pin)
+uint8_t getIndiceLEDPino(uint8_t const pin) {
+	uint8_t i = 0x00;
+	for (; i < TOTAL_LEDS; i++)
+		if (PINOS_LEDS[i] == pin)
 			break;
-	return indicePino;
+	return i;
 }
 
-void alteraValorLEDPorIndice(uint8_t const ledIndex) {
-	if (eventosLEDs[ledIndex] == FADE) {
-		ultimosValoresLEDs[ledIndex] = 0xFF;
-		fadeAmountsLEDs[ledIndex] = -5;
+void alteraValorLEDPorIndice(uint8_t const indicePino) {
+	if (eventosLEDs[indicePino] == FADE) {
+		ultimosValoresLEDs[indicePino] = 0xFF;
+		fadeAmountsLEDs[indicePino] = -5;
 	} else
-		ultimosValoresLEDs[ledIndex] = 0x00;
+		ultimosValoresLEDs[indicePino] = 0x00;
 }
 
 void alteraEEPROM(ArduinoStatus* const arduino) {
@@ -231,20 +273,40 @@ void alteraEEPROM(ArduinoStatus* const arduino) {
 
 	int16_t returnValue = SisbarcEEPROM::write(arduinoEEPROMWrite);
 	if (returnValue == 0x0000 || returnValue == 0x0001) {
-		if (arduino->getPin() == PINO_LED_AMARELO
-				|| arduino->getPin() == PINO_LED_VERDE
-				|| arduino->getPin() == PINO_LED_VERMELHO) {
+		if (arduino->getPin() == D11_LED_AMARELO
+				|| arduino->getPin() == D10_LED_VERDE
+				|| arduino->getPin() == D09_LED_VERMELHO
+				|| arduino->getPin() == D06_LED_AMARELO
+				|| arduino->getPin() == D05_LED_VERDE
+				|| arduino->getPin() == D04_LED_VERMELHO) {
 
-			uint8_t ledIndex = getIndicePino(arduinoEEPROMWrite->getPin());
-			eventosLEDs[ledIndex] = arduinoEEPROMWrite->getActionEvent();
+			uint8_t indicePino = getIndiceLEDPino(arduinoEEPROMWrite->getPin());
+			eventosLEDs[indicePino] = arduinoEEPROMWrite->getActionEvent();
 
-			alteraValorLEDPorIndice(ledIndex);
+			alteraValorLEDPorIndice(indicePino);
 		}
 
 		arduinoEEPROMWrite->setTransmitterValue(ArduinoStatus::ARDUINO);
 		arduinoEEPROMWrite->setStatusValue(ArduinoStatus::RESPONSE);
 		Sisbarc.send(arduinoEEPROMWrite);
 	}
+}
+
+void buscaEEPROM(ArduinoStatus* const arduino) {
+	ArduinoEEPROMRead* arduinoEEPROMRead = ((ArduinoEEPROMRead*) arduino);
+
+	EEPROMData* data = SisbarcEEPROM::read(arduinoEEPROMRead);
+	if (data == NULL)
+		return;
+
+	arduinoEEPROMRead->setThreadInterval(data->getThreadInterval());
+	arduinoEEPROMRead->setActionEvent(data->getActionEvent());
+
+	arduinoEEPROMRead->setTransmitterValue(ArduinoStatus::ARDUINO);
+	arduinoEEPROMRead->setStatusValue(ArduinoStatus::RESPONSE);
+
+	Sisbarc.send(arduinoEEPROMRead);
+
 }
 
 //Pisca o LED do pino 13
@@ -260,14 +322,14 @@ void pisca(void) {
 		break;
 	}
 
-	digitalWrite(PINO_LED_PISCA, ultimoValorLEDPisca);
+	digitalWrite(D13_LED_PISCA, ultimoValorLEDPisca);
 
-	Sisbarc.sendPinDigital(ArduinoStatus::SEND, PINO_LED_PISCA,
+	Sisbarc.sendPinDigital(ArduinoStatus::SEND, D13_LED_PISCA,
 			ultimoValorLEDPisca);
 
 }
 
-bool callLEDPisca(ArduinoStatus* const arduino) {
+bool callD13LEDPisca(ArduinoStatus* const arduino) {
 	if (arduino == NULL) {
 		pisca();
 
@@ -277,7 +339,7 @@ bool callLEDPisca(ArduinoStatus* const arduino) {
 	if (!isCallBySerialToPinDigital(arduino))
 		return false;
 
-	if (arduino->getPin() != PINO_LED_PISCA)
+	if (arduino->getPin() != D13_LED_PISCA)
 		return false;
 
 	if (arduino->getEventValue() == ArduinoStatus::WRITE) {
@@ -286,11 +348,16 @@ bool callLEDPisca(ArduinoStatus* const arduino) {
 		return true;
 	}
 
+	if (arduino->getEventValue() == ArduinoStatus::READ) {
+		buscaEEPROM(arduino);
+		return true;
+	}
+
 	return false;
 }
 
 void alteraValorLED(uint8_t const pin) {
-	uint8_t indicePino = getIndicePino(pin);
+	uint8_t indicePino = getIndiceLEDPino(pin);
 
 	if (ledsAtivas[indicePino]) {
 		switch (eventosLEDs[indicePino]) {
@@ -336,104 +403,132 @@ void alteraValorLEDPorSerial(ArduinoStatus* const arduino) {
 
 	digitalWrite(arduinoUSART->getPin(), (uint8_t) arduinoUSART->getPinValue());
 
-	uint8_t indicePino = getIndicePino(arduinoUSART->getPin());
+	uint8_t indicePino = getIndiceLEDPino(arduinoUSART->getPin());
 
 	ledsAtivas[indicePino] = arduinoUSART->getPinValue() != 0x0000;
 
 	Sisbarc.send(arduino);
 }
 
-bool callLEDAmarelo(ArduinoStatus* const arduino) {
-	if (arduino == NULL) {
-		alteraValorLED(PINO_LED_AMARELO);
-		return false;
-	}
-
-	if (!isCallBySerialToPinDigital(arduino))
-		return false;
-
-	if (arduino->getPin() != PINO_LED_AMARELO)
-		return false;
-
-	if (arduino->getEventValue() == ArduinoStatus::WRITE) {
-		alteraEEPROM(arduino);
-
+bool isValidEvent(ArduinoStatus* const arduino) {
+	if (arduino->getEventValue() == ArduinoStatus::EXECUTE) {
+		alteraValorLEDPorSerial(arduino);
 		return true;
 	}
 
-	if (arduino->getEventValue() == ArduinoStatus::EXECUTE) {
-		alteraValorLEDPorSerial(arduino);
+	if (arduino->getEventValue() == ArduinoStatus::WRITE) {
+		alteraEEPROM(arduino);
+		return true;
+	}
 
+	if (arduino->getEventValue() == ArduinoStatus::READ) {
+		buscaEEPROM(arduino);
 		return true;
 	}
 
 	return false;
 }
 
-bool callLEDVerde(ArduinoStatus* const arduino) {
+bool callD11LEDAmarelo(ArduinoStatus* const arduino) {
 	if (arduino == NULL) {
-		alteraValorLED(PINO_LED_VERDE);
+		alteraValorLED(D11_LED_AMARELO);
 		return false;
 	}
 
 	if (!isCallBySerialToPinDigital(arduino))
 		return false;
 
-	if (arduino->getPin() != PINO_LED_VERDE)
+	if (arduino->getPin() != D11_LED_AMARELO)
 		return false;
 
-	if (arduino->getEventValue() == ArduinoStatus::WRITE) {
-		alteraEEPROM(arduino);
-
-		return true;
-	}
-
-	if (arduino->getEventValue() == ArduinoStatus::EXECUTE) {
-		alteraValorLEDPorSerial(arduino);
-
-		return true;
-	}
-
-	return false;
+	return isValidEvent(arduino);
 }
 
-bool callLEDVermelho(ArduinoStatus* const arduino) {
+bool callD10LEDVerde(ArduinoStatus* const arduino) {
 	if (arduino == NULL) {
-		alteraValorLED(PINO_LED_VERMELHO);
+		alteraValorLED(D10_LED_VERDE);
 		return false;
 	}
 
 	if (!isCallBySerialToPinDigital(arduino))
 		return false;
 
-	if (arduino->getPin() != PINO_LED_VERMELHO)
+	if (arduino->getPin() != D10_LED_VERDE)
 		return false;
 
-	if (arduino->getEventValue() == ArduinoStatus::WRITE) {
-		alteraEEPROM(arduino);
+	return isValidEvent(arduino);
+}
 
-		return true;
+bool callD09LEDVermelho(ArduinoStatus* const arduino) {
+	if (arduino == NULL) {
+		alteraValorLED(D09_LED_VERMELHO);
+		return false;
 	}
 
-	if (arduino->getEventValue() == ArduinoStatus::EXECUTE) {
-		alteraValorLEDPorSerial(arduino);
+	if (!isCallBySerialToPinDigital(arduino))
+		return false;
 
-		return true;
+	if (arduino->getPin() != D09_LED_VERMELHO)
+		return false;
+
+	return isValidEvent(arduino);
+}
+
+bool callD06LEDAmarelo(ArduinoStatus* const arduino) {
+	if (arduino == NULL) {
+		alteraValorLED(D06_LED_AMARELO);
+		return false;
 	}
 
-	return false;
+	if (!isCallBySerialToPinDigital(arduino))
+		return false;
+
+	if (arduino->getPin() != D06_LED_AMARELO)
+		return false;
+
+	return isValidEvent(arduino);
+}
+
+bool callD05LEDVerde(ArduinoStatus* const arduino) {
+	if (arduino == NULL) {
+		alteraValorLED(D05_LED_VERDE);
+		return false;
+	}
+
+	if (!isCallBySerialToPinDigital(arduino))
+		return false;
+
+	if (arduino->getPin() != D05_LED_VERDE)
+		return false;
+
+	return isValidEvent(arduino);
+}
+
+bool callD04LEDVermelho(ArduinoStatus* const arduino) {
+	if (arduino == NULL) {
+		alteraValorLED(D04_LED_VERMELHO);
+		return false;
+	}
+
+	if (!isCallBySerialToPinDigital(arduino))
+		return false;
+
+	if (arduino->getPin() != D04_LED_VERMELHO)
+		return false;
+
+	return isValidEvent(arduino);
 }
 
 void alteraValorLEDPorBotao(void) {
-	for (uint8_t i = 0x00; i < TOTAL_LEDS; i++) {
+	for (uint8_t i = 0x00; i < TOTAL_BOTOES; i++) {
 		if (digitalRead(PINOS_BOTOES[i]) == LOW) {
-			if (digitalRead(PINOS_LEDS[i]) == LOW) {
+			if (digitalRead(PINOS_LEDS[i]) == LOW)
 				Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
 						PINOS_LEDS[i], HIGH);
-			} else {
+			else
 				Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
 						PINOS_LEDS[i], LOW);
-			}
+
 		}
 	}
 }
@@ -448,15 +543,15 @@ bool callLEDBotao(ArduinoStatus* const arduino) {
 }
 
 void alteraValorPotenciometro(void) {
-	uint16_t valorPotenciometro = (uint16_t) analogRead(PINO_POTENCIOMETRO);
+	uint16_t valorPotenciometro = (uint16_t) analogRead(A0_POTENCIOMETRO);
 	if (valorPotenciometro != ultimoValorPotenciometro) {
 		ultimoValorPotenciometro = valorPotenciometro;
-		Sisbarc.sendPinAnalog(ArduinoStatus::SEND, PINO_POTENCIOMETRO,
+		Sisbarc.sendPinAnalog(ArduinoStatus::SEND, A0_POTENCIOMETRO,
 				valorPotenciometro);
 	}
 }
 
-bool callPotenciometro(ArduinoStatus* const arduino) {
+bool callA0Potenciometro(ArduinoStatus* const arduino) {
 	if (arduino == NULL) {
 		alteraValorPotenciometro();
 		return false;

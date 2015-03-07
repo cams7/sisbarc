@@ -32,8 +32,7 @@ import br.com.cams7.sisbarc.arduino.vo.ArduinoUSART;
 public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		SerialPortEventListener {
 
-	private static final Logger LOG = Logger.getLogger(ArduinoServiceImpl.class
-			.getName());
+	private Logger log;
 
 	private OutputStream output;
 	private InputStream input;
@@ -68,6 +67,8 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		serialDataIndex = 0x00;
 
 		currentStatus = new HashMap<String, Arduino>();
+
+		log = Logger.getLogger(this.getClass().getName());
 
 		init();
 	}
@@ -183,7 +184,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 				while (input.available() > 0)
 					receiveDataBySerial((byte) input.read());
 			} catch (IOException e) {
-				LOG.log(Level.SEVERE, e.getMessage());
+				getLog().log(Level.SEVERE, e.getMessage());
 			}
 			break;
 		}
@@ -198,7 +199,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		try {
 			Thread.sleep(serialThreadTime);
 		} catch (InterruptedException e) {
-			LOG.log(Level.SEVERE, e.getMessage());
+			getLog().log(Level.SEVERE, e.getMessage());
 		}
 	}
 
@@ -220,14 +221,16 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 					addCurrentStatus(arduino);
 					receiveDataBySerial(arduino);
 				} catch (ArduinoException e) {
-					LOG.log(Level.SEVERE, e.getMessage());
+					getLog().log(Level.SEVERE, e.getMessage());
 				}
 				serialDataIndex = 0x00;
 			}
 
 		} else {
-			LOG.log(Level.WARNING, "O dado '" + Integer.toBinaryString(data)
-					+ "' foi corrompido");
+			getLog().log(
+					Level.WARNING,
+					"O dado '" + Integer.toBinaryString(data)
+							+ "' foi corrompido");
 		}
 
 	}
@@ -258,7 +261,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 
 	private void receiveDataBySerial(Arduino arduino) {
 		if (ArduinoTransmitter.ARDUINO != arduino.getTransmitter()) {
-			LOG.log(Level.WARNING, "O dado não vem do Arduino");
+			getLog().log(Level.WARNING, "O dado não vem do Arduino");
 			return;
 		}
 
@@ -326,7 +329,7 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 						break;
 					}
 				} catch (ArduinoException e) {
-					LOG.log(Level.WARNING, e.getMessage());
+					getLog().log(Level.WARNING, e.getMessage());
 				}
 
 				break;
@@ -462,11 +465,11 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		addCurrentStatus(arduino);
 	}
 
-	protected void sendDigitalEEPROMRead(ArduinoStatus status, byte pin,
-			byte threadTime, byte actionEvent) throws ArduinoException {
+	protected void sendDigitalEEPROMRead(ArduinoStatus status, byte pin)
+			throws ArduinoException {
 
 		ArduinoEEPROMRead arduino = new ArduinoEEPROMRead(status,
-				ArduinoPinType.DIGITAL, pin, threadTime, actionEvent);
+				ArduinoPinType.DIGITAL, pin);
 		serialWrite(SisbarcProtocol.getProtocolEEPROM(arduino));
 
 		addCurrentStatus(arduino);
@@ -482,14 +485,18 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		addCurrentStatus(arduino);
 	}
 
-	protected void sendAnalogEEPROMRead(ArduinoStatus status, byte pin,
-			byte threadTime, byte actionEvent) throws ArduinoException {
+	protected void sendAnalogEEPROMRead(ArduinoStatus status, byte pin)
+			throws ArduinoException {
 
 		ArduinoEEPROMRead arduino = new ArduinoEEPROMRead(status,
-				ArduinoPinType.ANALOG, pin, threadTime, actionEvent);
+				ArduinoPinType.ANALOG, pin);
 		serialWrite(SisbarcProtocol.getProtocolEEPROM(arduino));
 
 		addCurrentStatus(arduino);
+	}
+
+	protected Logger getLog() {
+		return log;
 	}
 
 	public String getSerialPort() {

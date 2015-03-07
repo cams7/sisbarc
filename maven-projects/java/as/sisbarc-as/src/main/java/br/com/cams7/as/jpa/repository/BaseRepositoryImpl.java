@@ -59,6 +59,11 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 		return entity;
 	}
 
+	public void update(List<E> entities) {
+		for (E entity : entities)
+			getEntityManager().merge(entity);
+	}
+
 	public void remove(E entity) {
 		getEntityManager().remove(getEntityManager().merge(entity));
 	}
@@ -502,7 +507,7 @@ public abstract class BaseRepositoryImpl<E extends BaseEntity<ID>, ID extends Se
 	 */
 	protected abstract EntityManager getEntityManager();
 
-	public Class<E> getEntityType() {
+	protected Class<E> getEntityType() {
 		return entityType;
 	}
 

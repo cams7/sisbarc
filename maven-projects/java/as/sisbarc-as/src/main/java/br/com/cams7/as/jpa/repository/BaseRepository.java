@@ -20,6 +20,8 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 
 	public E save(E entity);
 
+	public void update(List<E> entities);
+
 	public E findOne(ID id);
 
 	public List<E> findAll();
@@ -45,7 +47,5 @@ public interface BaseRepository<E extends BaseEntity<ID>, ID extends Serializabl
 			SortOrderField sortOrder,
 			Map<String, Object> filters,
 			SingularAttribute<? extends BaseEntity<?>, ? extends BaseEntity<?>>... joins);
-
-	public Class<E> getEntityType();
 
 }

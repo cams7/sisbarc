@@ -33,16 +33,15 @@
 			</h3>
 		</div>
 		<h:form id="form_led">
+			<p:growl id="all_messages" showDetail="true" life="5000" />
+
 			<p:dataTable id="ledTable" var="led" value="#{ledView.lazyModel}"
 				paginator="true" rows="#{ledView.rows}" first="#{ledView.first}"
 				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
-				rowsPerPageTemplate="5,10,15" selectionMode="single"
+				rowsPerPageTemplate="3,5,10,15" selectionMode="single"
 				selection="#{ledView.selectedEntity}" lazy="true"
-				emptyMessage="No led found with given criteria"
-				widgetVar="ledsTable" resizableColumns="true">
-				<!-- f:facet name="header">
-					<h:outputText value="#{msg['header.led.list']}" />
-				</f:facet -->
+				emptyMessage="#{msg['led.not.found']}" widgetVar="ledsTable"
+				resizableColumns="true">
 
 				<p:ajax event="rowSelect" listener="#{ledView.onRowSelect}"
 					update=":form_led:ledDetail" onsuccess="PF('ledDialog').show();" />
@@ -94,12 +93,14 @@
 					<f:facet name="filter">
 						<p:selectOneButton onchange="PF('ledsTable').filter()">
 							<f:converter converterId="javax.faces.Boolean" />
-							<f:selectItem itemLabel="All" itemValue="" />
-							<f:selectItem itemLabel="Sim" itemValue="true" />
-							<f:selectItem itemLabel="Nao" itemValue="false" />
+							<f:selectItem itemLabel="*" itemValue="" />
+							<f:selectItem itemLabel="#{msg['active.true']}" itemValue="true" />
+							<f:selectItem itemLabel="#{msg['active.false']}"
+								itemValue="false" />
 						</p:selectOneButton>
 					</f:facet>
-					<h:outputText value="#{led.ativadoPorBotao ? 'Sim': 'Nao'}" />
+					<h:outputText
+						value="#{led.ativadoPorBotao ? msg['active.true']: msg['active.false']}" />
 				</p:column>
 
 				<p:column headerText="#{msg['label.led.ativo']}"
@@ -108,112 +109,45 @@
 					<f:facet name="filter">
 						<p:selectOneButton onchange="PF('ledsTable').filter()">
 							<f:converter converterId="javax.faces.Boolean" />
-							<f:selectItem itemLabel="All" itemValue="" />
-							<f:selectItem itemLabel="Sim" itemValue="true" />
-							<f:selectItem itemLabel="Nao" itemValue="false" />
+							<f:selectItem itemLabel="*" itemValue="" />
+							<f:selectItem itemLabel="#{msg['active.true']}" itemValue="true" />
+							<f:selectItem itemLabel="#{msg['active.false']}"
+								itemValue="false" />
 						</p:selectOneButton>
 					</f:facet>
-					<h:outputText value="#{led.ativo ? 'Sim': 'Nao'}" />
+					<h:outputText
+						value="#{led.ativo ? msg['active.true']: msg['active.false']}" />
 				</p:column>
 
 				<f:facet name="footer">
-					<h:outputFormat value="#{msg['footer.led.total']}">
-						<f:param value="#{ledView.totalRows}" />
-					</h:outputFormat>
+					<p:panelGrid columns="3" columnClasses="value" style="width:100%">
+						<h:outputFormat value="#{msg['footer.led.total']}">
+							<f:param value="#{ledView.totalRows}" />
+						</h:outputFormat>
+
+						<p:commandButton value="#{msg['button.arduino.synchronize']}"
+							styleClass="btn btn-success"
+							actionListener="#{ledView.sincronizaLEDs}"
+							oncomplete="PF('ledsTable').filter()"
+							update=":form_led:all_messages" />
+
+						<p:commandButton value="#{msg['button.arduino.update']}"
+							styleClass="btn btn-success"
+							actionListener="#{ledView.atualizaLEDs}"
+							update=":form_led:all_messages" />
+					</p:panelGrid>
 				</f:facet>
 			</p:dataTable>
-
-			<p:ajaxStatus onstart="PF('statusDialog').show()"
-				onsuccess="PF('statusDialog').hide()" />
-
-			<p:dialog widgetVar="statusDialog" modal="true" visible="false"
-				draggable="false" closable="false" resizable="false"
-				showHeader="false">
-				<p:graphicImage name="/demo/images/ajaxloadingbar.gif" />
-			</p:dialog>
-
-			<p:growl id="growl" showDetail="true" life="5000" />
 
 			<p:dialog header="#{msg['title.led.edit']}" widgetVar="ledDialog"
 				modal="true" resizable="false">
 
 				<p:ajax event="close" listener="#{ledView.handleClose}" />
 
-				<p:outputPanel id="ledDetail" style="text-align:center;">
-					<p:panelGrid columns="2"
-						rendered="#{not empty ledView.selectedEntity}"
-						columnClasses="label,value">
-						<f:facet name="header">
-						</f:facet>
-
-						<h:outputText value="#{msg['label.led.pin']}:" />
-						<h:outputText id="pin"
-							value="#{ledView.selectedEntity.id.pinType} #{ledView.selectedEntity.id.pin}"
-							label="#{msg['label.led.pin']}" />
-
-
-						<h:outputText value="#{msg['label.led.cor']}:" />
-						<h:selectOneMenu id="color" value="#{ledView.selectedEntity.cor}"
-							label="#{msg['label.led.cor']}" styleClass="input-large"
-							disabled="true">
-							<f:selectItems value="#{ledView.cores}" />
-						</h:selectOneMenu>
-
-						<h:outputText value="#{msg['label.led.ativadoPorBotao']}:" />
-						<h:selectOneRadio id="activeByButton"
-							value="#{ledView.selectedEntity.ativadoPorBotao}"
-							label="#{msg['label.led.ativadoPorBotao']}"
-							styleClass="input-small" disabled="true">
-							<f:selectItem itemValue="#{true}" itemLabel="Sim" />
-							<f:selectItem itemValue="#{false}" itemLabel="Nao" />
-						</h:selectOneRadio>
-
-
-						<h:outputText value="#{msg['label.led.evento']}:" />
-						<h:selectOneMenu id="event"
-							value="#{ledView.selectedEntity.evento}"
-							label="#{msg['label.led.evento']}" styleClass="input-large"
-							disabled="#{not ledView.selectedEntity.alteraEvento}">
-							<f:selectItems value="#{ledView.eventos}" />
-						</h:selectOneMenu>
-
-						<h:outputText value="#{msg['label.led.intervalo']}:" />
-						<h:selectOneMenu id="eventInterval"
-							value="#{ledView.selectedEntity.intervalo}"
-							label="#{msg['label.led.intervalo']}" styleClass="input-large"
-							disabled="#{not ledView.selectedEntity.alteraIntervalo}">
-							<f:selectItems value="#{ledView.intervalos}" />
-						</h:selectOneMenu>
-
-						<h:outputText value="#{msg['label.led.ativo']}:" />
-						<h:selectOneRadio id="active"
-							value="#{ledView.selectedEntity.ativo}"
-							label="#{msg['label.led.ativo']}" styleClass="input-small">
-							<f:selectItem itemValue="#{true}" itemLabel="Sim" />
-							<f:selectItem itemValue="#{false}" itemLabel="Nao" />
-						</h:selectOneRadio>
-
-						<f:facet name="footer">
-							<p:commandButton value="#{msg['button.update']}"
-								actionListener="#{ledView.updateArduino}"
-								styleClass="btn btn-success"
-								oncomplete="handleUpdateRequest(xhr, status, args)"
-								update="growl" />
-							<p:commandButton type="button" value="#{msg['button.cancel']}"
-								onclick="PF('ledDialog').hide();" styleClass="btn" />
-						</f:facet>
-					</p:panelGrid>
-				</p:outputPanel>
+				<ui:include src="led_form.xhtml">
+					<ui:param name="led" value="#{ledView.selectedEntity}" />
+				</ui:include>
 			</p:dialog>
 		</h:form>
-		<script type="text/javascript">
-			function handleUpdateRequest(xhr, status, args) {
-				if (args.validationFailed || !args.arduino_updated)
-					return;
-
-				PF('ledDialog').hide();
-				PF('ledsTable').filter();
-			}
-		</script>
 	</ui:define>
 </ui:composition>

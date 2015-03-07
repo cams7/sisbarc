@@ -1,11 +1,10 @@
 package br.com.cams7.sisbarc.aal.ejb.service;
 
 import java.io.IOException;
-import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -14,7 +13,6 @@ import javax.ejb.Asynchronous;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.MalformedObjectNameException;
@@ -35,8 +33,10 @@ import br.com.cams7.sisbarc.aal.jmx.service.AppArduinoServiceMBean;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity_;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
+import br.com.cams7.sisbarc.arduino.vo.EEPROMData;
 import br.com.cams7.util.AppException;
 import br.com.cams7.util.AppUtil;
 
@@ -45,9 +45,6 @@ import br.com.cams7.util.AppUtil;
 @Remote(AppWildflyService.class)
 public class ArduinoServiceImpl extends BaseServiceImpl<LEDEntity, PinPK>
 		implements ArduinoService, AppWildflyService {
-
-	@Inject
-	private Logger log;
 
 	@PersistenceContext(unitName = "acendeApagaLEDsUnit")
 	private EntityManager entityManager;
@@ -74,7 +71,7 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LEDEntity, PinPK>
 					+ config.getProperty("JMX_HOST").trim() + ":"
 					+ config.getProperty("JMX_PORT").trim() + "/jmxrmi";
 
-			log.info("JMX URL: " + jmxURL);
+			getLog().info("JMX URL: " + jmxURL);
 
 			JMXServiceURL url = new JMXServiceURL(jmxURL);
 
@@ -91,10 +88,10 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LEDEntity, PinPK>
 					.newProxyInstance(mbeanServerConnection, mbeanName,
 							AppArduinoServiceMBean.class, true);
 		} catch (IOException | MalformedObjectNameException | AppException e) {
-			log.log(Level.SEVERE, e.getMessage());
+			getLog().log(Level.SEVERE, e.getMessage());
 		}
 
-		log.info("JMX Connector Open");
+		getLog().info("JMX Connector Open");
 	}
 
 	@PreDestroy
@@ -103,90 +100,77 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LEDEntity, PinPK>
 			try {
 				jmxConnector.close();
 			} catch (IOException e) {
-				log.log(Level.WARNING, e.getMessage());
+				getLog().log(Level.WARNING, e.getMessage());
 			}
 
-		log.info("JMX Connector Close");
+		getLog().info("JMX Connector Close");
 	}
 
 	@Asynchronous
-	public Future<LEDEntity> alteraEstadoLED(LEDEntity led) {
-
+	public Future<LEDEntity> alteraLEDEstado(LEDEntity led) {
 		if (mbeanProxy == null)
 			return null;
 
-		mbeanProxy.alteraEstadoLED(led.getId(), led.getEstado());
+		if (led.getEstado() == EstadoLED.ACESO && !led.isAtivo()) {
+			led.setEstado(EstadoLED.APAGADO);
+		} else {
+			mbeanProxy.alteraEstadoLED(led.getId(), led.getEstado());
 
-		log.info("LED " + led.getCor() + " -> changeStatusLED(pin = '"
-				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', status = '" + led.getEstado() + "') - Before sleep: "
-				+ DF.format(new Date()));
+			serialThreadTime();
 
-		serialThreadTime();
+			EstadoLED estado = mbeanProxy.getEstadoLED(led.getId());
+			led.setEstado(estado);
 
-		EstadoLED estado = mbeanProxy.getEstadoLED(led.getId());
-		led.setEstado(estado);
-
-		log.info("LED " + led.getCor() + " -> changeStatusLED(pin = '"
-				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', status = '" + led.getEstado() + "') - After sleep: "
-				+ DF.format(new Date()));
-
-		if (estado != null) {
-			log.info("LED '" + led.getCor() + "' esta '" + led.getEstado()
-					+ "'");
-		} else
-			log.log(Level.WARNING,
-					"Ocorreu um erro ao tenta buscar o status do LED '"
-							+ led.getCor() + "'");
+			if (estado != null) {
+				getLog().info(
+						"LED '" + led.getId() + "' esta '" + led.getEstado()
+								+ "'");
+			} else
+				getLog().log(
+						Level.WARNING,
+						"Ocorreu um erro ao tenta buscar o ESTADO do LED '"
+								+ led.getId() + "'");
+		}
 
 		return new AsyncResult<LEDEntity>(led);
-
 	}
 
-	@Override
-	public Future<LEDEntity> alteraEventoLED(LEDEntity led) {
+	@Asynchronous
+	public Future<Boolean> atualizaLED(LEDEntity led) {
 		if (mbeanProxy == null)
 			return null;
 
 		mbeanProxy.alteraEventoLED(led.getId(), led.getEvento(),
 				led.getIntervalo());
 
-		log.info("LED " + led.getCor() + " -> changeEventLED(pin = '"
-				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', event = '" + led.getEvento() + "', time = '"
-				+ led.getIntervalo() + "') - Before sleep: "
-				+ DF.format(new Date()));
-
 		serialThreadTime();
 
 		EventoLED evento = mbeanProxy.getEventoLED(led.getId());
-		// TODO: Quando implementa o getEventLED,descomenta linha abaixo
-		led.setEvento(evento);
 
-		log.info("LED " + led.getCor() + " -> changeEventLED(pin = '"
-				+ led.getId().getPinType() + " " + led.getId().getPin()
-				+ "', event = '" + led.getEvento() + "', time = '"
-				+ led.getIntervalo() + "') - After sleep: "
-				+ DF.format(new Date()));
+		Boolean arduinoRun = Boolean.FALSE;
 
 		if (evento != null) {
-			log.info("O evento do LED '" + led.getCor() + "' foi alterado '"
-					+ led.getEvento() + "' e o time e '" + led.getIntervalo()
-					+ "'");
-		} else
-			log.log(Level.WARNING,
-					"Ocorreu um erro ao tenta buscar o evento do LED '"
-							+ led.getCor() + "'");
+			led.setEvento(evento);
+			save(led);
+			arduinoRun = Boolean.TRUE;
 
-		return new AsyncResult<LEDEntity>(led);
+			getLog().info(
+					"O evento do LED '" + led.getId() + "' foi alterado '"
+							+ led.getEvento() + "'");
+		} else
+			getLog().log(
+					Level.WARNING,
+					"Ocorreu um erro ao tenta buscar o EVENTO do LED '"
+							+ led.getId() + "'");
+
+		return new AsyncResult<Boolean>(arduinoRun);
 	}
 
 	private void serialThreadTime() {
 		try {
 			Thread.sleep(mbeanProxy.getSerialThreadTime());
 		} catch (InterruptedException e) {
-			log.log(Level.WARNING, e.getMessage());
+			getLog().log(Level.WARNING, e.getMessage());
 		}
 	}
 
@@ -213,6 +197,74 @@ public class ArduinoServiceImpl extends BaseServiceImpl<LEDEntity, PinPK>
 			return EstadoLED.ACESO;
 
 		return EstadoLED.APAGADO;
+	}
+
+	@Asynchronous
+	public Future<Boolean> alteraLEDEventos(List<LEDEntity> leds) {
+		if (mbeanProxy == null)
+			return null;
+
+		for (LEDEntity led : leds)
+			mbeanProxy.alteraEventoLED(led.getId(), led.getEvento(),
+					led.getIntervalo());
+
+		serialThreadTime();
+
+		Boolean arduinoRun = Boolean.TRUE;
+
+		for (LEDEntity led : leds) {
+			EventoLED evento = mbeanProxy.getEventoLED(led.getId());
+
+			if (evento == null) {
+				arduinoRun = Boolean.FALSE;
+				break;
+			}
+		}
+
+		if (arduinoRun)
+			getLog().info("Os EVENTOs dos LEDs foram alterados");
+		else
+			getLog().log(Level.WARNING,
+					"Ocorreu um erro ao tenta buscar os EVENTOs dos LEDs");
+
+		return new AsyncResult<Boolean>(arduinoRun);
+	}
+
+	@Asynchronous
+	public Future<Boolean> sincronizaLEDEventos(List<LEDEntity> leds) {
+		if (mbeanProxy == null)
+			return null;
+
+		for (LEDEntity led : leds)
+			mbeanProxy.buscaDadosLED(led.getId());
+
+		serialThreadTime();
+
+		Boolean arduinoRun = Boolean.TRUE;
+
+		for (LEDEntity led : leds) {
+			EEPROMData data = mbeanProxy.getDadosLED(led.getId());
+			if (data == null) {
+				arduinoRun = Boolean.FALSE;
+				break;
+			}
+
+			EventoLED evento = EventoLED.values()[data.getActionEvent()];
+			IntervaloLED intervalo = IntervaloLED.values()[data
+					.getThreadInterval()];
+
+			led.setEvento(evento);
+			led.setIntervalo(intervalo);
+		}
+
+		if (arduinoRun) {
+			update(leds);
+			getLog().info("Os EVENTOs dos LEDs foram sincronizados");
+		} else
+			getLog().log(Level.WARNING,
+					"Ocorreu um erro ao tenta buscar os DADOs dos LEDs");
+
+		return new AsyncResult<Boolean>(arduinoRun);
 	}
 
 }

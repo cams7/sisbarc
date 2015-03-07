@@ -9,6 +9,8 @@ package br.com.cams7.sisbarc.arduino.vo;
  */
 public abstract class ArduinoEEPROM extends Arduino implements EEPROMData {
 
+	private static final long serialVersionUID = 1L;
+
 	private byte threadInterval;
 	private byte actionEvent;
 

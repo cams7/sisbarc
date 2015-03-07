@@ -10,10 +10,13 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -307,7 +310,7 @@ public final class AppUtil {
 		boolean isEquals = true;
 
 		if (map1.size() == map2.size()) {
-			for (K key : map1.keySet()) {
+			keyMap: for (K key : map1.keySet()) {
 				if (!map2.containsKey(key)) {
 					isEquals = false;
 					break;
@@ -315,7 +318,26 @@ public final class AppUtil {
 
 				V value1 = map1.get(key);
 				V value2 = map2.get(key);
-				if (!value1.equals(value2)) {
+
+				if (value1 instanceof Object[] && value2 instanceof Object[]) {
+					Object[] array1 = (Object[]) value1;
+					Object[] array2 = (Object[]) value2;
+
+					if (array1.length != array2.length) {
+						isEquals = false;
+						break;
+					}
+
+					List<?> list = Arrays.asList(array1);
+
+					for (Object value : array2) {
+						if (!list.contains(value)) {
+							isEquals = false;
+							break keyMap;
+						}
+					}
+
+				} else if (!value1.equals(value2)) {
 					isEquals = false;
 					break;
 				}
@@ -325,6 +347,24 @@ public final class AppUtil {
 			isEquals = false;
 
 		return isEquals;
+	}
+
+	public static <K, V> Map<K, V> removeEmptyArray(Map<K, V> map) {
+		if (map != null && !map.isEmpty()) {
+			Iterator<Map.Entry<K, V>> i = map.entrySet().iterator();
+
+			while (i.hasNext()) {
+				Map.Entry<K, V> entry = i.next();
+				V value = entry.getValue();
+
+				if ((value instanceof Object[])
+						&& ((Object[]) value).length == 0)
+					i.remove();
+			}
+
+		}
+
+		return map;
 	}
 
 }

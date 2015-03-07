@@ -3,11 +3,13 @@
  */
 package br.com.cams7.sisbarc.arduino.vo;
 
+import java.io.Serializable;
+
 /**
  * @author cams7
  *
  */
-public interface EEPROMData {
+public interface EEPROMData extends Serializable {
 
 	public static final byte THREAD_INTERVAL_MAX = 0x07; // 7
 
