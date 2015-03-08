@@ -3,9 +3,9 @@
  */
 package br.com.cams7.sisbarc.aal.jmx.service;
 
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Evento;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Intervalo;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.ArduinoService;
 import br.com.cams7.sisbarc.arduino.vo.EEPROMData;
@@ -37,14 +37,13 @@ public interface AppArduinoServiceMBean extends ArduinoService {
 	 * @param evento
 	 * @param intervalo
 	 */
-	public void alteraEventoLED(PinPK pino, EventoLED evento,
-			IntervaloLED intervalo);
+	public void alteraEventoLED(PinPK pino, Evento evento, Intervalo intervalo);
 
 	/**
 	 * @param pino
 	 * @return
 	 */
-	public EventoLED getEventoLED(PinPK pino);
+	public Evento getEventoLED(PinPK pino);
 
 	/**
 	 * @param pino
@@ -55,6 +54,25 @@ public interface AppArduinoServiceMBean extends ArduinoService {
 	 * @param pino
 	 * @return
 	 */
-	public EEPROMData getDadosLED(PinPK pino);
+	public EEPROMData getDados(PinPK pino);
+
+	/**
+	 * @param pino
+	 * @param evento
+	 * @param intervalo
+	 */
+	public void alteraEventoPotenciometro(PinPK pino, Evento evento,
+			Intervalo intervalo);
+
+	/**
+	 * @param pino
+	 * @return
+	 */
+	public Evento getEventoPotenciometro(PinPK pino);
+
+	/**
+	 * @param pino
+	 */
+	public void buscaDadosPotenciometro(PinPK pino);
 
 }

@@ -17,7 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
+import br.com.cams7.sisbarc.aal.ejb.service.LEDService;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
@@ -35,7 +35,7 @@ public class ArduinoResourceRESTService {
 	private Logger log;
 
 	@EJB
-	private ArduinoService service;
+	private LEDService service;
 
 	// LED Amarela - arduino/led?tipo_pino=DIGITAL&pino=11&estado=ON
 	// LED Verde - arduino/led?tipo_pino=DIGITAL&pino=10&estado=OFF

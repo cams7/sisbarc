@@ -42,20 +42,21 @@
 
 #define INTERVALO_LED_PISCA    1000 // 1 segundo
 #define INTERVALO_BOTAO        500  // 1/2 segundo
-#define INTERVALO_POENCIOMETRO 100  // 1/10 de segundo
+#define INTERVALO_POTENCIOMETRO 100  // 1/10 de segundo
 
 #define ACENDE_APAGA 0 // Acende ou apaga
 #define PISCA_PISCA  1 // Pisca-pisca
 #define FADE         2 // Acende ou apaga ao poucos
+#define NENHUM       3
 
-#define INTERVALO_100MILISEGUNDOS 100  // 1/10 de segundo
-#define INTERVALO_250MILISEGUNDOS 250  // 1/4 de segundo
-#define INTERVALO_500MILISEGUNDOS 500  // 1/2 de segundo
-#define INTERVALO_1SEGUNDO        1000 // 1 segundo
-#define INTERVALO_2SEGUNDOS       2000 // 2 segundos
-#define INTERVALO_3SEGUNDOS       3000 // 3 segundos
-#define INTERVALO_5SEGUNDOS       5000 // 5 segundos
-#define SEM_INTERVALO             0    // Não roda dentro da thread
+#define INTERVALO_10MILISEGUNDOS  10    // 1/100 de segundo
+#define INTERVALO_50MILISEGUNDOS  50    // 1/20 de segundo
+#define INTERVALO_100MILISEGUNDOS 100   // 1/10 de segundo
+#define INTERVALO_1SEGUNDO        1000  // 1 segundo
+#define INTERVALO_3SEGUNDOS       3000  // 3 segundos
+#define INTERVALO_5SEGUNDOS       5000  // 5 segundos
+#define INTERVALO_10SEGUNDOS      10000 // 10 segundos
+#define SEM_INTERVALO             0     // Não roda dentro da thread
 
 //Declared weak in Arduino.h to allow user redefinitions.
 int atexit(void (*func)()) {
@@ -95,13 +96,15 @@ D07_BOTAO_LED_VERMELHO };
 
 uint8_t eventosLEDs[] = { ACENDE_APAGA, ACENDE_APAGA, ACENDE_APAGA,
 ACENDE_APAGA, ACENDE_APAGA, PISCA_PISCA };
-uint8_t ultimosValoresLEDs[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+uint8_t ultimoValoresLEDs[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 int8_t fadeAmountsLEDs[] = { 0x05, 0x05, 0x05, 0x05, 0x05, 0x05 };
-bool ledsAtivas[] = { false, false, false, false, false, false };
+bool ledsAcesa[] = { false, false, false, false, false, false };
 
 uint16_t ultimoValorPotenciometro = 0x0000;    //Ultimo valor do Potenciometro
-uint8_t ultimoValorLEDPisca = (int8_t) HIGH;    //Utimo valor do LED do pino 13
+uint8_t eventoPotenciometro = NENHUM;
+
+bool ledPiscaAcesa = false;    //Utimo valor do LED do pino 13
 
 int main(void) {
 	init();
@@ -133,17 +136,17 @@ void setup(void) {
 
 	//----------------------------------------------------------
 
-	Sisbarc.begin(&Serial/*, BAUD_RATE*/);
+	Sisbarc.begin(&Serial);
 
 	//----------------------------------------------------------
 
-	Sisbarc.addThreadInterval(0x00, INTERVALO_100MILISEGUNDOS);
-	Sisbarc.addThreadInterval(0x01, INTERVALO_250MILISEGUNDOS);
-	Sisbarc.addThreadInterval(0x02, INTERVALO_500MILISEGUNDOS);
+	Sisbarc.addThreadInterval(0x00, INTERVALO_10MILISEGUNDOS);
+	Sisbarc.addThreadInterval(0x01, INTERVALO_50MILISEGUNDOS);
+	Sisbarc.addThreadInterval(0x02, INTERVALO_100MILISEGUNDOS);
 	Sisbarc.addThreadInterval(0x03, INTERVALO_1SEGUNDO);
-	Sisbarc.addThreadInterval(0x04, INTERVALO_2SEGUNDOS);
-	Sisbarc.addThreadInterval(0x05, INTERVALO_3SEGUNDOS);
-	Sisbarc.addThreadInterval(0x06, INTERVALO_5SEGUNDOS);
+	Sisbarc.addThreadInterval(0x04, INTERVALO_3SEGUNDOS);
+	Sisbarc.addThreadInterval(0x05, INTERVALO_5SEGUNDOS);
+	Sisbarc.addThreadInterval(0x06, INTERVALO_10SEGUNDOS);
 	Sisbarc.addThreadInterval(0x07, SEM_INTERVALO);
 
 	//----------------------------------------------------------
@@ -214,7 +217,10 @@ void setup(void) {
 
 	evento = Sisbarc.onRun(ArduinoStatus::ANALOG, A0_POTENCIOMETRO,
 			callA0Potenciometro,
-			INTERVALO_POENCIOMETRO);
+			INTERVALO_POTENCIOMETRO);
+	if (evento != -1)
+		eventoPotenciometro = evento;
+
 }
 
 void loop(void) {
@@ -252,20 +258,24 @@ bool isCallBySerialToPinAnalog(ArduinoStatus* const arduino) {
 	return true;
 }
 
-uint8_t getIndiceLEDPino(uint8_t const pin) {
-	uint8_t i = 0x00;
-	for (; i < TOTAL_LEDS; i++)
-		if (PINOS_LEDS[i] == pin)
+int16_t getIndiceLEDPino(uint8_t const pin) {
+	int16_t indice = -1;
+
+	for (uint8_t i = 0x00; i < TOTAL_LEDS; i++)
+		if (PINOS_LEDS[i] == pin) {
+			indice = i;
 			break;
-	return i;
+		}
+
+	return indice;
 }
 
 void alteraValorLEDPorIndice(uint8_t const indicePino) {
 	if (eventosLEDs[indicePino] == FADE) {
-		ultimosValoresLEDs[indicePino] = 0xFF;
+		ultimoValoresLEDs[indicePino] = 0xFF;
 		fadeAmountsLEDs[indicePino] = -5;
 	} else
-		ultimosValoresLEDs[indicePino] = 0x00;
+		ultimoValoresLEDs[indicePino] = 0x00;
 }
 
 void alteraEEPROM(ArduinoStatus* const arduino) {
@@ -280,11 +290,13 @@ void alteraEEPROM(ArduinoStatus* const arduino) {
 				|| arduino->getPin() == D05_LED_VERDE
 				|| arduino->getPin() == D04_LED_VERMELHO) {
 
-			uint8_t indicePino = getIndiceLEDPino(arduinoEEPROMWrite->getPin());
-			eventosLEDs[indicePino] = arduinoEEPROMWrite->getActionEvent();
-
-			alteraValorLEDPorIndice(indicePino);
-		}
+			int16_t indicePino = getIndiceLEDPino(arduinoEEPROMWrite->getPin());
+			if (indicePino != -1) {
+				eventosLEDs[indicePino] = arduinoEEPROMWrite->getActionEvent();
+				alteraValorLEDPorIndice(indicePino);
+			}
+		} else if (arduino->getPin() == A0_POTENCIOMETRO)
+			eventoPotenciometro = arduinoEEPROMWrite->getActionEvent();
 
 		arduinoEEPROMWrite->setTransmitterValue(ArduinoStatus::ARDUINO);
 		arduinoEEPROMWrite->setStatusValue(ArduinoStatus::RESPONSE);
@@ -306,93 +318,6 @@ void buscaEEPROM(ArduinoStatus* const arduino) {
 	arduinoEEPROMRead->setStatusValue(ArduinoStatus::RESPONSE);
 
 	Sisbarc.send(arduinoEEPROMRead);
-
-}
-
-//Pisca o LED do pino 13
-void pisca(void) {
-	switch (ultimoValorLEDPisca) {
-	case HIGH:
-		ultimoValorLEDPisca = (int8_t) LOW;
-		break;
-	case LOW:
-		ultimoValorLEDPisca = (int8_t) HIGH;
-		break;
-	default:
-		break;
-	}
-
-	digitalWrite(D13_LED_PISCA, ultimoValorLEDPisca);
-
-	Sisbarc.sendPinDigital(ArduinoStatus::SEND, D13_LED_PISCA,
-			ultimoValorLEDPisca);
-
-}
-
-bool callD13LEDPisca(ArduinoStatus* const arduino) {
-	if (arduino == NULL) {
-		pisca();
-
-		return false;
-	}
-
-	if (!isCallBySerialToPinDigital(arduino))
-		return false;
-
-	if (arduino->getPin() != D13_LED_PISCA)
-		return false;
-
-	if (arduino->getEventValue() == ArduinoStatus::WRITE) {
-		alteraEEPROM(arduino);
-
-		return true;
-	}
-
-	if (arduino->getEventValue() == ArduinoStatus::READ) {
-		buscaEEPROM(arduino);
-		return true;
-	}
-
-	return false;
-}
-
-void alteraValorLED(uint8_t const pin) {
-	uint8_t indicePino = getIndiceLEDPino(pin);
-
-	if (ledsAtivas[indicePino]) {
-		switch (eventosLEDs[indicePino]) {
-		case ACENDE_APAGA: {
-			break;
-		}
-		case PISCA_PISCA: {
-			switch (ultimosValoresLEDs[indicePino]) {
-			case HIGH:
-				ultimosValoresLEDs[indicePino] = (int8_t) LOW;
-				break;
-			case LOW:
-				ultimosValoresLEDs[indicePino] = (int8_t) HIGH;
-				break;
-			default:
-				break;
-			}
-
-			digitalWrite(pin, ultimosValoresLEDs[indicePino]);
-			break;
-		}
-		case FADE: {
-			analogWrite(pin, ultimosValoresLEDs[indicePino]);
-			ultimosValoresLEDs[indicePino] += fadeAmountsLEDs[indicePino];
-
-			if (ultimosValoresLEDs[indicePino] == 0x00
-					|| ultimosValoresLEDs[indicePino] == 0xFF)
-				fadeAmountsLEDs[indicePino] *= -1;
-			break;
-		}
-		default:
-			break;
-
-		}
-	}
 }
 
 void alteraValorLEDPorSerial(ArduinoStatus* const arduino) {
@@ -403,9 +328,10 @@ void alteraValorLEDPorSerial(ArduinoStatus* const arduino) {
 
 	digitalWrite(arduinoUSART->getPin(), (uint8_t) arduinoUSART->getPinValue());
 
-	uint8_t indicePino = getIndiceLEDPino(arduinoUSART->getPin());
+	int16_t indicePino = getIndiceLEDPino(arduinoUSART->getPin());
 
-	ledsAtivas[indicePino] = arduinoUSART->getPinValue() != 0x0000;
+	if (indicePino != -1)
+		ledsAcesa[indicePino] = arduinoUSART->getPinValue() == 0x0001;
 
 	Sisbarc.send(arduino);
 }
@@ -427,6 +353,71 @@ bool isValidEvent(ArduinoStatus* const arduino) {
 	}
 
 	return false;
+}
+
+//Pisca o LED do pino 13
+void pisca(void) {
+	ledPiscaAcesa = !ledPiscaAcesa;
+
+	digitalWrite(D13_LED_PISCA, ledPiscaAcesa ? HIGH : LOW);
+
+	Sisbarc.sendPinDigital(ArduinoStatus::SEND, D13_LED_PISCA, ledPiscaAcesa);
+
+}
+
+bool callD13LEDPisca(ArduinoStatus* const arduino) {
+	if (arduino == NULL) {
+		pisca();
+
+		return false;
+	}
+
+	if (!isCallBySerialToPinDigital(arduino))
+		return false;
+
+	if (arduino->getPin() != D13_LED_PISCA)
+		return false;
+
+	return isValidEvent(arduino);
+}
+
+void alteraValorLED(uint8_t const pin) {
+	int16_t indicePino = getIndiceLEDPino(pin);
+	if (indicePino == -1)
+		return;
+
+	if (ledsAcesa[indicePino]) {
+		switch (eventosLEDs[indicePino]) {
+		case ACENDE_APAGA: {
+			break;
+		}
+		case PISCA_PISCA: {
+			switch (ultimoValoresLEDs[indicePino]) {
+			case 0x00:    //HIGH
+				ultimoValoresLEDs[indicePino] = 0x01;
+				break;
+			default:    //LOW
+				ultimoValoresLEDs[indicePino] = 0x00;
+				break;
+			}
+
+			digitalWrite(pin, ultimoValoresLEDs[indicePino]);
+			break;
+		}
+		case FADE: {
+			analogWrite(pin, ultimoValoresLEDs[indicePino]);
+			ultimoValoresLEDs[indicePino] += fadeAmountsLEDs[indicePino];
+
+			if (ultimoValoresLEDs[indicePino] == 0x00
+					|| ultimoValoresLEDs[indicePino] == 0xFF)
+				fadeAmountsLEDs[indicePino] *= -1;
+			break;
+		}
+		default:
+			break;
+
+		}
+	}
 }
 
 bool callD11LEDAmarelo(ArduinoStatus* const arduino) {
@@ -522,12 +513,10 @@ bool callD04LEDVermelho(ArduinoStatus* const arduino) {
 void alteraValorLEDPorBotao(void) {
 	for (uint8_t i = 0x00; i < TOTAL_BOTOES; i++) {
 		if (digitalRead(PINOS_BOTOES[i]) == LOW) {
-			if (digitalRead(PINOS_LEDS[i]) == LOW)
-				Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
-						PINOS_LEDS[i], HIGH);
-			else
-				Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
-						PINOS_LEDS[i], LOW);
+			Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE, PINOS_LEDS[i],
+					!ledsAcesa[i]);
+			Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
+					PINOS_LEDS[i + 3], !ledsAcesa[i + 3]);
 
 		}
 	}
@@ -546,6 +535,30 @@ void alteraValorPotenciometro(void) {
 	uint16_t valorPotenciometro = (uint16_t) analogRead(A0_POTENCIOMETRO);
 	if (valorPotenciometro != ultimoValorPotenciometro) {
 		ultimoValorPotenciometro = valorPotenciometro;
+
+		if (eventoPotenciometro == ACENDE_APAGA) {
+			uint8_t i = 0x00;
+			for (; i < TOTAL_LEDS; i++) {
+				digitalWrite(PINOS_LEDS[i], LOW);
+				ledsAcesa[i] = false;
+			} //'170' < 171, '341' < 342, '512' < 513, '683' < 684, '854' < 855, ('1023'> 1023)
+
+			// 0 < 170, (171 > 170)
+			// 0 < 341, 171 < 341, (342 > 341)
+			// 0 < 512, 171 < 512, 342 < 512, (513 > 512)
+			// 0 < 683, 171 < 683, 342 < 683, 513 < 683, (684 > 683)
+			// 0 < 854, 171 < 854, 342 < 854, 513 < 854, 684 < 854, (855 > 854)
+			// 0 <1023, 171 <1023, 342 <1023, 513 <1023, 684 <1023, 855<1023, (1026 > 1023)
+
+			i = 0x00;
+
+			for (uint16_t j = 0x0000; j < ultimoValorPotenciometro; j += 171) {
+				Sisbarc.sendPinDigital(ArduinoStatus::SEND_RESPONSE,
+						PINOS_LEDS[i], !ledsAcesa[i]);
+				i++;
+			}
+		}
+
 		Sisbarc.sendPinAnalog(ArduinoStatus::SEND, A0_POTENCIOMETRO,
 				valorPotenciometro);
 	}
@@ -557,6 +570,12 @@ bool callA0Potenciometro(ArduinoStatus* const arduino) {
 		return false;
 	}
 
-	return false;
+	if (!isCallBySerialToPinAnalog(arduino))
+		return false;
+
+	if (arduino->getPin() != A0_POTENCIOMETRO)
+		return false;
+
+	return isValidEvent(arduino);
 }
 

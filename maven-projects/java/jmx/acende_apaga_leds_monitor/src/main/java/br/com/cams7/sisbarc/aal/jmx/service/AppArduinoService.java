@@ -11,10 +11,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import br.com.cams7.sisbarc.aal.ejb.service.AppWildflyService;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.CorLED;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Evento;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Intervalo;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.ArduinoException;
 import br.com.cams7.sisbarc.arduino.ArduinoServiceImpl;
@@ -314,18 +313,12 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public void alteraEventoLED(PinPK pino, EventoLED evento,
-			IntervaloLED intervalo) {
-		ArduinoPinType tipoPino = pino.getPinType();
-		byte pinoLED = pino.getPin().byteValue();
-
-		byte indiceEvento = (byte) evento.ordinal();
-		byte indiceIntervalo = (byte) intervalo.ordinal();
-
+	public void alteraEventoLED(PinPK pino, Evento evento, Intervalo intervalo) {
 		try {
-			if (tipoPino == ArduinoPinType.DIGITAL)
-				sendDigitalEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pinoLED,
-						indiceIntervalo, indiceEvento);
+			if (pino.getPinType() == ArduinoPinType.DIGITAL)
+				sendDigitalEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pino
+						.getPin().byteValue(), (byte) intervalo.ordinal(),
+						(byte) evento.ordinal());
 		} catch (ArduinoException e) {
 			getLog().log(Level.SEVERE, e.getMessage());
 		}
@@ -333,25 +326,43 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public EventoLED getEventoLED(PinPK pino) {
+	public void alteraEventoPotenciometro(PinPK pino, Evento evento,
+			Intervalo intervalo) {
+		try {
+			if (pino.getPinType() == ArduinoPinType.ANALOG)
+				sendAnalogEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pino
+						.getPin().byteValue(), (byte) intervalo.ordinal(),
+						(byte) evento.ordinal());
+		} catch (ArduinoException e) {
+			getLog().log(Level.SEVERE, e.getMessage());
+		}
+
+	}
+
+	@Override
+	public Evento getEventoLED(PinPK pino) {
 		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.WRITE, pino);
 		if (arduino == null)
 			return null;
 
-		byte eventoLED = ((ArduinoEEPROM) arduino).getActionEvent();
-		EventoLED evento = EventoLED.values()[eventoLED];
+		return Evento.values()[((ArduinoEEPROM) arduino).getActionEvent()];
+	}
 
-		return evento;
+	@Override
+	public Evento getEventoPotenciometro(PinPK pino) {
+		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.WRITE, pino);
+		if (arduino == null)
+			return null;
+
+		return Evento.values()[((ArduinoEEPROM) arduino).getActionEvent()];
 	}
 
 	@Override
 	public void buscaDadosLED(PinPK pino) {
-		ArduinoPinType tipoPino = pino.getPinType();
-		byte pinoLED = pino.getPin().byteValue();
-
 		try {
-			if (tipoPino == ArduinoPinType.DIGITAL)
-				sendDigitalEEPROMRead(ArduinoStatus.SEND_RESPONSE, pinoLED);
+			if (pino.getPinType() == ArduinoPinType.DIGITAL)
+				sendDigitalEEPROMRead(ArduinoStatus.SEND_RESPONSE, pino
+						.getPin().byteValue());
 		} catch (ArduinoException e) {
 			getLog().log(Level.SEVERE, e.getMessage());
 		}
@@ -359,14 +370,23 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	}
 
 	@Override
-	public EEPROMData getDadosLED(PinPK pino) {
+	public void buscaDadosPotenciometro(PinPK pino) {
+		try {
+			if (pino.getPinType() == ArduinoPinType.ANALOG)
+				sendAnalogEEPROMRead(ArduinoStatus.SEND_RESPONSE, pino.getPin()
+						.byteValue());
+		} catch (ArduinoException e) {
+			getLog().log(Level.SEVERE, e.getMessage());
+		}
+	}
+
+	@Override
+	public EEPROMData getDados(PinPK pino) {
 		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.READ, pino);
 		if (arduino == null)
 			return null;
 
-		EEPROMData data = (EEPROMData) arduino;
-
-		return data;
+		return (EEPROMData) arduino;
 	}
 
 	private short acendeOuApagaLEDPorBotao(byte pinoLED, short estadoPino) {
@@ -378,17 +398,10 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		try {
 			AppWildflyService service = lookupAppWildflyService();
 
-			for (CorLED cor : CorLED.values()) {
-				if (cor.getPin() == pinoLED) {
-					// Verifica permissão para ACENDE o LED
-					EstadoLED estado = service.getEstadoLEDAtivadoPorBotao(cor);
-					getLog().info("Status: " + estado);
+			EstadoLED estado = service.getEstadoLEDAtivadoPorBotao(pinoLED);
 
-					if (estado != null && estado == EstadoLED.ACESO)
-						estadoPino = (short) 0x0001;
-					break;
-				}
-			}
+			if (estado != null && estado == EstadoLED.ACESO)
+				estadoPino = (short) 0x0001;
 
 		} catch (NamingException e) {
 			getLog().log(Level.SEVERE, e.getMessage());
@@ -404,7 +417,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		final Context context = new InitialContext(jndiProperties);
 
 		return (AppWildflyService) context
-				.lookup("ejb:sisbarc/acende_apaga_leds-ejb//ArduinoServiceImpl!"
+				.lookup("ejb:sisbarc/acende_apaga_leds-ejb//LEDServiceImpl!"
 						+ AppWildflyService.class.getName());
 
 	}

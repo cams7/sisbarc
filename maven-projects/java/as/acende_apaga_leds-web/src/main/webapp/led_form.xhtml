@@ -19,39 +19,39 @@
 				label="#{msg['label.led.pin']}" />
 
 
-			<h:outputText value="#{msg['label.led.cor']}:" />
+			<h:outputText value="#{msg['label.led.color']}:" />
 			<h:selectOneMenu id="color" value="#{led.cor}"
-				label="#{msg['label.led.cor']}" styleClass="input-large"
+				label="#{msg['label.led.color']}" styleClass="input-large"
 				disabled="true">
 				<f:selectItems value="#{ledView.cores}" />
 			</h:selectOneMenu>
 
-			<h:outputText value="#{msg['label.led.evento']}:" />
+			<h:outputText value="#{msg['label.led.event']}:" />
 			<h:selectOneMenu id="event" value="#{led.evento}"
-				label="#{msg['label.led.evento']}" styleClass="input-large"
+				label="#{msg['label.led.event']}" styleClass="input-large"
 				disabled="#{not led.alteraEvento}">
 				<f:selectItems value="#{ledView.eventos}" />
 			</h:selectOneMenu>
 
-			<h:outputText value="#{msg['label.led.intervalo']}:" />
+			<h:outputText value="#{msg['label.led.interval']}:" />
 			<h:selectOneMenu id="eventInterval" value="#{led.intervalo}"
-				label="#{msg['label.led.intervalo']}" styleClass="input-large"
+				label="#{msg['label.led.interval']}" styleClass="input-large"
 				disabled="#{not led.alteraIntervalo}">
 				<f:selectItems value="#{ledView.intervalos}" />
 			</h:selectOneMenu>
 
-			<h:outputText value="#{msg['label.led.ativadoPorBotao']}:" />
+			<h:outputText value="#{msg['label.led.activeByButton']}:" />
 			<h:selectOneRadio id="activeByButton" value="#{led.ativadoPorBotao}"
-				label="#{msg['label.led.ativadoPorBotao']}" styleClass="input-small"
+				label="#{msg['label.led.activeByButton']}" styleClass="input-small"
 				disabled="true">
 				<f:selectItem itemValue="#{true}" itemLabel="#{msg['active.true']}" />
 				<f:selectItem itemValue="#{false}"
 					itemLabel="#{msg['active.false']}" />
 			</h:selectOneRadio>
 
-			<h:outputText value="#{msg['label.led.ativo']}:" />
+			<h:outputText value="#{msg['label.led.active']}:" />
 			<h:selectOneRadio id="active" value="#{led.ativo}"
-				label="#{msg['label.led.ativo']}" styleClass="input-small">
+				label="#{msg['label.led.active']}" styleClass="input-small">
 				<f:selectItem itemValue="#{true}" itemLabel="#{msg['active.true']}" />
 				<f:selectItem itemValue="#{false}"
 					itemLabel="#{msg['active.false']}" />

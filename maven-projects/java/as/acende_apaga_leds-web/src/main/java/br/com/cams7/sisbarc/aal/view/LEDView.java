@@ -11,12 +11,10 @@ import javax.faces.event.ActionEvent;
 
 import org.primefaces.context.RequestContext;
 
-import br.com.cams7.as.view.BaseView;
-import br.com.cams7.sisbarc.aal.ejb.service.ArduinoService;
+import br.com.cams7.sisbarc.aal.ejb.service.LEDService;
+import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Evento;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.CorLED;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EventoLED;
-import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
 
 /**
  * Componente responsável por integrar o front-end (páginas JSF) c/ camada de
@@ -40,7 +38,7 @@ import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.IntervaloLED;
  */
 @ManagedBean(name = "ledView")
 @ViewScoped
-public class LEDView extends BaseView<ArduinoService, LEDEntity> {
+public class LEDView extends AALView<LEDService, LEDEntity> {
 
 	/**
 	 * 
@@ -51,16 +49,11 @@ public class LEDView extends BaseView<ArduinoService, LEDEntity> {
 	 * Container injeta a referencia p/ o ejb MercadoriaService
 	 */
 	@EJB
-	private ArduinoService service;
+	private LEDService service;
 
 	@SuppressWarnings("unchecked")
 	public LEDView() {
 		super();
-	}
-
-	@Override
-	protected ArduinoService getService() {
-		return service;
 	}
 
 	@Override
@@ -154,16 +147,23 @@ public class LEDView extends BaseView<ArduinoService, LEDEntity> {
 
 	}
 
+	@Override
+	protected LEDService getService() {
+		return service;
+	}
+
 	public CorLED[] getCores() {
 		return CorLED.values();
 	}
 
-	public EventoLED[] getEventos() {
-		return EventoLED.values();
-	}
+	@Override
+	public Evento[] getEventos() {
+		Evento[] eventos = new Evento[3];
+		eventos[0] = Evento.ACENDE_APAGA;
+		eventos[1] = Evento.PISCA_PISCA;
+		eventos[2] = Evento.FADE;
 
-	public IntervaloLED[] getIntervalos() {
-		return IntervaloLED.values();
+		return eventos;
 	}
 
 }

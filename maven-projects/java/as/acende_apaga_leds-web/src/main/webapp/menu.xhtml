@@ -5,13 +5,19 @@
 	xmlns:p="http://primefaces.org/ui">
 
 	<ul class="nav nav-list" style="padding-top: 15px;">
-		<li><em><h:outputText value="#{msg['label.leds']}" /></em></li>
-
 		<li
-			class="#{empty param.active || param.active == 'lista' ? 'active' : ''}">
+			class="#{empty param.active || param.active == 'lista_leds' ? 'active' : ''}">
 			<h:link outcome="led_list">
-				<h:outputText value="#{msg['menu.list']}" escape="false" />
-				<f:param name="active" value="lista" />
+				<h:outputText value="#{msg['menu.led.list']}" escape="false" />
+				<f:param name="active" value="lista_leds" />
+			</h:link>
+		</li>
+		<li
+			class="#{empty param.active || param.active == 'lista_potenciometros' ? 'active' : ''}">
+			<h:link outcome="potenciometro_list">
+				<h:outputText value="#{msg['menu.potentiometer.list']}"
+					escape="false" />
+				<f:param name="active" value="lista_potenciometros" />
 			</h:link>
 		</li>
 

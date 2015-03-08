@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<ui:fragment xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+	<p:outputPanel id="potenciometroDetail" style="text-align:center;">
+		<p:panelGrid columns="2" rendered="#{not empty potenciometro}"
+			columnClasses="value" style="width:100%">
+
+			<h:outputText value="#{msg['label.potentiometer.pin']}:" />
+			<h:outputText id="pin"
+				value="#{potenciometro.id.pinType} #{potenciometro.id.pin}"
+				label="#{msg['label.potentiometer.pin']}" />
+
+			<h:outputText value="#{msg['label.potentiometer.event']}:" />
+			<h:selectOneMenu id="event" value="#{potenciometro.evento}"
+				label="#{msg['label.potentiometer.event']}" styleClass="input-large"
+				disabled="#{not potenciometro.alteraEvento}">
+				<f:selectItems value="#{potenciometroView.eventos}" />
+			</h:selectOneMenu>
+
+			<h:outputText value="#{msg['label.potentiometer.interval']}:" />
+			<h:selectOneMenu id="eventInterval"
+				value="#{potenciometro.intervalo}"
+				label="#{msg['label.potentiometer.interval']}"
+				styleClass="input-large"
+				disabled="#{not potenciometro.alteraIntervalo}">
+				<f:selectItems value="#{potenciometroView.intervalos}" />
+			</h:selectOneMenu>
+
+			<f:facet name="footer">
+				<p:commandButton value="#{msg['button.update']}"
+					actionListener="#{potenciometroView.atualizaPotenciometro}"
+					styleClass="btn btn-success"
+					oncomplete="handleUpdateRequest(xhr, status, args)"
+					update="all_messages" />
+				<p:commandButton type="button" value="#{msg['button.cancel']}"
+					onclick="PF('potenciometroDialog').hide();" styleClass="btn" />
+			</f:facet>
+		</p:panelGrid>
+	</p:outputPanel>
+
+	<script type="text/javascript">
+		function handleUpdateRequest(xhr, status, args) {
+			if (args.validationFailed || !args.arduinoAtualizado)
+				return;
+
+			PF('potenciometroDialog').hide();
+			PF('potenciometrosTable').filter();
+		}
+	</script>
+</ui:fragment>

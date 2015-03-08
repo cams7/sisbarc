@@ -1,0 +1,117 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" template="/layout/template.xhtml">
+
+	<ui:define name="template_head">
+		<style type="text/css">
+.ui-datatable .ui-datatable-header {
+	text-align: right !important;
+}
+
+.ui-button-text-only .ui-button-text {
+	/*padding: 0.3em 0.4em;*/
+	padding: 1px;
+}
+
+.ui-selectcheckboxmenu-panel .ui-selectcheckboxmenu-header .ui-chkbox {
+	display: none;
+}
+</style>
+	</ui:define>
+
+	<ui:define name="pageTitle">
+		<h:outputText value="#{msg['page.title.potentiometer.list']}" />
+	</ui:define>
+
+	<ui:define name="content">
+		<div style="border-bottom: 1px solid #E5E5E5;">
+			<h3>
+				<h:outputText value="#{msg['label.potentiometers']}" />
+				<small> <h:outputText value="#{msg['label.list']}" /></small>
+			</h3>
+		</div>
+		<h:form id="form_potenciometro">
+			<p:growl id="all_messages" showDetail="true" life="5000" />
+
+			<p:dataTable var="potenciometro"
+				value="#{potenciometroView.lazyModel}" paginator="true"
+				rows="#{potenciometroView.rows}" first="#{potenciometroView.first}"
+				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+				rowsPerPageTemplate="3,5,10,15" selectionMode="single"
+				selection="#{potenciometroView.selectedEntity}" lazy="true"
+				emptyMessage="#{msg['potentiometer.not.found']}"
+				widgetVar="potenciometrosTable" resizableColumns="true">
+
+				<p:ajax event="rowSelect"
+					listener="#{potenciometroView.onRowSelect}"
+					update=":form_potenciometro:potenciometroDetail"
+					onsuccess="PF('potenciometroDialog').show();" />
+
+				<p:column headerText="#{msg['label.potentiometer.pin']}">
+					<h:outputText
+						value="#{potenciometro.id.pinType} #{potenciometro.id.pin}"
+						title="#{msg['label.edit']} '#{potenciometro.id.pinType} #{potenciometro.id.pin}'" />
+				</p:column>
+
+				<p:column sortBy="#{potenciometro.evento}"
+					filterBy="#{potenciometro.evento}" filterMatchMode="in">
+					<f:facet name="filter">
+						<p:selectCheckboxMenu label="#{msg['label.potentiometer.event']}"
+							onchange="PF('potenciometrosTable').filter()"
+							panelStyle="width:150px" scrollHeight="100"
+							converter="eventoConverter">
+							<f:selectItems value="#{potenciometroView.eventos}" />
+						</p:selectCheckboxMenu>
+					</f:facet>
+					<h:outputText value="#{potenciometro.evento}" />
+				</p:column>
+
+				<p:column sortBy="#{potenciometro.intervalo}"
+					filterBy="#{potenciometro.intervalo}" filterMatchMode="in">
+					<f:facet name="filter">
+						<p:selectCheckboxMenu
+							label="#{msg['label.potentiometer.interval']}"
+							onchange="PF('potenciometrosTable').filter()"
+							panelStyle="width:300px" scrollHeight="260"
+							converter="intervaloConverter">
+							<f:selectItems value="#{potenciometroView.intervalos}" />
+						</p:selectCheckboxMenu>
+					</f:facet>
+					<h:outputText value="#{potenciometro.intervalo}" />
+				</p:column>
+
+				<f:facet name="footer">
+					<p:panelGrid columns="3" columnClasses="value" style="width:100%">
+						<h:outputFormat value="#{msg['footer.potentiometer.total']}">
+							<f:param value="#{potenciometroView.totalRows}" />
+						</h:outputFormat>
+
+						<p:commandButton value="#{msg['button.arduino.synchronize']}"
+							styleClass="btn btn-success"
+							actionListener="#{potenciometroView.sincronizaPotenciometros}"
+							oncomplete="PF('potenciometrosTable').filter()"
+							update=":form_potenciometro:all_messages" />
+
+						<p:commandButton value="#{msg['button.arduino.update']}"
+							styleClass="btn btn-success"
+							actionListener="#{potenciometroView.atualizaPotenciometros}"
+							update=":form_potenciometro:all_messages" />
+					</p:panelGrid>
+				</f:facet>
+			</p:dataTable>
+
+			<p:dialog header="#{msg['title.potentiometer.edit']}"
+				widgetVar="potenciometroDialog" modal="true" resizable="false">
+
+				<p:ajax event="close" listener="#{potenciometroView.handleClose}" />
+
+				<ui:include src="potenciometro_form.xhtml">
+					<ui:param name="potenciometro"
+						value="#{potenciometroView.selectedEntity}" />
+				</ui:include>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -35,8 +35,8 @@
 		<h:form id="form_led">
 			<p:growl id="all_messages" showDetail="true" life="5000" />
 
-			<p:dataTable id="ledTable" var="led" value="#{ledView.lazyModel}"
-				paginator="true" rows="#{ledView.rows}" first="#{ledView.first}"
+			<p:dataTable var="led" value="#{ledView.lazyModel}" paginator="true"
+				rows="#{ledView.rows}" first="#{ledView.first}"
 				paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
 				rowsPerPageTemplate="3,5,10,15" selectionMode="single"
 				selection="#{ledView.selectedEntity}" lazy="true"
@@ -54,7 +54,7 @@
 				<p:column sortBy="#{led.cor}" filterBy="#{led.cor}"
 					filterMatchMode="in">
 					<f:facet name="filter">
-						<p:selectCheckboxMenu label="#{msg['label.led.cor']}"
+						<p:selectCheckboxMenu label="#{msg['label.led.color']}"
 							onchange="PF('ledsTable').filter()" panelStyle="width:125px"
 							scrollHeight="100" converter="corLEDConverter">
 							<f:selectItems value="#{ledView.cores}" />
@@ -66,9 +66,9 @@
 				<p:column sortBy="#{led.evento}" filterBy="#{led.evento}"
 					filterMatchMode="in">
 					<f:facet name="filter">
-						<p:selectCheckboxMenu label="#{msg['label.led.evento']}"
+						<p:selectCheckboxMenu label="#{msg['label.led.event']}"
 							onchange="PF('ledsTable').filter()" panelStyle="width:150px"
-							scrollHeight="100" converter="eventoLEDConverter">
+							scrollHeight="100" converter="eventoConverter">
 							<f:selectItems value="#{ledView.eventos}" />
 						</p:selectCheckboxMenu>
 					</f:facet>
@@ -78,16 +78,16 @@
 				<p:column sortBy="#{led.intervalo}" filterBy="#{led.intervalo}"
 					filterMatchMode="in">
 					<f:facet name="filter">
-						<p:selectCheckboxMenu label="#{msg['label.led.intervalo']}"
+						<p:selectCheckboxMenu label="#{msg['label.led.interval']}"
 							onchange="PF('ledsTable').filter()" panelStyle="width:300px"
-							scrollHeight="260" converter="intervaloLEDConverter">
+							scrollHeight="260" converter="intervaloConverter">
 							<f:selectItems value="#{ledView.intervalos}" />
 						</p:selectCheckboxMenu>
 					</f:facet>
 					<h:outputText value="#{led.intervalo}" />
 				</p:column>
 
-				<p:column headerText="#{msg['label.led.ativadoPorBotao']}"
+				<p:column headerText="#{msg['label.led.activeByButton']}"
 					sortBy="#{led.ativadoPorBotao}" filterBy="#{led.ativadoPorBotao}"
 					filterMatchMode="equals">
 					<f:facet name="filter">
@@ -103,7 +103,7 @@
 						value="#{led.ativadoPorBotao ? msg['active.true']: msg['active.false']}" />
 				</p:column>
 
-				<p:column headerText="#{msg['label.led.ativo']}"
+				<p:column headerText="#{msg['label.led.active']}"
 					sortBy="#{led.ativo}" filterBy="#{led.ativo}"
 					filterMatchMode="equals">
 					<f:facet name="filter">
