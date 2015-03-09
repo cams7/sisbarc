@@ -39,7 +39,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 	private final byte D09_LED_VERMELHO = 9; // Pino 09 PWM
 	private final byte D06_LED_AMARELO = 6; // Pino 06 PWM
 	private final byte D05_LED_VERDE = 5; // Pino 05 PWM
-	private final byte D04_LED_VERMELHO = 4; // Pino 03 PWM
+	private final byte D04_LED_VERMELHO = 4; // Pino 04 Digital
 
 	private final byte A0_POTENCIOMETRO = 0; // Pino 0 Analogico
 
@@ -49,7 +49,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		getLog().info("Novo Servico");
 	}
 
-	@Override
 	protected void receiveExecute(ArduinoPinType pinType, byte pin,
 			short pinValue) {
 		switch (pinType) {
@@ -98,7 +97,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 	}
 
-	@Override
 	protected void receiveMessage(ArduinoPinType pinType, byte pin,
 			short pinValue) {
 		switch (pinType) {
@@ -137,7 +135,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 	}
 
-	@Override
 	protected void receiveWrite(ArduinoPinType pinType, byte pin,
 			byte threadInterval, byte actionEvent) {
 		switch (pinType) {
@@ -181,7 +178,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 	}
 
-	@Override
 	protected void receiveRead(ArduinoPinType pinType, byte pin,
 			byte threadInterval, byte actionEvent) {
 		switch (pinType) {
@@ -225,7 +221,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 	}
 
-	@Override
 	protected short sendResponse(ArduinoPinType pinType, byte pin,
 			short pinValue) {
 		switch (pinType) {
@@ -254,7 +249,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		return pinValue;
 	}
 
-	@Override
 	public void alteraEstadoLED(PinPK pino, EstadoLED estado) {
 		ArduinoPinType tipoPino = pino.getPinType();
 		byte pinoLED = pino.getPin().byteValue();
@@ -263,7 +257,42 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 
 		try {
 			if (tipoPino == ArduinoPinType.DIGITAL)
-				sendPinDigital(ArduinoStatus.SEND_RESPONSE, pinoLED, estadoLED);
+				sendPinDigitalUSART(ArduinoStatus.SEND_RESPONSE, pinoLED,
+						estadoLED);
+		} catch (ArduinoException e) {
+			getLog().log(Level.SEVERE, e.getMessage());
+		}
+
+	}
+
+	public void buscaEstadoLED(PinPK pino) {
+		ArduinoPinType tipoPino = pino.getPinType();
+		byte pinoLED = pino.getPin().byteValue();
+
+		try {
+			if (tipoPino == ArduinoPinType.DIGITAL)
+				sendPinDigitalUSARTMessage(ArduinoStatus.SEND_RESPONSE, pinoLED);
+		} catch (ArduinoException e) {
+			getLog().log(Level.SEVERE, e.getMessage());
+		}
+
+	}
+
+	public void alteraEvento(PinPK pino, Evento evento, Intervalo intervalo) {
+		try {
+			sendEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pino.getPinType(),
+					pino.getPin().byteValue(), (byte) intervalo.ordinal(),
+					(byte) evento.ordinal());
+		} catch (ArduinoException e) {
+			getLog().log(Level.SEVERE, e.getMessage());
+		}
+
+	}
+
+	public void buscaDados(PinPK pino) {
+		try {
+			sendEEPROMRead(ArduinoStatus.SEND_RESPONSE, pino.getPinType(), pino
+					.getPin().byteValue());
 		} catch (ArduinoException e) {
 			getLog().log(Level.SEVERE, e.getMessage());
 		}
@@ -291,9 +320,12 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		return arduino;
 	}
 
-	@Override
-	public EstadoLED getEstadoLED(PinPK pino) {
-		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.EXECUTE, pino);
+	public EstadoLED getEstadoLED(PinPK pino, ArduinoEvent arduinoEvent) {
+		if (arduinoEvent != ArduinoEvent.EXECUTE
+				&& arduinoEvent != ArduinoEvent.MESSAGE)
+			return null;
+
+		Arduino arduino = getArduinoResponse(arduinoEvent, pino);
 		if (arduino == null)
 			return null;
 
@@ -312,35 +344,7 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		return estado;
 	}
 
-	@Override
-	public void alteraEventoLED(PinPK pino, Evento evento, Intervalo intervalo) {
-		try {
-			if (pino.getPinType() == ArduinoPinType.DIGITAL)
-				sendDigitalEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pino
-						.getPin().byteValue(), (byte) intervalo.ordinal(),
-						(byte) evento.ordinal());
-		} catch (ArduinoException e) {
-			getLog().log(Level.SEVERE, e.getMessage());
-		}
-
-	}
-
-	@Override
-	public void alteraEventoPotenciometro(PinPK pino, Evento evento,
-			Intervalo intervalo) {
-		try {
-			if (pino.getPinType() == ArduinoPinType.ANALOG)
-				sendAnalogEEPROMWrite(ArduinoStatus.SEND_RESPONSE, pino
-						.getPin().byteValue(), (byte) intervalo.ordinal(),
-						(byte) evento.ordinal());
-		} catch (ArduinoException e) {
-			getLog().log(Level.SEVERE, e.getMessage());
-		}
-
-	}
-
-	@Override
-	public Evento getEventoLED(PinPK pino) {
+	public Evento getEvento(PinPK pino) {
 		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.WRITE, pino);
 		if (arduino == null)
 			return null;
@@ -348,39 +352,6 @@ public class AppArduinoService extends ArduinoServiceImpl implements
 		return Evento.values()[((ArduinoEEPROM) arduino).getActionEvent()];
 	}
 
-	@Override
-	public Evento getEventoPotenciometro(PinPK pino) {
-		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.WRITE, pino);
-		if (arduino == null)
-			return null;
-
-		return Evento.values()[((ArduinoEEPROM) arduino).getActionEvent()];
-	}
-
-	@Override
-	public void buscaDadosLED(PinPK pino) {
-		try {
-			if (pino.getPinType() == ArduinoPinType.DIGITAL)
-				sendDigitalEEPROMRead(ArduinoStatus.SEND_RESPONSE, pino
-						.getPin().byteValue());
-		} catch (ArduinoException e) {
-			getLog().log(Level.SEVERE, e.getMessage());
-		}
-
-	}
-
-	@Override
-	public void buscaDadosPotenciometro(PinPK pino) {
-		try {
-			if (pino.getPinType() == ArduinoPinType.ANALOG)
-				sendAnalogEEPROMRead(ArduinoStatus.SEND_RESPONSE, pino.getPin()
-						.byteValue());
-		} catch (ArduinoException e) {
-			getLog().log(Level.SEVERE, e.getMessage());
-		}
-	}
-
-	@Override
 	public EEPROMData getDados(PinPK pino) {
 		Arduino arduino = getArduinoResponse(Arduino.ArduinoEvent.READ, pino);
 		if (arduino == null)

@@ -5,12 +5,15 @@ package br.com.cams7.sisbarc.aal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,15 +39,19 @@ import br.com.cams7.util.RestUtil;
 public class MainActivity extends Activity implements OnClickListener {
 
 	private static final String TAG = "MainActivity";
-	private static final String URL = "http://192.168.1.7:8080/acende_apaga_leds/rest/arduino/led";
+	private static final String URL = "http://192.168.1.7:8080/acende_apaga_leds/rest/arduino";
 
-	private static final byte PINO_LED_AMARELO = 11; // Pino 11 PWM
-	private static final byte PINO_LED_VERDE = 10; // Pino 10 PWM
-	private static final byte PINO_LED_VERMELHO = 9; // Pino 09 PWM
+	private static final byte D11_LED_AMARELO = 11; // Pino 11 PWM
+	private static final byte D10_LED_VERDE = 10; // Pino 10 PWM
+	private static final byte D09_LED_VERMELHO = 9; // Pino 09 PWM
+	private static final byte D06_LED_AMARELO = 6; // Pino 06 PWM
+	private static final byte D05_LED_VERDE = 5; // Pino 05 PWM
+	private static final byte D04_LED_VERMELHO = 4; // Pino 04 Digital
 
-	private static final byte PINOS_LEDS[] = { PINO_LED_AMARELO,
-			PINO_LED_VERDE, PINO_LED_VERMELHO };
+	private static final byte PINOS_LEDS[] = { D11_LED_AMARELO, D10_LED_VERDE,
+			D09_LED_VERMELHO, D06_LED_AMARELO, D05_LED_VERDE, D04_LED_VERMELHO };
 	private static final int CORES_LEDS[] = { R.string.btn_yellow,
+			R.string.btn_green, R.string.btn_red, R.string.btn_yellow,
 			R.string.btn_green, R.string.btn_red };
 
 	private TextView tvResponse;
@@ -67,14 +74,23 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		botoesLEDs = new ImageButton[PINOS_LEDS.length];
 		// flash switch button
-		botoesLEDs[0] = (ImageButton) findViewById(R.id.btn_yellow);
+		botoesLEDs[0] = (ImageButton) findViewById(R.id.btn_d11_led_amarelo);
 		botoesLEDs[0].setOnClickListener(this);
 
-		botoesLEDs[1] = (ImageButton) findViewById(R.id.btn_green);
+		botoesLEDs[1] = (ImageButton) findViewById(R.id.btn_d10_led_verde);
 		botoesLEDs[1].setOnClickListener(this);
 
-		botoesLEDs[2] = (ImageButton) findViewById(R.id.btn_red);
+		botoesLEDs[2] = (ImageButton) findViewById(R.id.btn_d09_led_vermelho);
 		botoesLEDs[2].setOnClickListener(this);
+
+		botoesLEDs[3] = (ImageButton) findViewById(R.id.btn_d06_led_amarelo);
+		botoesLEDs[3].setOnClickListener(this);
+
+		botoesLEDs[4] = (ImageButton) findViewById(R.id.btn_d05_led_verde);
+		botoesLEDs[4].setOnClickListener(this);
+
+		botoesLEDs[5] = (ImageButton) findViewById(R.id.btn_d04_led_vermelho);
+		botoesLEDs[5].setOnClickListener(this);
 
 		isConnected = RestUtil.isConnected(this);
 
@@ -107,14 +123,23 @@ public class MainActivity extends Activity implements OnClickListener {
 	public void onClick(View view) {
 		Byte pino = null;
 		switch (view.getId()) {
-		case R.id.btn_yellow:
-			pino = PINO_LED_AMARELO;
+		case R.id.btn_d11_led_amarelo:
+			pino = D11_LED_AMARELO;
 			break;
-		case R.id.btn_green:
-			pino = PINO_LED_VERDE;
+		case R.id.btn_d10_led_verde:
+			pino = D10_LED_VERDE;
 			break;
-		case R.id.btn_red:
-			pino = PINO_LED_VERMELHO;
+		case R.id.btn_d09_led_vermelho:
+			pino = D09_LED_VERMELHO;
+			break;
+		case R.id.btn_d06_led_amarelo:
+			pino = D06_LED_AMARELO;
+			break;
+		case R.id.btn_d05_led_verde:
+			pino = D05_LED_VERDE;
+			break;
+		case R.id.btn_d04_led_vermelho:
+			pino = D04_LED_VERMELHO;
 			break;
 		default:
 			break;
@@ -125,7 +150,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	}
 
-	private static String GET(String url, String errorMsg) {
+	private static String GET(String url, String wildflyError,
+			String monitorError) {
+
 		// create HttpClient
 		HttpClient httpclient = new DefaultHttpClient();
 
@@ -136,7 +163,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			InputStream inputStream = httpResponse.getEntity().getContent();
 			if (inputStream == null) {
 				Log.d(RestUtil.TAG_INPUT_STREAM, "InputStream is null");
-				return errorMsg;
+				return wildflyError;
 			}
 
 			return RestUtil.convertInputStreamToString(inputStream);
@@ -146,9 +173,13 @@ public class MainActivity extends Activity implements OnClickListener {
 		} catch (IOException e) {
 			Log.d(RestUtil.TAG_INPUT_STREAM, e.getLocalizedMessage(),
 					e.getCause());
+		} catch (NullPointerException e) {
+			Log.d(RestUtil.TAG_INPUT_STREAM, e.getLocalizedMessage(),
+					e.getCause());
+			return monitorError;
 		}
 
-		return errorMsg;
+		return wildflyError;
 	}
 
 	private class HttpAsyncTask extends AsyncTask<String, Void, String> {
@@ -159,63 +190,33 @@ public class MainActivity extends Activity implements OnClickListener {
 		 * @see android.os.AsyncTask#doInBackground(java.lang.Object[])
 		 */
 		protected String doInBackground(String... urls) {
-			return GET(urls[0], getString(R.string.msg_error_wildfly));
+			return GET(urls[0], getString(R.string.msg_error_wildfly),
+					getString(R.string.msg_error_monitor));
 		}
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
 		protected void onPostExecute(String result) {
 			String wildflyError = getString(R.string.msg_error_wildfly);
+			String monitorError = getString(R.string.msg_error_monitor);
 
 			try {
 				if (wildflyError.equals(result))
 					throw new AppException(wildflyError);
 
-				JSONObject json = new JSONObject(result);
+				if (monitorError.equals(result))
+					throw new AppException(monitorError);
 
-				LED led = new LED();
-
-				final String STRING_NULL = "null";
-
-				JSONObject id = json.getJSONObject("id");
-				if (id != null) {
-					String jsonPin = id.getString("pin");
-					if (!STRING_NULL.equals(jsonPin))
-						led.setPino(Byte.valueOf(jsonPin));
-
+				try {
+					for (LED led : getLEDs(new JSONArray(result)))
+						setEstadoLED(led, false);
+				} catch (JSONException e) {
+					LED led = getLED(new JSONObject(result));
+					setEstadoLED(led, true);
 				}
 
-				String jsonEstado = json.getString("estado");
-				if (!STRING_NULL.equals(jsonEstado))
-					led.setEstado(EstadoLED.valueOf(jsonEstado));
-
-				if (led.getPino() == null)
-					throw new AppException(getString(R.string.msg_error));
-
-				if (led.getEstado() == null)
-					throw new AppException(
-							getString(R.string.msg_error_arduino));
-
-				byte indicePino = getIndicePino(led.getPino().byteValue());
-
-				estadosLEDs[indicePino] = led.getEstado();
-
-				switch (led.getEstado()) {
-				case ACESO:
-					tvResponse.setText(getString(R.string.msg_led_on,
-							getString(CORES_LEDS[indicePino])));
-					break;
-				case APAGADO:
-					tvResponse.setText(getString(R.string.msg_led_off,
-							getString(CORES_LEDS[indicePino])));
-					break;
-				default:
-					break;
-				}
-
-				alteraImagemBotao(indicePino);
 			} catch (JSONException e) {
-				tvResponse.setText(R.string.msg_error_monitor);
+				tvResponse.setText(e.getMessage());
 				Log.d(TAG, e.getLocalizedMessage(), e.getCause());
 			} catch (AppException e) {
 				tvResponse.setText(e.getMessage());
@@ -223,6 +224,63 @@ public class MainActivity extends Activity implements OnClickListener {
 			}
 
 		}
+	}
+
+	private LED getLED(JSONObject json) throws AppException, JSONException {
+		LED led = new LED();
+
+		final String STRING_NULL = "null";
+
+		JSONObject id = json.getJSONObject("id");
+		if (id != null) {
+			String jsonPin = id.getString("pin");
+			if (!STRING_NULL.equals(jsonPin))
+				led.setPino(Byte.valueOf(jsonPin));
+
+		}
+
+		String jsonEstado = json.getString("estado");
+		if (!STRING_NULL.equals(jsonEstado))
+			led.setEstado(EstadoLED.valueOf(jsonEstado));
+
+		if (led.getPino() == null)
+			throw new AppException(getString(R.string.msg_error));
+
+		if (led.getEstado() == null)
+			throw new AppException(getString(R.string.msg_error_arduino));
+
+		return led;
+	}
+
+	private List<LED> getLEDs(JSONArray array) throws AppException,
+			JSONException {
+		List<LED> leds = new ArrayList<LED>();
+		for (int i = 0; i < array.length(); i++)
+			leds.add(getLED(array.getJSONObject(i)));
+
+		return leds;
+	}
+
+	private void setEstadoLED(LED led, boolean viewMessage) {
+		byte indicePino = getIndicePino(led.getPino().byteValue());
+
+		estadosLEDs[indicePino] = led.getEstado();
+
+		if (viewMessage)
+			switch (led.getEstado()) {
+			case ACESO:
+				tvResponse.setText(getString(R.string.msg_led_on,
+						getString(CORES_LEDS[indicePino])));
+				break;
+			case APAGADO:
+				tvResponse.setText(getString(R.string.msg_led_off,
+						getString(CORES_LEDS[indicePino])));
+				break;
+			default:
+				break;
+			}
+
+		alteraImagemBotao(indicePino);
 	}
 
 	/*
@@ -246,7 +304,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			// play sound
 			playSound(indicePino);
 
-			String url = URL + "?tipo_pino=DIGITAL&pino="
+			String url = URL + "/led?tipo_pino=DIGITAL&pino="
 					+ PINOS_LEDS[indicePino] + "&estado=" + estado.name();
 			new HttpAsyncTask().execute(url);
 		}
@@ -298,6 +356,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		Log.v(TAG, "MainActivity.onDestroy()");
 	}
 
 	@Override
@@ -307,11 +366,13 @@ public class MainActivity extends Activity implements OnClickListener {
 		// on pause turn off the flash
 		if (estadosLEDs != null && botoesLEDs != null)
 			apagaLEDs();
+		Log.v(TAG, "MainActivity.onPause()");
 	}
 
 	@Override
 	protected void onRestart() {
 		super.onRestart();
+		Log.v(TAG, "MainActivity.onRestart()");
 	}
 
 	@Override
@@ -320,16 +381,20 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		// on resume turn on the flash
 		if (isConnected && estadosLEDs != null && botoesLEDs != null)
-			apagaLEDs();
+			new HttpAsyncTask().execute(URL + "/leds");
+
+		Log.v(TAG, "MainActivity.onResume()");
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		Log.v(TAG, "MainActivity.onStart()");
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
+		Log.v(TAG, "MainActivity.onStop()");
 	}
 }

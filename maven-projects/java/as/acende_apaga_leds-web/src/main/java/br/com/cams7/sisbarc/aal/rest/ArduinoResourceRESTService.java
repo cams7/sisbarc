@@ -3,6 +3,7 @@
  */
 package br.com.cams7.sisbarc.aal.rest;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -43,7 +44,7 @@ public class ArduinoResourceRESTService {
 	@GET
 	@Path("/led")
 	@Produces(MediaType.APPLICATION_JSON)
-	public LEDEntity changeStatusLED(
+	public LEDEntity alteraLEDEstado(
 			@QueryParam("tipo_pino") String stringTipoPino,
 			@QueryParam("pino") String stringPino,
 			@QueryParam("estado") String stringEstado) {
@@ -56,6 +57,22 @@ public class ArduinoResourceRESTService {
 
 		try {
 			Future<LEDEntity> call = service.alteraLEDEstado(led);
+			return call.get();
+		} catch (InterruptedException | ExecutionException e) {
+			log.log(Level.SEVERE, e.getMessage());
+		} catch (NullPointerException e) {
+			log.log(Level.WARNING, e.getMessage());
+		}
+
+		return null;
+	}
+
+	@GET
+	@Path("/leds")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<LEDEntity> getLEDs() {
+		try {
+			Future<List<LEDEntity>> call = service.getLEDsAtivadoPorBotao();
 			return call.get();
 		} catch (InterruptedException | ExecutionException e) {
 			log.log(Level.SEVERE, e.getMessage());

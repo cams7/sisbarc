@@ -90,13 +90,13 @@
 
 						<p:commandButton value="#{msg['button.arduino.synchronize']}"
 							styleClass="btn btn-success"
-							actionListener="#{potenciometroView.sincronizaPotenciometros}"
+							actionListener="#{potenciometroView.sincronizaPinos}"
 							oncomplete="PF('potenciometrosTable').filter()"
 							update=":form_potenciometro:all_messages" />
 
 						<p:commandButton value="#{msg['button.arduino.update']}"
 							styleClass="btn btn-success"
-							actionListener="#{potenciometroView.atualizaPotenciometros}"
+							actionListener="#{potenciometroView.atualizaPinos}"
 							update=":form_potenciometro:all_messages" />
 					</p:panelGrid>
 				</f:facet>

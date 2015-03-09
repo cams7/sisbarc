@@ -1,15 +1,8 @@
 package br.com.cams7.sisbarc.aal.view;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.event.ActionEvent;
-
-import org.primefaces.context.RequestContext;
 
 import br.com.cams7.sisbarc.aal.ejb.service.LEDService;
 import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Evento;
@@ -40,9 +33,6 @@ import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.CorLED;
 @ViewScoped
 public class LEDView extends AALView<LEDService, LEDEntity> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -59,92 +49,6 @@ public class LEDView extends AALView<LEDService, LEDEntity> {
 	@Override
 	protected void init() {
 		getLog().info("Init View");
-	}
-
-	public void atualizaLED(ActionEvent event) {
-		LEDEntity led = getSelectedEntity();
-
-		final String MSG_ERROR_UPDATE = getMessageFromI18N(
-				"error.msg.led.update", led.getCor().name(), led.getId()
-						.getPin());
-
-		RequestContext context = RequestContext.getCurrentInstance();
-		final String CALLBACK_PARAM = "arduinoAtualizado";
-
-		try {
-			Future<Boolean> call = getService().atualizaLED(led);
-
-			boolean arduinoRun = call.get();
-
-			if (arduinoRun) {
-				String summary = getMessageFromI18N("info.msg.led.update.ok");// Resumo
-				String detail = getMessageFromI18N("info.msg.led.update", led
-						.getCor().name(), led.getId().getPin());// Detalhes
-
-				addINFOMessage(summary, detail);
-				context.addCallbackParam(CALLBACK_PARAM, true);
-			} else {
-				addMessageArduinoNotRun(MSG_ERROR_UPDATE);
-				context.addCallbackParam(CALLBACK_PARAM, false);
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			addERRORMessage(MSG_ERROR_UPDATE, e.getMessage());
-			context.addCallbackParam(CALLBACK_PARAM, false);
-		} catch (NullPointerException e) {
-			addMessageMonitorNotRun(MSG_ERROR_UPDATE);
-			context.addCallbackParam(CALLBACK_PARAM, false);
-		}
-
-	}
-
-	public void atualizaLEDs(ActionEvent event) {
-		final String MSG_ERROR_UPDATE = getMessageFromI18N("error.msg.leds.update");
-
-		List<LEDEntity> leds = getService().findAll();
-		try {
-			Future<Boolean> call = getService().alteraLEDEventos(leds);
-
-			boolean arduinoRun = call.get();
-
-			if (arduinoRun) {
-				String summary = getMessageFromI18N("info.msg.leds.update.ok");// Resumo
-				String detail = getMessageFromI18N("info.msg.leds.update");// Detalhes
-
-				addINFOMessage(summary, detail);
-			} else
-				addMessageArduinoNotRun(MSG_ERROR_UPDATE);
-
-		} catch (InterruptedException | ExecutionException e) {
-			addERRORMessage(MSG_ERROR_UPDATE, e.getMessage());
-		} catch (NullPointerException e) {
-			addMessageMonitorNotRun(MSG_ERROR_UPDATE);
-		}
-
-	}
-
-	public void sincronizaLEDs(ActionEvent event) {
-		final String MSG_ERROR_SYNCHRONIZE = getMessageFromI18N("error.msg.leds.synchronize");
-
-		List<LEDEntity> leds = getService().findAll();
-		try {
-			Future<Boolean> call = getService().sincronizaLEDEventos(leds);
-
-			boolean arduinoRun = call.get();
-
-			if (arduinoRun) {
-				String summary = getMessageFromI18N("info.msg.leds.synchronize.ok");// Resumo
-				String detail = getMessageFromI18N("info.msg.leds.synchronize");// Detalhes
-
-				addINFOMessage(summary, detail);
-			} else
-				addMessageArduinoNotRun(MSG_ERROR_SYNCHRONIZE);
-
-		} catch (InterruptedException | ExecutionException e) {
-			addERRORMessage(MSG_ERROR_SYNCHRONIZE, e.getMessage());
-		} catch (NullPointerException e) {
-			addMessageMonitorNotRun(MSG_ERROR_SYNCHRONIZE);
-		}
-
 	}
 
 	@Override

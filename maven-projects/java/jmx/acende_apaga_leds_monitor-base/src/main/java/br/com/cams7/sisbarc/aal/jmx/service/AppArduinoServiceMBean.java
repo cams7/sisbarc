@@ -8,6 +8,7 @@ import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Intervalo;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
 import br.com.cams7.sisbarc.arduino.ArduinoService;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoEvent;
 import br.com.cams7.sisbarc.arduino.vo.EEPROMData;
 
 /**
@@ -17,62 +18,73 @@ import br.com.cams7.sisbarc.arduino.vo.EEPROMData;
 public interface AppArduinoServiceMBean extends ArduinoService {
 
 	/**
-	 * @param pino
-	 * @param estado
+	 * Altera o ESTADO do LED para ACESO ou APAGADO
 	 * 
-	 *            Altera o estado do LED ligado/desligado
+	 * @param PINO
+	 *            do LED - Numero do PINO DIGITAL
+	 * @param ESTADO
+	 *            do LED - ACESO/APAGADO
+	 * 
+	 * 
 	 */
 	public void alteraEstadoLED(PinPK pino, EstadoLED estado);
 
 	/**
-	 * @param pino
-	 * @return
+	 * Busca o ESTADO do LED, que pode ser ACESO ou APAGADO
 	 * 
-	 *         Obtem o estado atual do LED informado
+	 * @param PINO
+	 *            do LED - Numero do PINO DIGITAL
 	 */
-	public EstadoLED getEstadoLED(PinPK pino);
+	public void buscaEstadoLED(PinPK pino);
 
 	/**
-	 * @param pino
-	 * @param evento
-	 * @param intervalo
+	 * Altera o EVENTO e o INTERVALO
+	 * 
+	 * @param PINO
+	 *            - Numero do PINO DIGITAL/ANALOGICO
+	 * @param EVENTO
+	 * 
+	 * @param INTERVALO
 	 */
-	public void alteraEventoLED(PinPK pino, Evento evento, Intervalo intervalo);
+	public void alteraEvento(PinPK pino, Evento evento, Intervalo intervalo);
 
 	/**
-	 * @param pino
-	 * @return
+	 * Obtem os Dados na EEPROM do ARDUINO
+	 * 
+	 * @param PINO
+	 *            - Numero do PINO DIGITAL/ANALOGICO
 	 */
-	public Evento getEventoLED(PinPK pino);
+	public void buscaDados(PinPK pino);
 
 	/**
-	 * @param pino
+	 * Obtem o ESTADO atual do LED informado,
+	 * 
+	 * Obs.: Os dados sao recebidos pela SERIAL do ARDUINO
+	 * 
+	 * @param PINO
+	 *            do LED - Numero do PINO DIGITAL
+	 * @return ESTADO do LED
 	 */
-	public void buscaDadosLED(PinPK pino);
+	public EstadoLED getEstadoLED(PinPK pino, ArduinoEvent arduinoEvent);
 
 	/**
-	 * @param pino
-	 * @return
+	 * Obtem o EVENTO, os dados sao recebidos pela SERIAL do ARDUINO
+	 * 
+	 * @param PINO
+	 *            - Numero do PINO DIGITAL/ANALOG
+	 * @return EVENTO do LED
+	 */
+	public Evento getEvento(PinPK pino);
+
+	/**
+	 * Obtem os DADOS da EEPROM no ARDUINO
+	 * 
+	 * Obs.: Os dados sao recebidos pela SERIAL do ARDUINO
+	 * 
+	 * @param PINO
+	 *            - Numero do PINO DIGITAL/ANALOGICO
+	 * @return DADOS da EEPROM no ARDUINO
 	 */
 	public EEPROMData getDados(PinPK pino);
-
-	/**
-	 * @param pino
-	 * @param evento
-	 * @param intervalo
-	 */
-	public void alteraEventoPotenciometro(PinPK pino, Evento evento,
-			Intervalo intervalo);
-
-	/**
-	 * @param pino
-	 * @return
-	 */
-	public Evento getEventoPotenciometro(PinPK pino);
-
-	/**
-	 * @param pino
-	 */
-	public void buscaDadosPotenciometro(PinPK pino);
 
 }

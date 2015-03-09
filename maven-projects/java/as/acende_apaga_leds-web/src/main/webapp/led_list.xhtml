@@ -127,13 +127,13 @@
 
 						<p:commandButton value="#{msg['button.arduino.synchronize']}"
 							styleClass="btn btn-success"
-							actionListener="#{ledView.sincronizaLEDs}"
+							actionListener="#{ledView.sincronizaPinos}"
 							oncomplete="PF('ledsTable').filter()"
 							update=":form_led:all_messages" />
 
 						<p:commandButton value="#{msg['button.arduino.update']}"
 							styleClass="btn btn-success"
-							actionListener="#{ledView.atualizaLEDs}"
+							actionListener="#{ledView.atualizaPinos}"
 							update=":form_led:all_messages" />
 					</p:panelGrid>
 				</f:facet>

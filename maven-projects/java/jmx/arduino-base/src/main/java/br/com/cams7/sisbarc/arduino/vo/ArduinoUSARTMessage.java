@@ -23,9 +23,14 @@ public class ArduinoUSARTMessage extends ArduinoUSART {
 	 * @param pin
 	 * @param pinValue
 	 */
-	public ArduinoUSARTMessage(ArduinoStatus status, ArduinoPinType pinType,
+	private ArduinoUSARTMessage(ArduinoStatus status, ArduinoPinType pinType,
 			byte pin, short pinValue) {
 		super(status, ArduinoEvent.MESSAGE, pinType, pin, pinValue);
+	}
+
+	public ArduinoUSARTMessage(ArduinoStatus status, ArduinoPinType pinType,
+			byte pin) {
+		this(status, pinType, pin, (byte) 0);
 	}
 
 }

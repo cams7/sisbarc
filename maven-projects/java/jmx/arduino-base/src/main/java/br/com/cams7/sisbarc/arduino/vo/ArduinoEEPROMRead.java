@@ -34,7 +34,7 @@ public class ArduinoEEPROMRead extends ArduinoEEPROM {
 
 	public ArduinoEEPROMRead(ArduinoStatus status, ArduinoPinType pinType,
 			byte pin) {
-		this(status, pinType, pin, (byte) -1, (byte) -1);
+		this(status, pinType, pin, (byte) 0, (byte) 0);
 	}
 
 }

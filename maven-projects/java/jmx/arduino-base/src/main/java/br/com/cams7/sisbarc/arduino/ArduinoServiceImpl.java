@@ -28,6 +28,7 @@ import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROMRead;
 import br.com.cams7.sisbarc.arduino.vo.ArduinoEEPROMWrite;
 import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
 import br.com.cams7.sisbarc.arduino.vo.ArduinoUSART;
+import br.com.cams7.sisbarc.arduino.vo.ArduinoUSARTMessage;
 
 public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		SerialPortEventListener {
@@ -297,7 +298,6 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		case RESPONSE_RESPONSE:
 			switch (arduino.getEvent()) {
 			case EXECUTE:
-			case MESSAGE:
 				short pinValue = sendResponse(arduino.getPinType(),
 						arduino.getPin(),
 						((ArduinoUSART) arduino).getPinValue());
@@ -313,15 +313,16 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 							}
 
 						if (isPinPWD)
-							sendPinPWM(ArduinoStatus.RESPONSE_RESPONSE,
+							sendPinPWMUSART(ArduinoStatus.RESPONSE_RESPONSE,
 									arduino.getPin(), pinValue);
 						else
-							sendPinDigital(ArduinoStatus.RESPONSE_RESPONSE,
+							sendPinDigitalUSART(
+									ArduinoStatus.RESPONSE_RESPONSE,
 									arduino.getPin(), pinValue == 0x0001);
 						break;
 					}
 					case ANALOG: {
-						sendPinAnalog(ArduinoStatus.RESPONSE_RESPONSE,
+						sendPinAnalogUSART(ArduinoStatus.RESPONSE_RESPONSE,
 								arduino.getPin(), pinValue);
 						break;
 					}
@@ -332,6 +333,8 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 					getLog().log(Level.WARNING, e.getMessage());
 				}
 
+				break;
+			case MESSAGE:
 				break;
 			case WRITE:
 			case READ:
@@ -362,11 +365,11 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 	protected abstract short sendResponse(ArduinoPinType pinType, byte pin,
 			short pinValue);
 
-	protected void sendPinDigital(ArduinoStatus status, byte digitalPin,
-			boolean pinValue) throws ArduinoException {
-		ArduinoUSART arduino = new ArduinoUSART(status, ArduinoPinType.DIGITAL,
-				digitalPin, (short) (pinValue ? 0x0001 : 0x0000));
+	private static Arduino receive(byte[] values) throws ArduinoException {
+		return SisbarcProtocol.decode(values);
+	}
 
+	private void sendPinDigital(ArduinoUSART arduino) throws ArduinoException {
 		boolean pinOk = false;
 		for (byte pin : Arduino.getPinsDigital())
 			if (arduino.getPin() == pin) {
@@ -391,11 +394,21 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		addCurrentStatus(arduino);
 	}
 
-	protected void sendPinPWM(ArduinoStatus status, byte digitalPin,
-			short pinValue) throws ArduinoException {
+	protected void sendPinDigitalUSART(ArduinoStatus status, byte digitalPin,
+			boolean pinValue) throws ArduinoException {
 		ArduinoUSART arduino = new ArduinoUSART(status, ArduinoPinType.DIGITAL,
-				digitalPin, pinValue);
+				digitalPin, (short) (pinValue ? 0x0001 : 0x0000));
+		sendPinDigital(arduino);
+	}
 
+	protected void sendPinDigitalUSARTMessage(ArduinoStatus status,
+			byte digitalPin) throws ArduinoException {
+		ArduinoUSARTMessage arduino = new ArduinoUSARTMessage(status,
+				ArduinoPinType.DIGITAL, digitalPin);
+		sendPinDigital(arduino);
+	}
+
+	private void sendPinPWM(ArduinoUSART arduino) throws ArduinoException {
 		boolean pinOk = false;
 		for (byte pin : Arduino.getPinsDigitalPWM())
 			if (arduino.getPin() == pin) {
@@ -421,11 +434,23 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		addCurrentStatus(arduino);
 	}
 
-	protected void sendPinAnalog(ArduinoStatus status, byte analogPin,
+	protected void sendPinPWMUSART(ArduinoStatus status, byte digitalPin,
 			short pinValue) throws ArduinoException {
-		ArduinoUSART arduino = new ArduinoUSART(status, ArduinoPinType.ANALOG,
-				analogPin, pinValue);
+		ArduinoUSART arduino = new ArduinoUSART(status, ArduinoPinType.DIGITAL,
+				digitalPin, pinValue);
+		sendPinPWM(arduino);
 
+	}
+
+	protected void sendPinPWMUSARTMessage(ArduinoStatus status, byte digitalPin)
+			throws ArduinoException {
+		ArduinoUSARTMessage arduino = new ArduinoUSARTMessage(status,
+				ArduinoPinType.DIGITAL, digitalPin);
+		sendPinPWM(arduino);
+
+	}
+
+	private void sendPinAnalog(ArduinoUSART arduino) throws ArduinoException {
 		boolean pinOk = false;
 		for (byte pin : Arduino.getPinsAnalog())
 			if (arduino.getPin() == pin) {
@@ -451,45 +476,35 @@ public abstract class ArduinoServiceImpl implements ArduinoService, Runnable,
 		addCurrentStatus(arduino);
 	}
 
-	private static Arduino receive(byte[] values) throws ArduinoException {
-		return SisbarcProtocol.decode(values);
+	protected void sendPinAnalogUSART(ArduinoStatus status, byte analogPin,
+			short pinValue) throws ArduinoException {
+		ArduinoUSART arduino = new ArduinoUSART(status, ArduinoPinType.ANALOG,
+				analogPin, pinValue);
+		sendPinAnalog(arduino);
 	}
 
-	protected void sendDigitalEEPROMWrite(ArduinoStatus status, byte pin,
-			byte threadTime, byte actionEvent) throws ArduinoException {
-
-		ArduinoEEPROMWrite arduino = new ArduinoEEPROMWrite(status,
-				ArduinoPinType.DIGITAL, pin, threadTime, actionEvent);
-		serialWrite(SisbarcProtocol.getProtocolEEPROM(arduino));
-
-		addCurrentStatus(arduino);
+	protected void sendPinAnalogUSARTMessage(ArduinoStatus status,
+			byte analogPin) throws ArduinoException {
+		ArduinoUSARTMessage arduino = new ArduinoUSARTMessage(status,
+				ArduinoPinType.ANALOG, analogPin);
+		sendPinAnalog(arduino);
 	}
 
-	protected void sendDigitalEEPROMRead(ArduinoStatus status, byte pin)
+	protected void sendEEPROMWrite(ArduinoStatus status,
+			ArduinoPinType pinType, byte pin, byte threadTime, byte actionEvent)
 			throws ArduinoException {
 
-		ArduinoEEPROMRead arduino = new ArduinoEEPROMRead(status,
-				ArduinoPinType.DIGITAL, pin);
+		ArduinoEEPROMWrite arduino = new ArduinoEEPROMWrite(status, pinType,
+				pin, threadTime, actionEvent);
 		serialWrite(SisbarcProtocol.getProtocolEEPROM(arduino));
 
 		addCurrentStatus(arduino);
 	}
 
-	protected void sendAnalogEEPROMWrite(ArduinoStatus status, byte pin,
-			byte threadTime, byte actionEvent) throws ArduinoException {
+	protected void sendEEPROMRead(ArduinoStatus status, ArduinoPinType pinType,
+			byte pin) throws ArduinoException {
 
-		ArduinoEEPROMWrite arduino = new ArduinoEEPROMWrite(status,
-				ArduinoPinType.ANALOG, pin, threadTime, actionEvent);
-		serialWrite(SisbarcProtocol.getProtocolEEPROM(arduino));
-
-		addCurrentStatus(arduino);
-	}
-
-	protected void sendAnalogEEPROMRead(ArduinoStatus status, byte pin)
-			throws ArduinoException {
-
-		ArduinoEEPROMRead arduino = new ArduinoEEPROMRead(status,
-				ArduinoPinType.ANALOG, pin);
+		ArduinoEEPROMRead arduino = new ArduinoEEPROMRead(status, pinType, pin);
 		serialWrite(SisbarcProtocol.getProtocolEEPROM(arduino));
 
 		addCurrentStatus(arduino);

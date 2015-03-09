@@ -18,13 +18,14 @@
         android:textSize="18sp" />
 
     <ImageButton
-        android:id="@+id/btn_yellow"
+        android:id="@+id/btn_d11_led_amarelo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/tvResponse"
         android:layout_centerVertical="true"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
-        android:layout_toLeftOf="@+id/btn_green"
+        android:layout_toLeftOf="@+id/btn_d10_led_verde"
         android:background="@null"
         android:contentDescription="@null"
         android:paddingLeft="0dp"
@@ -33,9 +34,10 @@
         android:text="@string/btn_yellow" />
 
     <ImageButton
-        android:id="@+id/btn_green"
+        android:id="@+id/btn_d10_led_verde"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/tvResponse"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:layout_marginLeft="0dp"
@@ -48,13 +50,62 @@
         android:text="@string/btn_green" />
 
     <ImageButton
-        android:id="@+id/btn_red"
+        android:id="@+id/btn_d09_led_vermelho"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/tvResponse"
         android:layout_centerVertical="true"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
-        android:layout_toRightOf="@+id/btn_green"
+        android:layout_toRightOf="@+id/btn_d10_led_verde"
+        android:background="@null"
+        android:contentDescription="@null"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:src="@drawable/btn_switch_off"
+        android:text="@string/btn_red" />
+
+    <ImageButton
+        android:id="@+id/btn_d06_led_amarelo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_d11_led_amarelo"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_toLeftOf="@+id/btn_d05_led_verde"
+        android:background="@null"
+        android:contentDescription="@null"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:src="@drawable/btn_switch_off"
+        android:text="@string/btn_yellow" />
+
+    <ImageButton
+        android:id="@+id/btn_d05_led_verde"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_d10_led_verde"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:background="@null"
+        android:contentDescription="@null"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:src="@drawable/btn_switch_off"
+        android:text="@string/btn_green" />
+
+    <ImageButton
+        android:id="@+id/btn_d04_led_vermelho"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_d09_led_vermelho"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_toRightOf="@+id/btn_d05_led_verde"
         android:background="@null"
         android:contentDescription="@null"
         android:paddingLeft="0dp"

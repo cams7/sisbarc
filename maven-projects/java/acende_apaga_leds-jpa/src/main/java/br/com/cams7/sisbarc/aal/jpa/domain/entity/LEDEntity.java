@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -23,7 +24,9 @@ import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
 @XmlRootElement
 @Entity
 @Table(name = "led")
-@NamedQuery(name = "Led.findAll", query = "SELECT led FROM LEDEntity led")
+@NamedQueries({
+		@NamedQuery(name = "Led.findAll", query = "SELECT led FROM LEDEntity led"),
+		@NamedQuery(name = "Led.buscaLEDsAtivadoPorBotao", query = "SELECT led FROM LEDEntity led WHERE led.ativadoPorBotao=true") })
 public class LEDEntity extends Pin {
 
 	private static final long serialVersionUID = 1L;

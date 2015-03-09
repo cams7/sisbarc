@@ -15,19 +15,17 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Evento;
-import br.com.cams7.sisbarc.aal.jpa.domain.Pin.Intervalo;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity.EstadoLED;
 import br.com.cams7.sisbarc.aal.jpa.domain.entity.LEDEntity_;
 import br.com.cams7.sisbarc.aal.jpa.domain.pk.PinPK;
+import br.com.cams7.sisbarc.arduino.vo.Arduino.ArduinoEvent;
 import br.com.cams7.sisbarc.arduino.vo.ArduinoPin.ArduinoPinType;
-import br.com.cams7.sisbarc.arduino.vo.EEPROMData;
 
 @Stateless
 @Local(LEDService.class)
 @Remote(AppWildflyService.class)
-public class LEDServiceImpl extends AALService<LEDEntity, PinPK> implements
+public class LEDServiceImpl extends AALServiceImpl<LEDEntity, PinPK> implements
 		LEDService, AppWildflyService {
 
 	public LEDServiceImpl() {
@@ -46,7 +44,8 @@ public class LEDServiceImpl extends AALService<LEDEntity, PinPK> implements
 
 			serialThreadTime();
 
-			EstadoLED estado = getMbeanProxy().getEstadoLED(led.getId());
+			EstadoLED estado = getMbeanProxy().getEstadoLED(led.getId(),
+					ArduinoEvent.EXECUTE);
 			led.setEstado(estado);
 
 			if (estado != null) {
@@ -63,35 +62,21 @@ public class LEDServiceImpl extends AALService<LEDEntity, PinPK> implements
 		return new AsyncResult<LEDEntity>(led);
 	}
 
-	@Asynchronous
-	public Future<Boolean> atualizaLED(LEDEntity led) {
-		if (getMbeanProxy() == null)
-			return null;
+	public Future<List<LEDEntity>> getLEDsAtivadoPorBotao() {
+		@SuppressWarnings("unchecked")
+		List<LEDEntity> leds = getEntityManager().createNamedQuery(
+				"Led.buscaLEDsAtivadoPorBotao").getResultList();
 
-		getMbeanProxy().alteraEventoLED(led.getId(), led.getEvento(),
-				led.getIntervalo());
+		for (LEDEntity led : leds)
+			getMbeanProxy().buscaEstadoLED(led.getId());
 
 		serialThreadTime();
 
-		Evento evento = getMbeanProxy().getEventoLED(led.getId());
+		for (LEDEntity led : leds)
+			led.setEstado(getMbeanProxy().getEstadoLED(led.getId(),
+					ArduinoEvent.MESSAGE));
 
-		Boolean arduinoRun = Boolean.FALSE;
-
-		if (evento != null) {
-			led.setEvento(evento);
-			save(led);
-			arduinoRun = Boolean.TRUE;
-
-			getLog().info(
-					"O evento do LED '" + led.getId() + "' foi alterado '"
-							+ led.getEvento() + "'");
-		} else
-			getLog().log(
-					Level.WARNING,
-					"Ocorreu um erro ao tenta buscar o EVENTO do LED '"
-							+ led.getId() + "'");
-
-		return new AsyncResult<Boolean>(arduinoRun);
+		return new AsyncResult<List<LEDEntity>>(leds);
 	}
 
 	@Override
@@ -118,73 +103,6 @@ public class LEDServiceImpl extends AALService<LEDEntity, PinPK> implements
 			return EstadoLED.ACESO;
 
 		return EstadoLED.APAGADO;
-	}
-
-	@Asynchronous
-	public Future<Boolean> alteraLEDEventos(List<LEDEntity> leds) {
-		if (getMbeanProxy() == null)
-			return null;
-
-		for (LEDEntity led : leds)
-			getMbeanProxy().alteraEventoLED(led.getId(), led.getEvento(),
-					led.getIntervalo());
-
-		serialThreadTime();
-
-		Boolean arduinoRun = Boolean.TRUE;
-
-		for (LEDEntity led : leds) {
-			Evento evento = getMbeanProxy().getEventoLED(led.getId());
-
-			if (evento == null) {
-				arduinoRun = Boolean.FALSE;
-				break;
-			}
-		}
-
-		if (arduinoRun)
-			getLog().info("Os EVENTOs dos LEDs foram alterados");
-		else
-			getLog().log(Level.WARNING,
-					"Ocorreu um erro ao tenta buscar os EVENTOs dos LEDs");
-
-		return new AsyncResult<Boolean>(arduinoRun);
-	}
-
-	@Asynchronous
-	public Future<Boolean> sincronizaLEDEventos(List<LEDEntity> leds) {
-		if (getMbeanProxy() == null)
-			return null;
-
-		for (LEDEntity led : leds)
-			getMbeanProxy().buscaDadosLED(led.getId());
-
-		serialThreadTime();
-
-		Boolean arduinoRun = Boolean.TRUE;
-
-		for (LEDEntity led : leds) {
-			EEPROMData data = getMbeanProxy().getDados(led.getId());
-			if (data == null) {
-				arduinoRun = Boolean.FALSE;
-				break;
-			}
-
-			Evento evento = Evento.values()[data.getActionEvent()];
-			Intervalo intervalo = Intervalo.values()[data.getThreadInterval()];
-
-			led.setEvento(evento);
-			led.setIntervalo(intervalo);
-		}
-
-		if (arduinoRun) {
-			update(leds);
-			getLog().info("Os EVENTOs dos LEDs foram sincronizados");
-		} else
-			getLog().log(Level.WARNING,
-					"Ocorreu um erro ao tenta buscar os DADOs dos LEDs");
-
-		return new AsyncResult<Boolean>(arduinoRun);
 	}
 
 }

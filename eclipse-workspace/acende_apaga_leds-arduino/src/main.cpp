@@ -47,7 +47,7 @@
 #define ACENDE_APAGA 0 // Acende ou apaga
 #define PISCA_PISCA  1 // Pisca-pisca
 #define FADE         2 // Acende ou apaga ao poucos
-#define NENHUM       3
+#define NENHUM       3 // O potenciometro não vai acende ou apagar os LEDs
 
 #define INTERVALO_10MILISEGUNDOS  10    // 1/100 de segundo
 #define INTERVALO_50MILISEGUNDOS  50    // 1/20 de segundo
@@ -333,12 +333,31 @@ void alteraValorLEDPorSerial(ArduinoStatus* const arduino) {
 	if (indicePino != -1)
 		ledsAcesa[indicePino] = arduinoUSART->getPinValue() == 0x0001;
 
-	Sisbarc.send(arduino);
+	Sisbarc.send(arduinoUSART);
+}
+
+void buscaEstadoLED(ArduinoStatus* const arduino) {
+	ArduinoUSARTMessage* arduinoUSART = ((ArduinoUSARTMessage*) arduino);
+
+	arduinoUSART->setTransmitterValue(ArduinoStatus::ARDUINO);
+	arduinoUSART->setStatusValue(ArduinoStatus::RESPONSE);
+
+	int16_t indicePino = getIndiceLEDPino(arduinoUSART->getPin());
+
+	if (indicePino != -1)
+		arduinoUSART->setPinValue(ledsAcesa[indicePino] ? 0x0001 : 0x0000);
+
+	Sisbarc.send(arduinoUSART);
 }
 
 bool isValidEvent(ArduinoStatus* const arduino) {
 	if (arduino->getEventValue() == ArduinoStatus::EXECUTE) {
 		alteraValorLEDPorSerial(arduino);
+		return true;
+	}
+
+	if (arduino->getEventValue() == ArduinoStatus::MESSAGE) {
+		buscaEstadoLED(arduino);
 		return true;
 	}
 
@@ -541,14 +560,7 @@ void alteraValorPotenciometro(void) {
 			for (; i < TOTAL_LEDS; i++) {
 				digitalWrite(PINOS_LEDS[i], LOW);
 				ledsAcesa[i] = false;
-			} //'170' < 171, '341' < 342, '512' < 513, '683' < 684, '854' < 855, ('1023'> 1023)
-
-			// 0 < 170, (171 > 170)
-			// 0 < 341, 171 < 341, (342 > 341)
-			// 0 < 512, 171 < 512, 342 < 512, (513 > 512)
-			// 0 < 683, 171 < 683, 342 < 683, 513 < 683, (684 > 683)
-			// 0 < 854, 171 < 854, 342 < 854, 513 < 854, 684 < 854, (855 > 854)
-			// 0 <1023, 171 <1023, 342 <1023, 513 <1023, 684 <1023, 855<1023, (1026 > 1023)
+			}
 
 			i = 0x00;
 
@@ -557,10 +569,11 @@ void alteraValorPotenciometro(void) {
 						PINOS_LEDS[i], !ledsAcesa[i]);
 				i++;
 			}
+
+			Sisbarc.sendPinAnalog(ArduinoStatus::SEND, A0_POTENCIOMETRO,
+					valorPotenciometro);
 		}
 
-		Sisbarc.sendPinAnalog(ArduinoStatus::SEND, A0_POTENCIOMETRO,
-				valorPotenciometro);
 	}
 }
 
