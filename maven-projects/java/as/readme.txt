@@ -1,9 +1,9 @@
 For Linux QBEX:  
 	WildFly
-	$JBOSS_HOME/bin/standalone.sh -b 192.168.0.160 -bmanagement 192.168.0.160
+	$JBOSS_HOME/bin/standalone.sh -b 192.168.1.8 -bmanagement 192.168.1.8
 	
 	Jboss-AS
-	$EAP_HOME/bin/standalone.sh -b 192.168.0.160 -bmanagement 192.168.0.160
+	$EAP_HOME/bin/standalone.sh -b 192.168.1.8 -bmanagement 192.168.1.8
 
 For Windows VAIO: 
 	#FOR /F "tokens=4 delims= " %%P IN ('netstat -a -n -o ^| findstr :8080') DO @ECHO TaskKill.exe /PID %%P
@@ -29,8 +29,8 @@ WildFly started
 	mvn clean test -Parq-wildfly-remote
 
 	For Linux QBEX: 
-		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.0.160
-		mvn wildfly:undeploy -Dwildfly.hostname=192.168.0.160
+		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.1.8
+		mvn wildfly:undeploy -Dwildfly.hostname=192.168.1.8
 		
 	For Windows VAIO:
 		mvn clean install wildfly:deploy -Dwildfly.hostname=192.168.1.7
@@ -46,8 +46,8 @@ Jboss-AS started
 	mvn clean test -Parq-jbossas-remote
 
 	For Linux QBEX: 
-		mvn clean install jboss-as:deploy -Djboss-as.hostname=192.168.0.160
-		mvn jboss-as:undeploy -Djboss-as.hostname=192.168.0.160
+		mvn clean install jboss-as:deploy -Djboss-as.hostname=192.168.1.8
+		mvn jboss-as:undeploy -Djboss-as.hostname=192.168.1.8
 		
 	For Windows VAIO:
 		mvn clean install jboss-as:deploy -Djboss-as.hostname=192.168.1.7
