@@ -55,7 +55,7 @@
 			<scope>provided</scope>
 			<type>jar</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>br.com.cams7.sisbarc</groupId>
 			<artifactId>sisbarc-as</artifactId>
@@ -132,18 +132,9 @@
 					<!-- Tell Maven we are using EJB 3.1 -->
 					<ejbVersion>3.1</ejbVersion>
 					<generateClient>true</generateClient>
-					<clientExcludes>
-						<clientExclude>**/ArduinoService.class</clientExclude>
-						<clientExclude>**/*Impl.class</clientExclude>
-						<clientExclude>br/com/cams7/sisbarc/aal/util/</clientExclude>
-						<clientExcludes>import.sql</clientExcludes>
-						<clientExcludes>META-INF/beans.xml</clientExcludes>
-						<clientExcludes>config.properties</clientExcludes>
-						<clientExcludes>org/</clientExcludes>
-						<clientExclude>br/com/yaw/</clientExclude>
-					</clientExcludes>
-					<!--clientIncludes> <clientIncludes>br/com/cams7/sisbarc/aal/ejb/service/RemoteArduinoService.class</clientIncludes> 
-						</clientIncludes -->
+					<clientIncludes>
+						<clientIncludes>br/com/cams7/sisbarc/aal/ejb/service/AppWildflyService.class</clientIncludes>
+					</clientIncludes>
 				</configuration>
 			</plugin>
 		</plugins>
